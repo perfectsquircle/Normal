@@ -1,14 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <VersionPrefix>0.1.0</VersionPrefix>
-        <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <PackageId>Tesla.Toadstool</PackageId>
-        <AssemblyName>Tesla.Toadstool</AssemblyName>
-        <RootNamespace>Tesla.Toadstool</RootNamespace>
-    </PropertyGroup>
-    <PropertyGroup>
-        <NoWarn>1701;1702;1705;CS1591</NoWarn>
-    </PropertyGroup>
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFrameworks>netstandard1.3;net451</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Tesla.Toadstool</PackageId>
+    <AssemblyName>Tesla.Toadstool</AssemblyName>
+    <RootNamespace>Tesla.Toadstool</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>1701;1702;1705;CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.60.1"/>
+    <PackageReference Include="System.Data.Common" Version="4.3.0"/>
+  </ItemGroup>
 </Project>
