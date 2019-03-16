@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <TargetFrameworks>netstandard1.3;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Tesla.Toadstool</PackageId>
     <AssemblyName>Tesla.Toadstool</AssemblyName>
@@ -12,7 +12,8 @@
     <NoWarn>1701;1702;1705;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="1.60.1"/>
     <PackageReference Include="System.Data.Common" Version="4.3.0"/>
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.0"/>
+    <PackageReference Include="Npgsql" Version="4.0.5"/>
   </ItemGroup>
 </Project>

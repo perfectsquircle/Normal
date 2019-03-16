@@ -4,7 +4,9 @@ namespace Toadstool
 {
     public interface IDbContext
     {
-        T QueryAsync<T>(object parameters);
-        int ExecuteAsync(object parameters);
+        DbCommandBuilder Query(string commandText);
+
+        IDbConnection GetOpenConnection();
+        IDbTransaction GetTransaction();
     }
 }
