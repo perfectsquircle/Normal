@@ -2,6 +2,16 @@
 
 > A Tesla package.
 
+## TODO
+
+* Abstract specific database drivers.
+* Support async query.
+* Support execute scalar and execute ?.
+* Make column matching case insensitive.
+* Make column matching ignore underscores.
+* Make deserialization configurable.
+* Deteslafy.
+
 ## Features
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nec rutrum ante. Duis in tincidunt felis. Vivamus feugiat mattis lacus quis mollis. Donec et ligula tempus nibh dignissim ullamcorper. Ut molestie placerat leo nec rutrum. Cras posuere porttitor risus, id tristique ligula lobortis eu. Vivamus nulla ipsum, blandit at massa at, venenatis hendrerit lectus. Pellentesque vel nunc tellus. Proin bibendum odio ac purus auctor consectetur.
