@@ -2,14 +2,6 @@
 
 > Fluent .NET Micro ORM
 
-## TODO
-
-* Make column matching case insensitive.
-* Make column matching ignore underscores.
-* Make deserialization configurable.
-* Stylecop
-
-
 ## Features
 
 Query the database with ease
@@ -38,6 +30,14 @@ export FrameworkPathOverride=$(dirname $(which mono))/../lib/mono/4.5/
 The `Dockerfile` installs Mono on top of the `dotnet:2.0-sdk` image, then sets `FrameworkPathOverride` to the known location of Mono.
 
 See https://github.com/dotnet/sdk/issues/335
+
+
+## TODO
+
+* Make column matching case insensitive.
+* Make column matching ignore underscores.
+* Make deserialization configurable.
+* Stylecop
 
 ---
 
