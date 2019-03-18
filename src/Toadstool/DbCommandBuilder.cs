@@ -9,21 +9,22 @@ namespace Toadstool
 {
     public class DbCommandBuilder
     {
-        string CommandText { get; set; }
-        int? CommandTimeout { get; set; }
-        CommandType? CommandType { get; set; }
-        IDictionary<string, string> Parameters { get; }
-        public DbContext DbContext { get; }
-
         public DbCommandBuilder()
         {
             Parameters = new Dictionary<string, string>();
         }
 
-        internal DbCommandBuilder(DbContext dbContext) : this()
+        internal DbCommandBuilder(DbContext dbContext)
+            : this()
         {
             DbContext = dbContext;
         }
+
+        public string CommandText { get; set; }
+        public int? CommandTimeout { get; set; }
+        public CommandType? CommandType { get; set; }
+        public IDictionary<string, string> Parameters { get; }
+        public DbContext DbContext { get; }
 
         public DbCommandBuilder WithCommandText(string commandText)
         {
@@ -67,9 +68,18 @@ namespace Toadstool
                 throw new NotSupportedException("Connection required to build command");
             }
             var command = dbConnection.CreateCommand();
-            if (CommandText != null) command.CommandText = CommandText;
-            if (CommandTimeout != null) command.CommandTimeout = CommandTimeout.Value;
-            if (CommandType != null) command.CommandType = CommandType.Value;
+            if (CommandText != null)
+            {
+                command.CommandText = CommandText;
+            }
+            if (CommandTimeout != null)
+            {
+                command.CommandTimeout = CommandTimeout.Value;
+            }
+            if (CommandType != null)
+            {
+                command.CommandType = CommandType.Value;
+            }
             command.Connection = dbConnection;
             command.Transaction = dbContext.Transaction;
 
@@ -89,12 +99,6 @@ namespace Toadstool
             return ExecuteAsync(DbContext, cancellationToken);
         }
 
-        internal async Task<DbResultBuilder> ExecuteAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var reader = await ExecuteReaderAsync(dbContext, cancellationToken: cancellationToken);
-            return new DbResultBuilder(reader, dbContext.DataReaderDeserializer);
-        }
-
         public async Task<int> ExecuteNonQueryAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
         {
             var command = await this.BuildAsync(dbContext, cancellationToken);
@@ -111,6 +115,13 @@ namespace Toadstool
         {
             var command = await this.BuildAsync(dbContext, cancellationToken);
             return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // internal
+        internal async Task<DbResultBuilder> ExecuteAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var reader = await ExecuteReaderAsync(dbContext, cancellationToken: cancellationToken);
+            return new DbResultBuilder(reader, dbContext.DataReaderDeserializer);
         }
     }
 }

@@ -6,14 +6,14 @@ namespace Toadstool
 {
     public class DbContext : IDbContext
     {
-        public DbConnection Connection { get; private set; }
-        public DbTransaction Transaction { get; private set; }
-        public IDataReaderDeserializer DataReaderDeserializer { get; private set; }
-
         public DbContext()
         {
             DataReaderDeserializer = new DefaultDataReaderDeserializer();
         }
+
+        public DbConnection Connection { get; private set; }
+        public DbTransaction Transaction { get; private set; }
+        public IDataReaderDeserializer DataReaderDeserializer { get; private set; }
 
         public DbContext WithConnection(DbConnection dbConnection)
         {

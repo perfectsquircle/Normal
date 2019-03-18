@@ -36,8 +36,8 @@ See https://github.com/dotnet/sdk/issues/335
 ## TODO
 
 * Make column matching ignore underscores?
-* Stylecop
 * Type mapping [customizable](https://github.com/grigorgeous/sqldatareader-mapper/).
+* XML Documentation for all fields.
 
 ---
 

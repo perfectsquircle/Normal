@@ -13,5 +13,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.3.0"/>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(ProjectDir)../../stylecop.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="$(ProjectDir)../../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
 </Project>

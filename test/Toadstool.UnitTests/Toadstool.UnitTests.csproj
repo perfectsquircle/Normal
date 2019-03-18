@@ -18,4 +18,10 @@
     <PackageReference Include="Npgsql" Version="4.0.5"/>
   </ItemGroup>
 
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(ProjectDir)../../stylecop.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="$(ProjectDir)../../stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
 </Project>
