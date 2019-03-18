@@ -10,8 +10,8 @@ Query the database with ease
 var context = new DbContext(new NpgsqlConnection("Host=localhost;Database=whatever;"));
 
 var results = await context
-    .Query("select 7 as A")
-    .WithParameter("foo", "bar")
+    .Query("select a, b, c from bar where foo = @foo")
+    .WithParameter("foo", "something")
     .ExecuteAsync()
     .AsList<Bar>();
 ```

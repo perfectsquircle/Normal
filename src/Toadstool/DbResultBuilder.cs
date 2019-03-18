@@ -37,6 +37,7 @@ namespace Toadstool
                 {
                     yield return Deserialize<T>(_dataReader);
                 }
+                yield break;
             }
         }
 
