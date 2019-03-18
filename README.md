@@ -1,6 +1,6 @@
 # Toadstool
 
-> A Tesla package.
+> Fluent .NET Micro ORM
 
 ## TODO
 
@@ -10,7 +10,6 @@
 * Make column matching case insensitive.
 * Make column matching ignore underscores.
 * Make deserialization configurable.
-* Deteslafy.
 
 ## Features
 
@@ -40,6 +39,6 @@ See https://github.com/dotnet/sdk/issues/335
 
 ---
 
-Built with &hearts; by [Trogdor](mailto:DL-DEPT-WEB-DEV@tesla.com?subject=Toadstool).
+Built with &hearts; by Calvin.
 
-&copy; Tesla
+&copy; Calvin Furano

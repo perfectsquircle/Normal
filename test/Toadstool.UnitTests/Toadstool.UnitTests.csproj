@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyName>Tesla.Toadstool.UnitTests</AssemblyName>
-    <RootNamespace>Tesla.Toadstool.UnitTests</RootNamespace>
+    <AssemblyName>Toadstool.UnitTests</AssemblyName>
+    <RootNamespace>Toadstool.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

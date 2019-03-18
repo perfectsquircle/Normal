@@ -10,7 +10,7 @@ namespace Toadstool.UnitTests
         public async Task SqlServerContextShouldWork()
         {
             //Given
-            var context = new SqlServerContext("slcsql-qa.solarcity.local");
+            var context = new SqlServerContext("???");
 
             //When
 
@@ -26,7 +26,7 @@ namespace Toadstool.UnitTests
         public async Task PostgresContextShouldWork()
         {
             //Given
-            var context = new PostgresContext("User ID=incentives_api;Password=BB8DC0F7-F196-425C-A8FE-EEF0606AFC67;Host=sjc04d1mtpdb01.teslamotors.com;Database=incentive_reference;");
+            var context = new PostgresContext("Host=localhost;Database=cfurano;");
 
             //When
             var results = context
