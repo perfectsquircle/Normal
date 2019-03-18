@@ -2,21 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Reflection;
 
 namespace Toadstool
 {
     public class DbResultBuilder
     {
         private readonly IDataReader _dataReader;
+        private readonly IDataReaderDeserializer _dataReaderDeserializer;
 
-        public DbResultBuilder(IDataReader dataReader)
+        public DbResultBuilder(IDataReader dataReader, IDataReaderDeserializer dataReaderDeserializer)
         {
             if (dataReader == null)
             {
                 throw new ArgumentNullException(nameof(dataReader));
             }
             _dataReader = dataReader;
+            _dataReaderDeserializer = dataReaderDeserializer;
         }
 
         public IList<T> AsList<T>()
@@ -35,24 +36,10 @@ namespace Toadstool
 
                 while (_dataReader.Read())
                 {
-                    yield return Deserialize<T>(_dataReader);
+                    yield return _dataReaderDeserializer.Deserialize<T>(_dataReader);
                 }
                 yield break;
             }
-        }
-
-        internal static T Deserialize<T>(IDataReader dataReader)
-        {
-            T obj = default(T);
-            obj = Activator.CreateInstance<T>();
-            foreach (PropertyInfo prop in obj.GetType().GetRuntimeProperties()) // TODO: cache this
-            {
-                if (!object.Equals(dataReader[prop.Name], DBNull.Value))
-                {
-                    prop.SetValue(obj, dataReader[prop.Name], null);
-                }
-            }
-            return obj;
         }
     }
 }

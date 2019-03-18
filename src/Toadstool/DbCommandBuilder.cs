@@ -92,7 +92,7 @@ namespace Toadstool
         internal async Task<DbResultBuilder> ExecuteAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
         {
             var reader = await ExecuteReaderAsync(dbContext, cancellationToken: cancellationToken);
-            return new DbResultBuilder(reader);
+            return new DbResultBuilder(reader, dbContext.DataReaderDeserializer);
         }
 
         public async Task<int> ExecuteNonQueryAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))

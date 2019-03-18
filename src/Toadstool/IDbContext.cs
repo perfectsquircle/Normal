@@ -8,6 +8,7 @@ namespace Toadstool
     public interface IDbContext
     {
         DbTransaction Transaction { get; }
+        IDataReaderDeserializer DataReaderDeserializer { get; }
         DbCommandBuilder Query(string commandText);
         Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken));
         Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken));

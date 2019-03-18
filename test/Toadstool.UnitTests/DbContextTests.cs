@@ -22,7 +22,9 @@ namespace Toadstool.UnitTests
 
         public class Bar
         {
-            public int A { get; set; }
+            public int Alpha { get; set; }
+            public string Beta { get; set; }
+            public string Charlie { get; } = "Can't set me";
         }
 
         [Fact]
@@ -34,15 +36,17 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query("select 7 as A")
-                .WithParameter("foo", "bar")
+                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie")
                 .ExecuteAsync()
                 .As<Bar>();
 
             //Then
             Assert.NotNull(results);
             // Assert.NotEmpty(results); // This iterates the IEnumerable, thus consuming it.
-            Assert.Equal(7, results.Single().A);
+            var bar = results.Single();
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
         }
 
         [Fact]
@@ -54,15 +58,17 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query("select 7 as A")
-                .WithParameter("foo", "bar")
+                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie")
                 .ExecuteAsync()
                 .AsList<Bar>();
 
             //Then
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            Assert.Equal(7, results.Single().A);
+            var bar = results.Single();
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
         }
     }
 }

@@ -1,4 +1,4 @@
-# Toadstool
+# 🍄 Toadstool
 
 > Fluent .NET Micro ORM
 
@@ -20,7 +20,7 @@ var results = await context
 
 ## Building
 
-This project targets both .NET Standard 1.3 and .NET Framework 4.5. Because of this, you must have .NET Framework or Mono installed (in addition to .NET Core).
+This project targets both .NET Standard 2.0 and .NET Framework 4.5.1. Because of this, you must have .NET Framework or Mono installed (in addition to .NET Core).
 
 On macOS and Linux build environments, to build from .NET Core you must set the `FrameworkPathOverride` environment variable.
 
@@ -28,17 +28,16 @@ On macOS and Linux build environments, to build from .NET Core you must set the 
 export FrameworkPathOverride=$(dirname $(which mono))/../lib/mono/4.5/
 ```
 
-The `Dockerfile` installs Mono on top of the `dotnet:2.0-sdk` image, then sets `FrameworkPathOverride` to the known location of Mono.
+The `Dockerfile` installs Mono on top of the `dotnet:2.1-sdk` image, then sets `FrameworkPathOverride` to the known location of Mono.
 
 See https://github.com/dotnet/sdk/issues/335
 
 
 ## TODO
 
-* Make column matching case insensitive.
-* Make column matching ignore underscores.
-* Make deserialization configurable.
+* Make column matching ignore underscores?
 * Stylecop
+* Type mapping [customizable](https://github.com/grigorgeous/sqldatareader-mapper/).
 
 ---
 
