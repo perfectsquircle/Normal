@@ -1,16 +1,18 @@
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Npgsql;
 using Xunit;
 
 namespace Toadstool.UnitTests
 {
     public class DbContextTests
     {
-        [Fact]
+        [Fact(Skip = "Support later")]
         public async Task SqlServerContextShouldWork()
         {
             //Given
-            var context = new SqlServerContext("???");
+            var context = new DbContext(new SqlConnection("???"));
 
             //When
 
@@ -26,12 +28,13 @@ namespace Toadstool.UnitTests
         public async Task PostgresContextShouldWork()
         {
             //Given
-            var context = new PostgresContext("Host=localhost;Database=cfurano;");
+            var context = new DbContext(new NpgsqlConnection("Host=localhost;Database=cfurano;"));
 
             //When
-            var results = context
+            var results = await context
                 .Query("select 7 as A")
-                .Execute()
+                .WithParameter("foo", "bar")
+                .ExecuteAsync()
                 .AsList<Bar>();
 
             //Then

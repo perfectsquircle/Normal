@@ -4,24 +4,26 @@
 
 ## TODO
 
-* Abstract specific database drivers.
-* Support async query.
-* Support execute scalar and execute ?.
 * Make column matching case insensitive.
 * Make column matching ignore underscores.
 * Make deserialization configurable.
+* Stylecop
+
 
 ## Features
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nec rutrum ante. Duis in tincidunt felis. Vivamus feugiat mattis lacus quis mollis. Donec et ligula tempus nibh dignissim ullamcorper. Ut molestie placerat leo nec rutrum. Cras posuere porttitor risus, id tristique ligula lobortis eu. Vivamus nulla ipsum, blandit at massa at, venenatis hendrerit lectus. Pellentesque vel nunc tellus. Proin bibendum odio ac purus auctor consectetur.
+Query the database with ease
 
-## Installation
+```csharp
+var context = new DbContext(new NpgsqlConnection("Host=localhost;Database=whatever;"));
 
-Sed elementum, tellus sit amet laoreet feugiat, ante lectus interdum est, at sagittis lacus nulla vitae mi. Nullam risus ante, sagittis nec pharetra vel, molestie sit amet dolor. Nam aliquam non nulla nec sollicitudin. Nam id congue nulla. Etiam nulla ante, feugiat in sapien bibendum, pulvinar feugiat purus. Mauris rhoncus mauris congue purus dictum molestie. Donec non felis vel turpis venenatis luctus. Duis maximus consequat pretium.
+var results = await context
+    .Query("select 7 as A")
+    .WithParameter("foo", "bar")
+    .ExecuteAsync()
+    .AsList<Bar>();
+```
 
-## Publishing
-
-Update the version number in the csproj. Merges to master will create a release.
 
 ## Building
 

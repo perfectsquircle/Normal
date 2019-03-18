@@ -1,27 +1,41 @@
-using System.Data;
+using System.Data.Common;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public abstract class DbContext : IDbContext
+    public class DbContext : IDbContext
     {
-        protected abstract ThreadLocal<IDbConnection> Connection { get; }
+        public DbConnection Connection { get; }
+        public DbTransaction Transaction { get; private set; }
+
+        public DbContext(DbConnection dbConnection)
+        {
+            Connection = dbConnection;
+        }
+
         public DbCommandBuilder Query(string commandText)
         {
             return new DbCommandBuilder(this)
                 .WithCommandText(commandText);
         }
 
-        public IDbConnection GetOpenConnection()
+        public Task<DbConnection> GetOpenConnectionAsync() => GetOpenConnectionAsync(CancellationToken.None);
+        public async Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            var sqlConnection = Connection.Value;
-            sqlConnection.Open();
+            var sqlConnection = Connection;
+            await sqlConnection.OpenAsync(cancellationToken);
             return sqlConnection;
         }
 
-        public IDbTransaction GetTransaction()
+        public Task<DbTransaction> BeginTransactionAsync() => BeginTransactionAsync(CancellationToken.None);
+        public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
         {
-            return GetOpenConnection().BeginTransaction();
+            if (Transaction == null)
+            {
+                Transaction = (await GetOpenConnectionAsync()).BeginTransaction();
+            }
+            return Transaction;
         }
     }
 }

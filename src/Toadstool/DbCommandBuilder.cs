@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace Toadstool
 {
@@ -9,17 +11,15 @@ namespace Toadstool
         string CommandText { get; set; }
         int? CommandTimeout { get; set; }
         CommandType? CommandType { get; set; }
-        // IDbConnection Connection { get; set; }
-        // IDbTransaction Transaction { get; set; }
         IDictionary<string, string> Parameters { get; }
-        public IDbContext DbContext { get; }
+        public DbContext DbContext { get; }
 
         public DbCommandBuilder()
         {
             Parameters = new Dictionary<string, string>();
         }
 
-        internal DbCommandBuilder(IDbContext dbContext) : this()
+        internal DbCommandBuilder(DbContext dbContext) : this()
         {
             DbContext = dbContext;
         }
@@ -42,12 +42,6 @@ namespace Toadstool
             return this;
         }
 
-        // public DbCommandBuilder WithConnection(IDbConnection connection)
-        // {
-        //     this.Connection = connection;
-        //     return this;
-        // }
-
         public DbCommandBuilder WithParameter(string key, object value)
         {
             Parameters[key] = Convert.ToString(value);
@@ -64,15 +58,9 @@ namespace Toadstool
             throw new NotImplementedException();
         }
 
-        // public DbCommandBuilder WithTransaction(IDbTransaction transaction)
-        // {
-        //     this.Transaction = transaction;
-        //     return this;
-        // }
-
-        public IDbCommand Build(IDbContext dbContext)
+        public async Task<DbCommand> BuildAsync(IDbContext dbContext)
         {
-            var dbConnection = dbContext.GetOpenConnection();
+            var dbConnection = await dbContext.GetOpenConnectionAsync();
             if (dbConnection == null)
             {
                 throw new NotSupportedException("Connection required to build command");
@@ -82,44 +70,47 @@ namespace Toadstool
             if (CommandTimeout != null) command.CommandTimeout = CommandTimeout.Value;
             if (CommandType != null) command.CommandType = CommandType.Value;
             command.Connection = dbConnection;
-            command.Transaction = dbContext.GetTransaction();
+            command.Transaction = dbContext.Transaction;
 
             foreach (var parameter in Parameters)
             {
-                command.Parameters[parameter.Key] = parameter.Value;
+                var dbParameter = command.CreateParameter();
+                dbParameter.ParameterName = parameter.Key;
+                dbParameter.Value = parameter.Value;
+                command.Parameters.Add(dbParameter);
             }
 
             return command;
         }
 
-        public DbResultBuilder Execute()
+        public Task<DbResultBuilder> ExecuteAsync()
         {
-            return Execute(DbContext);
+            return ExecuteAsync(DbContext);
         }
 
-        internal DbResultBuilder Execute(IDbContext dbContext)
+        internal async Task<DbResultBuilder> ExecuteAsync(IDbContext dbContext)
         {
-            var command = this.Build(dbContext);
-            var reader = command.ExecuteReader();
+            var command = await this.BuildAsync(dbContext);
+            var reader = await command.ExecuteReaderAsync();
             return new DbResultBuilder(reader);
         }
 
-        private int ExecuteNonQuery(IDbContext dbContext)
+        public async Task<int> ExecuteNonQueryAsync(IDbContext dbContext)
         {
-            var command = this.Build(dbContext);
-            return command.ExecuteNonQuery();
+            var command = await this.BuildAsync(dbContext);
+            return await command.ExecuteNonQueryAsync();
         }
 
-        private IDataReader ExecuteReader(IDbContext dbContext, CommandBehavior commandBehavior = CommandBehavior.Default)
+        public async Task<IDataReader> ExecuteReaderAsync(IDbContext dbContext, CommandBehavior commandBehavior = CommandBehavior.Default)
         {
-            var command = this.Build(dbContext);
-            return command.ExecuteReader(commandBehavior);
+            var command = await this.BuildAsync(dbContext);
+            return await command.ExecuteReaderAsync(commandBehavior);
         }
 
-        private object ExecuteScalar(IDbContext dbContext)
+        public async Task<object> ExecuteScalarAsync(IDbContext dbContext)
         {
-            var command = this.Build(dbContext);
-            return command.ExecuteScalar();
+            var command = await this.BuildAsync(dbContext);
+            return command.ExecuteScalarAsync();
         }
     }
 }

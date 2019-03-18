@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Toadstool
 {
@@ -41,7 +40,7 @@ namespace Toadstool
             }
         }
 
-        public static T Deserialize<T>(IDataReader dataReader)
+        internal static T Deserialize<T>(IDataReader dataReader)
         {
             T obj = default(T);
             obj = Activator.CreateInstance<T>();

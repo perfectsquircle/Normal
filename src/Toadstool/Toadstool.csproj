@@ -13,7 +13,5 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.3.0"/>
-    <PackageReference Include="System.Data.SqlClient" Version="4.6.0"/>
-    <PackageReference Include="Npgsql" Version="4.0.5"/>
   </ItemGroup>
 </Project>
