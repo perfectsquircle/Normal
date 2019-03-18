@@ -36,7 +36,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie")
+                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
                 .ExecuteAsync()
                 .As<Bar>();
 
@@ -58,7 +58,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie")
+                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
                 .ExecuteAsync()
                 .AsList<Bar>();
 

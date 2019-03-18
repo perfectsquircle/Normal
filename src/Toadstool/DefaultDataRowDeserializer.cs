@@ -28,6 +28,10 @@ namespace Toadstool
                     continue;
                 }
                 var columnName = dataReader.GetName(i);
+                if (!properties.ContainsKey(columnName.ToLowerInvariant()))
+                {
+                    continue;
+                }
                 var property = properties[columnName.ToLowerInvariant()];
                 if (property == null || !property.CanWrite)
                 {
