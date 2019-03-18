@@ -12,7 +12,8 @@ namespace Toadstool.UnitTests
         public async Task SqlServerContextShouldWork()
         {
             //Given
-            var context = new DbContext(new SqlConnection("???"));
+            var context = new DbContext()
+                .WithConnection(new SqlConnection("???"));
 
             //When
 
@@ -28,7 +29,8 @@ namespace Toadstool.UnitTests
         public async Task AsShouldWork()
         {
             //Given
-            var context = new DbContext(new NpgsqlConnection("Host=localhost;Database=cfurano;"));
+            var context = new DbContext()
+                .WithConnection(new NpgsqlConnection("Host=localhost;Database=cfurano;"));
 
             //When
             var results = await context
@@ -47,7 +49,8 @@ namespace Toadstool.UnitTests
         public async Task AsListShouldWork()
         {
             //Given
-            var context = new DbContext(new NpgsqlConnection("Host=localhost;Database=cfurano;"));
+            var context = new DbContext()
+                .WithConnection(new NpgsqlConnection("Host=localhost;Database=cfurano;"));
 
             //When
             var results = await context

@@ -6,12 +6,17 @@ namespace Toadstool
 {
     public class DbContext : IDbContext
     {
-        public DbConnection Connection { get; }
+        public DbConnection Connection { get; private set; }
         public DbTransaction Transaction { get; private set; }
 
-        public DbContext(DbConnection dbConnection)
+        public DbContext()
+        {
+        }
+
+        public DbContext WithConnection(DbConnection dbConnection)
         {
             Connection = dbConnection;
+            return this;
         }
 
         public DbCommandBuilder Query(string commandText)
@@ -20,20 +25,18 @@ namespace Toadstool
                 .WithCommandText(commandText);
         }
 
-        public Task<DbConnection> GetOpenConnectionAsync() => GetOpenConnectionAsync(CancellationToken.None);
-        public async Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        public async Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var sqlConnection = Connection;
-            await sqlConnection.OpenAsync(cancellationToken);
+            await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             return sqlConnection;
         }
 
-        public Task<DbTransaction> BeginTransactionAsync() => BeginTransactionAsync(CancellationToken.None);
-        public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+        public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (Transaction == null)
             {
-                Transaction = (await GetOpenConnectionAsync()).BeginTransaction();
+                Transaction = (await GetOpenConnectionAsync(cancellationToken)).BeginTransaction();
             }
             return Transaction;
         }

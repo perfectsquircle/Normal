@@ -7,7 +7,8 @@
 Query the database with ease
 
 ```csharp
-var context = new DbContext(new NpgsqlConnection("Host=localhost;Database=whatever;"));
+var context = new DbContext()
+    .WithConnection(new NpgsqlConnection("Host=localhost;Database=whatever;"));
 
 var results = await context
     .Query("select a, b, c from bar where foo = @foo")

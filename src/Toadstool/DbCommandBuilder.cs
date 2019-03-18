@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Toadstool
@@ -58,9 +59,9 @@ namespace Toadstool
             throw new NotImplementedException();
         }
 
-        public async Task<DbCommand> BuildAsync(IDbContext dbContext)
+        public async Task<DbCommand> BuildAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var dbConnection = await dbContext.GetOpenConnectionAsync();
+            var dbConnection = await dbContext.GetOpenConnectionAsync(cancellationToken);
             if (dbConnection == null)
             {
                 throw new NotSupportedException("Connection required to build command");
@@ -83,34 +84,33 @@ namespace Toadstool
             return command;
         }
 
-        public Task<DbResultBuilder> ExecuteAsync()
+        public Task<DbResultBuilder> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return ExecuteAsync(DbContext);
+            return ExecuteAsync(DbContext, cancellationToken);
         }
 
-        internal async Task<DbResultBuilder> ExecuteAsync(IDbContext dbContext)
+        internal async Task<DbResultBuilder> ExecuteAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(dbContext);
-            var reader = await command.ExecuteReaderAsync();
+            var reader = await ExecuteReaderAsync(dbContext, cancellationToken: cancellationToken);
             return new DbResultBuilder(reader);
         }
 
-        public async Task<int> ExecuteNonQueryAsync(IDbContext dbContext)
+        public async Task<int> ExecuteNonQueryAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(dbContext);
-            return await command.ExecuteNonQueryAsync();
+            var command = await this.BuildAsync(dbContext, cancellationToken);
+            return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IDataReader> ExecuteReaderAsync(IDbContext dbContext, CommandBehavior commandBehavior = CommandBehavior.Default)
+        public async Task<IDataReader> ExecuteReaderAsync(IDbContext dbContext, CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(dbContext);
-            return await command.ExecuteReaderAsync(commandBehavior);
+            var command = await this.BuildAsync(dbContext, cancellationToken);
+            return await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<object> ExecuteScalarAsync(IDbContext dbContext)
+        public async Task<object> ExecuteScalarAsync(IDbContext dbContext, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(dbContext);
-            return command.ExecuteScalarAsync();
+            var command = await this.BuildAsync(dbContext, cancellationToken);
+            return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }
