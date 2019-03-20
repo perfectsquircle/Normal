@@ -29,15 +29,15 @@ namespace Toadstool
 
         public DbCommandBuilder Query(string commandText)
         {
-            return new DbCommandBuilder(this)
+            return new DbCommandBuilder()
+                .WithDbContext(this)
                 .WithCommandText(commandText);
         }
 
         public async Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var sqlConnection = Connection;
-            await sqlConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-            return sqlConnection;
+            await Connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            return Connection;
         }
 
         public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
