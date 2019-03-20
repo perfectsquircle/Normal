@@ -20,12 +20,12 @@ namespace Toadstool
             _dataReaderDeserializer = dataReaderDeserializer;
         }
 
-        public IList<T> AsList<T>()
+        public IList<T> AsListOf<T>()
         {
-            return As<T>().ToList();
+            return AsEnumerableOf<T>().ToList();
         }
 
-        public IEnumerable<T> As<T>()
+        public IEnumerable<T> AsEnumerableOf<T>()
         {
             using (_dataReader)
             {

@@ -14,7 +14,7 @@ var results = await context
     .Query("select a, b, c from bar where foo = @foo")
     .WithParameter("foo", "something")
     .ExecuteAsync()
-    .AsList<Bar>();
+    .AsListOf<Bar>();
 ```
 
 

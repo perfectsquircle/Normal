@@ -38,7 +38,7 @@ namespace Toadstool.UnitTests
             var results = await context
                 .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
                 .ExecuteAsync()
-                .As<Bar>();
+                .AsEnumerableOf<Bar>();
 
             //Then
             Assert.NotNull(results);
@@ -60,7 +60,7 @@ namespace Toadstool.UnitTests
             var results = await context
                 .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
                 .ExecuteAsync()
-                .AsList<Bar>();
+                .AsListOf<Bar>();
 
             //Then
             Assert.NotNull(results);

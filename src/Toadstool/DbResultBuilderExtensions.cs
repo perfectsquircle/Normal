@@ -6,14 +6,14 @@ namespace Toadstool
 {
     public static class DbResultBuilderExtensions
     {
-        public static async Task<IList<T>> AsList<T>(this Task<DbResultBuilder> builder)
+        public static async Task<IList<T>> AsListOf<T>(this Task<DbResultBuilder> builder)
         {
-            return (await builder).As<T>().ToList();
+            return (await builder).AsEnumerableOf<T>().ToList();
         }
 
-        public static async Task<IEnumerable<T>> As<T>(this Task<DbResultBuilder> builder)
+        public static async Task<IEnumerable<T>> AsEnumerableOf<T>(this Task<DbResultBuilder> builder)
         {
-            return (await builder).As<T>();
+            return (await builder).AsEnumerableOf<T>();
         }
     }
 }
