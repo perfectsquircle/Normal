@@ -2,6 +2,8 @@
 
 > Fluent .NET Micro ORM
 
+[![NuGet version](https://img.shields.io/nuget/vpre/Toadstool.svg)](https://www.nuget.org/packages/Toadstool)
+
 ## Features
 
 Query the database with ease

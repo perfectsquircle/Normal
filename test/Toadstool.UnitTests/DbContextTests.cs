@@ -16,6 +16,10 @@ namespace Toadstool.UnitTests
                 .WithConnection(new SqlConnection("???"));
 
             //When
+            var results = await context
+                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
+                .ExecuteAsync()
+                .AsEnumerableOf<Bar>();
 
             //Then
         }
