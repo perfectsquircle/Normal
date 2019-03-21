@@ -1,3 +1,5 @@
+using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +13,11 @@ namespace Toadstool
             DataReaderDeserializer = new DefaultDataReaderDeserializer();
         }
 
-        public DbConnection Connection { get; private set; }
-        public DbTransaction Transaction { get; private set; }
+        public IDbConnection Connection { get; private set; }
+        public IDbTransaction Transaction { get; private set; }
         public IDataReaderDeserializer DataReaderDeserializer { get; private set; }
 
-        public DbContext WithConnection(DbConnection dbConnection)
+        public DbContext WithConnection(IDbConnection dbConnection)
         {
             Connection = dbConnection;
             return this;
@@ -34,13 +36,18 @@ namespace Toadstool
                 .WithCommandText(commandText);
         }
 
-        public async Task<DbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            await Connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-            return Connection;
+            if (!(Connection is DbConnection))
+            {
+                throw new NotSupportedException("Connection must be DbConnection");
+            }
+            var dbConnection = Connection as DbConnection;
+            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            return dbConnection;
         }
 
-        public async Task<DbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (Transaction == null)
             {

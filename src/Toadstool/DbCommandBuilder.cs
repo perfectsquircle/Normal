@@ -18,7 +18,7 @@ namespace Toadstool
         public int? CommandTimeout { get; private set; }
         public CommandType? CommandType { get; private set; }
         public IDictionary<string, string> Parameters { get; }
-        public DbContext DbContext { get; private set; }
+        public IDbContext DbContext { get; private set; }
 
         public DbCommandBuilder WithCommandText(string commandText)
         {
@@ -49,18 +49,18 @@ namespace Toadstool
             throw new NotImplementedException();
         }
 
-        public DbCommandBuilder WithParameters(IDictionary<string, string> parameters)
+        public DbCommandBuilder WithParameters(IDictionary<string, object> parameters)
         {
             throw new NotImplementedException();
         }
 
-        public DbCommandBuilder WithDbContext(DbContext dbContext)
+        public DbCommandBuilder WithDbContext(IDbContext dbContext)
         {
             DbContext = dbContext;
             return this;
         }
 
-        public async Task<DbCommand> BuildAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDbCommand> BuildAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (DbContext == null)
             {
@@ -102,20 +102,30 @@ namespace Toadstool
 
         public async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(cancellationToken);
+            var command = await this.BuildDbCommandAsync(cancellationToken);
             return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IDataReader> ExecuteReaderAsync(CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(cancellationToken);
+            var command = await this.BuildDbCommandAsync(cancellationToken);
             return await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var command = await this.BuildAsync(cancellationToken);
+            var command = await this.BuildDbCommandAsync(cancellationToken);
             return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<DbCommand> BuildDbCommandAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var command = await BuildAsync(cancellationToken);
+            if (!(command is DbCommand))
+            {
+                throw new NotSupportedException("Command must be DbCommand");
+            }
+            return command as DbCommand;
         }
     }
 }

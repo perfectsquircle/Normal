@@ -14,6 +14,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0"/>
     <PackageReference Include="Npgsql" Version="4.0.5"/>
     <PackageReference Include="AutoFixture" Version="4.8.0"/>
-    <PackageReference Include="AutoFixture.AutoMoq" Version="4.8.0"/>
+    <PackageReference Include="AutoFixture.Xunit2" Version="4.8.0"/>
+    <PackageReference Include="Moq" Version="4.10.1"/>
   </ItemGroup>
 </Project>

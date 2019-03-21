@@ -1,19 +1,29 @@
 using System;
-using System.Data.Common;
+using System.Data;
+using System.Threading;
 using System.Threading.Tasks;
-using AutoFixture;
-using AutoFixture.AutoMoq;
+using AutoFixture.Xunit2;
+using Moq;
 using Xunit;
 
 namespace Toadstool.UnitTests
 {
     public class DbCommandBuilderTests
     {
-        private readonly Fixture _fixture;
+        private readonly Mock<IDbContext> _context;
         public DbCommandBuilderTests()
         {
-            _fixture = new Fixture();
-            _fixture.Customize(new AutoMoqCustomization());
+            var command = new Mock<IDbCommand>()
+                .SetupAllProperties();
+            var connection = new Mock<IDbConnection>()
+                .SetupAllProperties();
+            connection.Setup(c => c.CreateCommand())
+                .Returns(command.Object);
+            _context = new Mock<IDbContext>()
+                .SetupAllProperties();
+            _context
+                .Setup(c => c.GetOpenConnectionAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(connection.Object);
         }
 
         [Fact]
@@ -23,20 +33,6 @@ namespace Toadstool.UnitTests
 
             //When
             var builder = new DbCommandBuilder();
-
-            //Then
-            Assert.NotNull(builder.Parameters);
-        }
-
-        [Fact]
-        public void ShouldBeConstructableWithContext()
-        {
-            //Given
-            var context = _fixture.Create<DbContext>();
-
-            //When
-            var builder = new DbCommandBuilder()
-                .WithDbContext(context);
 
             //Then
             Assert.NotNull(builder.Parameters);
@@ -54,22 +50,25 @@ namespace Toadstool.UnitTests
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await builder.BuildAsync());
         }
 
-        [Fact]
-        public async Task ShouldBeBuildable()
+        [Theory, AutoData]
+        public async Task ShouldBeBuildable(string commandText, int commandTimeout, CommandType commandType)
         {
             //Given
-            var connection = _fixture.Create<DbConnection>();
-            var context = _fixture.Create<DbContext>()
-                .WithConnection(connection);
             var builder = new DbCommandBuilder()
-                .WithDbContext(context);
+                .WithDbContext(_context.Object)
+                .WithCommandText(commandText)
+                .WithCommandTimeout(commandTimeout)
+                .WithCommandType(commandType)
+                ;
 
             //When
             var command = await builder.BuildAsync();
 
             //Then
             Assert.NotNull(command);
-            Assert.Equal(context.Connection.ConnectionString, command.Connection.ConnectionString);
+            Assert.Equal(commandText, command.CommandText);
+            Assert.Equal(commandTimeout, command.CommandTimeout);
+            Assert.Equal(commandType, command.CommandType);
         }
     }
 }
