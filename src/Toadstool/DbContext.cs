@@ -44,7 +44,7 @@ namespace Toadstool
                 throw new InvalidOperationException("No DB Connection Creator");
             }
 
-            if (Transaction != null)
+            if (Transaction != null && Transaction.Connection != null)
             {
                 return Transaction.Connection;
             }

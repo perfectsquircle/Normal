@@ -97,9 +97,45 @@ namespace Toadstool.UnitTests
                 .Query("select 2")
                 .ExecuteScalarAsync();
 
+            var results3 = context
+                .Query("select 3")
+                .ExecuteScalarAsync();
+
             //Then
             Assert.Equal(1, await results as int?);
             Assert.Equal(2, await results2 as int?);
+            Assert.Equal(3, await results3 as int?);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task MultipleQueriesInTransaction(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            using (var transaction = await context.BeginTransactionAsync())
+            {
+                var results = await context
+                    .Query("select 1")
+                    .ExecuteScalarAsync();
+
+                var results2 = await context
+                    .Query("select 2")
+                    .ExecuteScalarAsync();
+
+                //Then
+                Assert.Equal(1, results as int?);
+                Assert.Equal(2, results2 as int?);
+                transaction.Commit();
+            }
+
+            var results3 = await context
+                    .Query("select 1")
+                    .ExecuteScalarAsync();
+            Assert.Equal(3, results3 as int?);
         }
 
         public static IEnumerable<object[]> GetDbConnection()
