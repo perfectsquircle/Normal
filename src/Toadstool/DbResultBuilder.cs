@@ -10,7 +10,7 @@ namespace Toadstool
         private readonly IDataReader _dataReader;
         private readonly IDataReaderDeserializer _dataReaderDeserializer;
 
-        public DbResultBuilder(IDataReader dataReader, IDataReaderDeserializer dataReaderDeserializer)
+        internal DbResultBuilder(IDataReader dataReader, IDataReaderDeserializer dataReaderDeserializer)
         {
             if (dataReader == null)
             {

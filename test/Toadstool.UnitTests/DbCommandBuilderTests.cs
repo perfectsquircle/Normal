@@ -10,7 +10,7 @@ namespace Toadstool.UnitTests
 {
     public class DbCommandBuilderTests
     {
-        private readonly Mock<IDbContext> _context;
+        private readonly Mock<DbContext> _context;
         public DbCommandBuilderTests()
         {
             var command = new Mock<IDbCommand>()
@@ -19,7 +19,7 @@ namespace Toadstool.UnitTests
                 .SetupAllProperties();
             connection.Setup(c => c.CreateCommand())
                 .Returns(command.Object);
-            _context = new Mock<IDbContext>()
+            _context = new Mock<DbContext>()
                 .SetupAllProperties();
             _context
                 .Setup(c => c.GetOpenConnectionAsync(It.IsAny<CancellationToken>()))
@@ -35,7 +35,7 @@ namespace Toadstool.UnitTests
             var builder = new DbCommandBuilder();
 
             //Then
-            Assert.NotNull(builder.Parameters);
+            Assert.NotNull(builder);
         }
 
         [Fact]

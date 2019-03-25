@@ -14,8 +14,8 @@ namespace Toadstool
             DataReaderDeserializer = new DefaultDataReaderDeserializer();
         }
 
-        public IDbTransaction Transaction { get; private set; }
-        public IDataReaderDeserializer DataReaderDeserializer { get; private set; }
+        internal IDbTransaction Transaction { get; private set; }
+        internal IDataReaderDeserializer DataReaderDeserializer { get; private set; }
         private Func<IDbConnection> _dbConnectionCreator;
 
         public DbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
@@ -37,7 +37,25 @@ namespace Toadstool
                 .WithCommandText(commandText);
         }
 
-        public async Task<IDbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task BeginTransactionAsync(Func<IDbTransaction, Task> transactionAction, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                if (Transaction == null)
+                {
+                    Transaction = (await GetAnonymousConnectionAsync(cancellationToken)).BeginTransaction();
+                }
+                await transactionAction.Invoke(Transaction);
+            }
+            finally
+            {
+                Transaction?.Dispose();
+                Transaction = null;
+            }
+
+        }
+
+        internal virtual async Task<IDbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_dbConnectionCreator == null)
             {
@@ -61,15 +79,6 @@ namespace Toadstool
             return connection;
         }
 
-        public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (Transaction == null)
-            {
-                Transaction = (await GetAnonymousConnectionAsync(cancellationToken)).BeginTransaction();
-            }
-            return Transaction;
-        }
-
         private static async Task OpenConnectionAsync(IDbConnection connection, CancellationToken cancellationToken)
         {
             if (!(connection is DbConnection))
@@ -79,24 +88,5 @@ namespace Toadstool
             var dbConnection = connection as DbConnection;
             await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        /*
-        private static readonly int _connectionWaitRetries = 20;
-        private static readonly int _connectionWaitPeriodMilliseconds = 100;
-        private static async Task<IDbConnection> WaitForOpenConnection(IDbConnection connection, CancellationToken cancellationToken)
-        {
-            for (var i = 0; i < _connectionWaitRetries; i++)
-            {
-                var exponentialBackoffTimeout = _connectionWaitPeriodMilliseconds * Math.Pow(2, i);
-                Debug.WriteLine($"Connection is busy, waiting {exponentialBackoffTimeout}ms");
-                await Task.Delay((int)Math.Pow(i, _connectionWaitPeriodMilliseconds), cancellationToken);
-                if (connection.State == ConnectionState.Open)
-                {
-                    return connection;
-                }
-            }
-            throw new InvalidOperationException($"Timeout exceeded while waiting for open connection. Connection state: {Connection.State}");
-        }
-        */
     }
 }

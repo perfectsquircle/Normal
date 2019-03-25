@@ -116,7 +116,7 @@ namespace Toadstool.UnitTests
                 .WithConnection(dbConnection);
 
             //When
-            using (var transaction = await context.BeginTransactionAsync())
+            await context.BeginTransactionAsync(async transaction =>
             {
                 var results = await context
                     .Query("select 1")
@@ -126,16 +126,36 @@ namespace Toadstool.UnitTests
                     .Query("select 2")
                     .ExecuteScalarAsync();
 
-                //Then
                 Assert.Equal(1, results as int?);
                 Assert.Equal(2, results2 as int?);
                 transaction.Commit();
-            }
+            });
 
             var results3 = await context
-                    .Query("select 1")
+                    .Query("select 3")
                     .ExecuteScalarAsync();
             Assert.Equal(3, results3 as int?);
+
+            await context.BeginTransactionAsync(async transaction =>
+            {
+                var results = await context
+                    .Query("select 4")
+                    .ExecuteScalarAsync();
+
+                var results2 = await context
+                    .Query("select 5")
+                    .ExecuteScalarAsync();
+
+                //Then
+                Assert.Equal(4, results as int?);
+                Assert.Equal(5, results2 as int?);
+                transaction.Commit();
+            });
+
+            var results4 = await context
+                    .Query("select 6")
+                    .ExecuteScalarAsync();
+            Assert.Equal(6, results4 as int?);
         }
 
         public static IEnumerable<object[]> GetDbConnection()
