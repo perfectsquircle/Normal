@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public interface IDbContext
+    public interface IDbContext : IDisposable
     {
         DbCommandBuilder Query(string commandText);
         Task BeginTransactionAsync(Func<IDbTransaction, Task> transactionAction, CancellationToken cancellationToken = default(CancellationToken));

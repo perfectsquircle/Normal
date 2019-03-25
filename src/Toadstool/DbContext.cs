@@ -1,7 +1,6 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,13 +48,14 @@ namespace Toadstool
             }
             finally
             {
+                Transaction?.Connection?.Dispose();
                 Transaction?.Dispose();
                 Transaction = null;
             }
 
         }
 
-        internal virtual async Task<IDbConnection> GetOpenConnectionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        internal virtual async Task<IDbConnectionContext> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             if (_dbConnectionCreator == null)
             {
@@ -64,11 +64,11 @@ namespace Toadstool
 
             if (Transaction != null && Transaction.Connection != null)
             {
-                return Transaction.Connection;
+                return new DbConnectionContext(Transaction.Connection, Transaction);
             }
             else
             {
-                return await GetAnonymousConnectionAsync(cancellationToken);
+                return new DbConnectionContext(await GetAnonymousConnectionAsync(cancellationToken));
             }
         }
 
@@ -88,5 +88,29 @@ namespace Toadstool
             var dbConnection = connection as DbConnection;
             await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Transaction?.Connection?.Dispose();
+                    Transaction?.Dispose();
+                }
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
     }
 }

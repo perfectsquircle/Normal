@@ -1,6 +1,4 @@
-using System;
 using System.Data;
-using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
 using Moq;
@@ -10,20 +8,16 @@ namespace Toadstool.UnitTests
 {
     public class DbCommandBuilderTests
     {
-        private readonly Mock<DbContext> _context;
+        private readonly Mock<IDbConnection> _connection;
+
         public DbCommandBuilderTests()
         {
             var command = new Mock<IDbCommand>()
                 .SetupAllProperties();
-            var connection = new Mock<IDbConnection>()
+            _connection = new Mock<IDbConnection>()
                 .SetupAllProperties();
-            connection.Setup(c => c.CreateCommand())
+            _connection.Setup(c => c.CreateCommand())
                 .Returns(command.Object);
-            _context = new Mock<DbContext>()
-                .SetupAllProperties();
-            _context
-                .Setup(c => c.GetOpenConnectionAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(connection.Object);
         }
 
         [Fact]
@@ -38,31 +32,18 @@ namespace Toadstool.UnitTests
             Assert.NotNull(builder);
         }
 
-        [Fact]
-        public async Task ShouldNotBeBuildable()
-        {
-            //Given
-
-            //When
-            var builder = new DbCommandBuilder();
-
-            //Then
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await builder.BuildAsync());
-        }
-
         [Theory, AutoData]
-        public async Task ShouldBeBuildable(string commandText, int commandTimeout, CommandType commandType)
+        public void ShouldBeBuildable(string commandText, int commandTimeout, CommandType commandType)
         {
             //Given
             var builder = new DbCommandBuilder()
-                .WithDbContext(_context.Object)
                 .WithCommandText(commandText)
                 .WithCommandTimeout(commandTimeout)
                 .WithCommandType(commandType)
                 ;
 
             //When
-            var command = await builder.BuildAsync();
+            var command = builder.Build(new DbConnectionContext(_connection.Object));
 
             //Then
             Assert.NotNull(command);
