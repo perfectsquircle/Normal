@@ -7,6 +7,7 @@ namespace Toadstool
     {
         IDbConnection DbConnection { get; }
         IDbTransaction DbTransaction { get; }
-        bool DisposeMe { get; }
+        CommandBehavior CommandBehavior { get; }
+        bool IsComplete { get; }
     }
 }

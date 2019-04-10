@@ -8,23 +8,25 @@ namespace Toadstool
         internal DbConnectionContext(IDbConnection dbConnection)
         {
             this.DbConnection = dbConnection;
-            this.DisposeMe = true;
 
         }
-        internal DbConnectionContext(IDbConnection dbConnection, IDbTransaction transaction)
+        internal DbConnectionContext(IDbConnection dbConnection, DbTransactionContext transactionContext)
         {
             this.DbConnection = dbConnection;
-            this.DisposeMe = false;
+            this._dbTransactionContext = transactionContext;
 
         }
 
         public IDbConnection DbConnection { get; }
-        public IDbTransaction DbTransaction { get; }
-        public bool DisposeMe { get; }
+        public IDbTransaction DbTransaction => _dbTransactionContext?.DbTransaction;
+        public bool IsComplete => _dbTransactionContext?.IsComplete ?? true;
+        public CommandBehavior CommandBehavior => IsComplete ? CommandBehavior.CloseConnection : CommandBehavior.Default;
+        private DbTransactionContext _dbTransactionContext;
+
 
         public void Dispose()
         {
-            if (DisposeMe)
+            if (IsComplete)
             {
                 DbConnection?.Dispose();
             }

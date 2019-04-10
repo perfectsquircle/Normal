@@ -57,10 +57,9 @@ namespace Toadstool
         public async Task<DbResultBuilder> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken);
-            var commandBehavior = connectionContext.DisposeMe ? CommandBehavior.CloseConnection : CommandBehavior.Default;
             using (var command = BuildDbCommand(connectionContext))
             {
-                var reader = await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
+                var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false);
                 return new DbResultBuilder(reader, _dbContext.DataReaderDeserializer);
             }
         }

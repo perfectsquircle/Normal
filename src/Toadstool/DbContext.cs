@@ -13,9 +13,9 @@ namespace Toadstool
             DataReaderDeserializer = new DefaultDataReaderDeserializer();
         }
 
-        internal IDbTransaction Transaction { get; private set; }
         internal IDataReaderDeserializer DataReaderDeserializer { get; private set; }
         private Func<IDbConnection> _dbConnectionCreator;
+        private IDbConnectionContext _activeDbConnectionContext;
 
         public DbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
         {
@@ -36,23 +36,22 @@ namespace Toadstool
                 .WithCommandText(commandText);
         }
 
-        public async Task BeginTransactionAsync(Func<IDbTransaction, Task> transactionAction, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDbTransactionContext> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            try
+            if (_activeDbConnectionContext != null)
             {
-                if (Transaction == null)
-                {
-                    Transaction = (await GetAnonymousConnectionAsync(cancellationToken)).BeginTransaction();
-                }
-                await transactionAction.Invoke(Transaction);
+                CleanupActiveContext();
             }
-            finally
-            {
-                Transaction?.Connection?.Dispose();
-                Transaction?.Dispose();
-                Transaction = null;
-            }
+            var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
+            var transaction = dbConnection.BeginTransaction();
+            var transactionContext = new DbTransactionContext(transaction);
+            _activeDbConnectionContext = new DbConnectionContext(dbConnection, transactionContext);
+            return transactionContext;
+        }
 
+        public void Dispose()
+        {
+            CleanupActiveContext();
         }
 
         internal virtual async Task<IDbConnectionContext> GetOpenConnectionAsync(CancellationToken cancellationToken)
@@ -62,9 +61,14 @@ namespace Toadstool
                 throw new InvalidOperationException("No DB Connection Creator");
             }
 
-            if (Transaction != null && Transaction.Connection != null)
+            if (_activeDbConnectionContext != null && _activeDbConnectionContext.IsComplete)
             {
-                return new DbConnectionContext(Transaction.Connection, Transaction);
+                CleanupActiveContext();
+            }
+
+            if (_activeDbConnectionContext != null)
+            {
+                return _activeDbConnectionContext;
             }
             else
             {
@@ -89,28 +93,10 @@ namespace Toadstool
             await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        private void CleanupActiveContext()
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Transaction?.Connection?.Dispose();
-                    Transaction?.Dispose();
-                }
-                disposedValue = true;
-            }
+            _activeDbConnectionContext?.Dispose();
+            _activeDbConnectionContext = null;
         }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-        }
-        #endregion
     }
 }
