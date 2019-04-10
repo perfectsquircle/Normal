@@ -1,6 +1,6 @@
 # 🍄 Toadstool
 
-> Fluent .NET Micro ORM
+> The Dapper alternative that nobody asked for.
 
 [![NuGet version](https://img.shields.io/nuget/vpre/Toadstool.svg)](https://www.nuget.org/packages/Toadstool)
 
@@ -33,13 +33,6 @@ export FrameworkPathOverride=$(dirname $(which mono))/../lib/mono/4.5/
 The `Dockerfile` installs Mono on top of the `dotnet:2.1-sdk` image, then sets `FrameworkPathOverride` to the known location of Mono.
 
 See https://github.com/dotnet/sdk/issues/335
-
-
-## TODO
-
-* Make column matching ignore underscores?
-* Type mapping [customizable](https://github.com/grigorgeous/sqldatareader-mapper/).
-* XML Documentation for all fields.
 
 ---
 
