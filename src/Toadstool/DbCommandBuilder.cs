@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,13 +55,13 @@ namespace Toadstool
             throw new NotImplementedException();
         }
 
-        public async Task<DbResultBuilder> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IList<T>> AsListOf<T>(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken);
+            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connectionContext))
+            using (var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false))
             {
-                var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false);
-                return new DbResultBuilder(reader, _dbContext.DataReaderDeserializer);
+                return AsEnumerableOf<T>(reader).ToList();
             }
         }
 
@@ -88,7 +89,7 @@ namespace Toadstool
             return this;
         }
 
-        internal IDbCommand Build(IDbConnectionContext dbConnectionContext)
+        internal IDbCommand Build(IDbConnectionWrapper dbConnectionContext)
         {
             var dbConnection = dbConnectionContext.DbConnection;
             var command = dbConnection.CreateCommand();
@@ -118,7 +119,7 @@ namespace Toadstool
             return command;
         }
 
-        private DbCommand BuildDbCommand(IDbConnectionContext dbConnectionContext)
+        private DbCommand BuildDbCommand(IDbConnectionWrapper dbConnectionContext)
         {
             var command = Build(dbConnectionContext);
             if (!(command is DbCommand))
@@ -126,6 +127,20 @@ namespace Toadstool
                 throw new NotSupportedException("Command must be DbCommand");
             }
             return command as DbCommand;
+        }
+
+        private IEnumerable<T> AsEnumerableOf<T>(IDataReader dataReader)
+        {
+            if (dataReader.FieldCount == 0)
+            {
+                yield break;
+            }
+
+            while (dataReader.Read())
+            {
+                yield return _dbContext.DataRecordDeserializer.Deserialize<T>(dataReader);
+            }
+            yield break;
         }
     }
 }

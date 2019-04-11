@@ -1,14 +1,17 @@
+using System;
 using System.Data;
 
 namespace Toadstool
 {
-    public class DbTransactionContext : IDbTransactionContext
+    public class DbTransactionWrapper : IDbTransactionWrapper
     {
         internal IDbTransaction DbTransaction { get; }
+        private Action _onDisposed;
 
-        internal DbTransactionContext(IDbTransaction dbTransaction)
+        internal DbTransactionWrapper(IDbTransaction dbTransaction, Action onDisposed)
         {
             DbTransaction = dbTransaction;
+            _onDisposed = onDisposed;
         }
 
         public bool IsComplete { get; private set; }
@@ -29,6 +32,7 @@ namespace Toadstool
         {
             IsComplete = true;
             DbTransaction?.Dispose();
+            _onDisposed?.Invoke();
         }
     }
 }

@@ -7,27 +7,27 @@ using System.Reflection;
 
 namespace Toadstool
 {
-    public class DefaultDataReaderDeserializer : IDataReaderDeserializer
+    internal class DefaultDataRecordDeserializer : IDataRecordDeserializer
     {
         private readonly ConcurrentDictionary<string, IDictionary<string, PropertyInfo>> _runtimePropertyCache;
 
-        public DefaultDataReaderDeserializer()
+        public DefaultDataRecordDeserializer()
         {
             _runtimePropertyCache = new ConcurrentDictionary<string, IDictionary<string, PropertyInfo>>();
         }
 
-        public T Deserialize<T>(IDataReader dataReader)
+        public T Deserialize<T>(IDataRecord dataRecord)
         {
             T obj = default(T);
             obj = Activator.CreateInstance<T>();
             var properties = GetRuntimeProperties(obj);
-            for (var i = 0; i < dataReader.FieldCount; i++)
+            for (var i = 0; i < dataRecord.FieldCount; i++)
             {
-                if (dataReader.IsDBNull(i))
+                if (dataRecord.IsDBNull(i))
                 {
                     continue;
                 }
-                var columnName = dataReader.GetName(i);
+                var columnName = dataRecord.GetName(i);
                 if (!properties.ContainsKey(columnName.ToLowerInvariant()))
                 {
                     continue;
@@ -37,7 +37,7 @@ namespace Toadstool
                 {
                     continue;
                 }
-                property.SetValue(obj, dataReader[columnName]);
+                property.SetValue(obj, dataRecord[columnName]);
             }
             return obj;
         }

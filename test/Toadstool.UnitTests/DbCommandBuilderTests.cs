@@ -43,7 +43,7 @@ namespace Toadstool.UnitTests
                 ;
 
             //When
-            var command = builder.Build(new DbConnectionContext(_connection.Object));
+            var command = builder.Build(new DbConnectionWrapper(_connection.Object));
 
             //Then
             Assert.NotNull(command);

@@ -2,7 +2,7 @@ using System;
 
 namespace Toadstool
 {
-    public interface IDbTransactionContext : IDisposable
+    public interface IDbTransactionWrapper : IDisposable
     {
         void Commit();
         void Rollback();

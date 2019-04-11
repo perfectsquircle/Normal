@@ -10,12 +10,12 @@ namespace Toadstool
     {
         public DbContext()
         {
-            DataReaderDeserializer = new DefaultDataReaderDeserializer();
+            DataRecordDeserializer = new DefaultDataRecordDeserializer();
         }
 
-        internal IDataReaderDeserializer DataReaderDeserializer { get; private set; }
+        internal IDataRecordDeserializer DataRecordDeserializer { get; private set; }
+        internal IDbConnectionWrapper _activeDbConnectionContext;
         private Func<IDbConnection> _dbConnectionCreator;
-        private IDbConnectionContext _activeDbConnectionContext;
 
         public DbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
         {
@@ -23,9 +23,9 @@ namespace Toadstool
             return this;
         }
 
-        public DbContext WithDataRowDeserializer(IDataReaderDeserializer dataReaderDeserializer)
+        public DbContext WithDataRecordDeserializer(IDataRecordDeserializer dataRecordDeserializer)
         {
-            DataReaderDeserializer = dataReaderDeserializer;
+            DataRecordDeserializer = dataRecordDeserializer;
             return this;
         }
 
@@ -36,7 +36,7 @@ namespace Toadstool
                 .WithCommandText(commandText);
         }
 
-        public async Task<IDbTransactionContext> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_activeDbConnectionContext != null)
             {
@@ -44,8 +44,8 @@ namespace Toadstool
             }
             var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
             var transaction = dbConnection.BeginTransaction();
-            var transactionContext = new DbTransactionContext(transaction);
-            _activeDbConnectionContext = new DbConnectionContext(dbConnection, transactionContext);
+            var transactionContext = new DbTransactionWrapper(transaction, CleanupActiveContext);
+            _activeDbConnectionContext = new DbConnectionWrapper(dbConnection, transactionContext);
             return transactionContext;
         }
 
@@ -54,16 +54,11 @@ namespace Toadstool
             CleanupActiveContext();
         }
 
-        internal virtual async Task<IDbConnectionContext> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        internal virtual async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             if (_dbConnectionCreator == null)
             {
                 throw new InvalidOperationException("No DB Connection Creator");
-            }
-
-            if (_activeDbConnectionContext != null && _activeDbConnectionContext.IsComplete)
-            {
-                CleanupActiveContext();
             }
 
             if (_activeDbConnectionContext != null)
@@ -72,7 +67,7 @@ namespace Toadstool
             }
             else
             {
-                return new DbConnectionContext(await GetAnonymousConnectionAsync(cancellationToken));
+                return new DbConnectionWrapper(await GetAnonymousConnectionAsync(cancellationToken));
             }
         }
 

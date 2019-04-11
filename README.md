@@ -10,12 +10,11 @@ Query the database with ease
 
 ```csharp
 var context = new DbContext()
-    .WithConnection(new NpgsqlConnection("Host=localhost;Database=whatever;"));
+    .WithConnection(() => new NpgsqlConnection("Host=localhost;Database=whatever;"));
 
 var results = await context
     .Query("select a, b, c from bar where foo = @foo")
     .WithParameter("foo", "something")
-    .ExecuteAsync()
     .AsListOf<Bar>();
 ```
 

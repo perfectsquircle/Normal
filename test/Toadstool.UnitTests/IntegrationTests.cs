@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
@@ -14,7 +13,7 @@ namespace Toadstool.UnitTests
     {
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task As(Func<IDbConnection> dbConnection)
+        public async Task AsListOf(Func<IDbConnection> dbConnection)
         {
             //Given
             var context = new DbContext()
@@ -23,30 +22,6 @@ namespace Toadstool.UnitTests
             //When
             var results = await context
                 .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
-                .ExecuteAsync()
-                .AsEnumerableOf<Bar>();
-
-            //Then
-            Assert.NotNull(results);
-            // Assert.NotEmpty(results); // This iterates the IEnumerable, thus consuming it.
-            var bar = results.Single();
-            Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
-            Assert.Equal("Can't set me", bar.Charlie);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetDbConnection))]
-        public async Task AsList(Func<IDbConnection> dbConnection)
-        {
-            //Given
-            var context = new DbContext()
-                .WithConnection(dbConnection);
-
-            //When
-            var results = await context
-                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
-                .ExecuteAsync()
                 .AsListOf<Bar>();
 
             //Then
@@ -118,6 +93,10 @@ namespace Toadstool.UnitTests
             //When
             using (var transaction = await context.BeginTransactionAsync())
             {
+                Assert.NotNull(context._activeDbConnectionContext);
+                var connection1 = context._activeDbConnectionContext.DbConnection;
+                var transaction1 = context._activeDbConnectionContext.DbTransaction;
+
                 var results = await context
                     .Query("select 1")
                     .ExecuteScalarAsync();
@@ -126,10 +105,19 @@ namespace Toadstool.UnitTests
                     .Query("select 2")
                     .ExecuteScalarAsync();
 
+                var connection2 = context._activeDbConnectionContext.DbConnection;
+                var transaction2 = context._activeDbConnectionContext.DbTransaction;
+
+                Assert.Same(connection1, connection2);
+                Assert.Same(transaction1, transaction2);
+
                 Assert.Equal(1, results as int?);
                 Assert.Equal(2, results2 as int?);
+                Assert.False(transaction.IsComplete);
                 transaction.Commit();
+                Assert.True(transaction.IsComplete);
             };
+            Assert.Null(context._activeDbConnectionContext);
 
             var results3 = await context
                     .Query("select 3")
@@ -138,19 +126,18 @@ namespace Toadstool.UnitTests
 
             using (var transaction = await context.BeginTransactionAsync())
             {
+                Assert.NotNull(context._activeDbConnectionContext);
+
                 var results = await context
                     .Query("select 4")
                     .ExecuteScalarAsync();
 
-                var results2 = await context
-                    .Query("select 5")
-                    .ExecuteScalarAsync();
-
                 //Then
                 Assert.Equal(4, results as int?);
-                Assert.Equal(5, results2 as int?);
-                transaction.Commit();
+
+                // TRANSACTION NOT COMMITTED
             };
+            Assert.Null(context._activeDbConnectionContext);
 
             var results4 = await context
                     .Query("select 6")
