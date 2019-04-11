@@ -7,7 +7,7 @@ namespace Toadstool
 {
     public interface IDbContext : IDisposable
     {
-        DbCommandBuilder Query(string commandText);
+        IDbCommandBuilder Query(string commandText);
         Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }

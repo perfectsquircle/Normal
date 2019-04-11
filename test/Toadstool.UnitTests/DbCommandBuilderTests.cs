@@ -1,6 +1,5 @@
+using System;
 using System.Data;
-using System.Threading.Tasks;
-using AutoFixture.Xunit2;
 using Moq;
 using Xunit;
 
@@ -32,7 +31,9 @@ namespace Toadstool.UnitTests
             Assert.NotNull(builder);
         }
 
-        [Theory, AutoData]
+        [Theory]
+        [InlineData("banana", 123, CommandType.Text)]
+        [InlineData("", -100, CommandType.StoredProcedure)]
         public void ShouldBeBuildable(string commandText, int commandTimeout, CommandType commandType)
         {
             //Given
@@ -43,7 +44,7 @@ namespace Toadstool.UnitTests
                 ;
 
             //When
-            var command = builder.Build(new DbConnectionWrapper(_connection.Object));
+            var command = (builder as DbCommandBuilder).Build(_connection.Object);
 
             //Then
             Assert.NotNull(command);

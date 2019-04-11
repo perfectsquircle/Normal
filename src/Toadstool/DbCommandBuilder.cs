@@ -8,51 +8,84 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public class DbCommandBuilder
+    internal class DbCommandBuilder : IDbCommandBuilder
     {
         public DbCommandBuilder()
         {
-            _parameters = new Dictionary<string, string>();
+            _parameters = new Dictionary<string, object>();
         }
 
         private string _commandText;
         private int? _commandTimeout;
         private CommandType? _commandType;
-        private readonly IDictionary<string, string> _parameters;
+        private readonly IDictionary<string, object> _parameters;
         private DbContext _dbContext;
 
-        public DbCommandBuilder WithCommandText(string commandText)
+        public IDbCommandBuilder WithDbContext(DbContext dbContext)
         {
+            _dbContext = dbContext;
+            return this;
+        }
+
+        public IDbCommandBuilder WithCommandText(string commandText)
+        {
+            if (commandText == null)
+            {
+                throw new ArgumentNullException(nameof(commandText));
+            }
+
             this._commandText = commandText;
             return this;
         }
 
-        public DbCommandBuilder WithCommandTimeout(int commandTimeout)
+        public IDbCommandBuilder WithCommandTimeout(int commandTimeout)
         {
             this._commandTimeout = commandTimeout;
             return this;
         }
 
-        public DbCommandBuilder WithCommandType(CommandType commandType)
+        public IDbCommandBuilder WithCommandType(CommandType commandType)
         {
             this._commandType = commandType;
             return this;
         }
 
-        public DbCommandBuilder WithParameter(string key, object value)
+        public IDbCommandBuilder WithParameter(string key, object value)
         {
-            _parameters[key] = Convert.ToString(value);
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            _parameters[key] = value;
             return this;
         }
 
-        public DbCommandBuilder WithParameters(object parameters)
+        public IDbCommandBuilder WithParameters(object parameters)
         {
-            throw new NotImplementedException();
+            if (parameters == null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            return WithParameters(ReflectionHelper.ToDictionary(parameters));
         }
 
-        public DbCommandBuilder WithParameters(IDictionary<string, object> parameters)
+        public IDbCommandBuilder WithParameters(IDictionary<string, object> parameters)
         {
-            throw new NotImplementedException();
+            if (parameters == null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Key == null)
+                {
+                    continue;
+                }
+                _parameters[parameter.Key] = parameter.Value;
+            }
+            return this;
         }
 
         public async Task<IList<T>> AsListOf<T>(CancellationToken cancellationToken = default(CancellationToken))
@@ -83,15 +116,8 @@ namespace Toadstool
             }
         }
 
-        internal DbCommandBuilder WithDbContext(DbContext dbContext)
+        internal IDbCommand Build(IDbConnection dbConnection, IDbTransaction dbTransaction = null)
         {
-            _dbContext = dbContext;
-            return this;
-        }
-
-        internal IDbCommand Build(IDbConnectionWrapper dbConnectionContext)
-        {
-            var dbConnection = dbConnectionContext.DbConnection;
             var command = dbConnection.CreateCommand();
             if (_commandText != null)
             {
@@ -106,7 +132,7 @@ namespace Toadstool
                 command.CommandType = _commandType.Value;
             }
             command.Connection = dbConnection;
-            command.Transaction = dbConnectionContext.DbTransaction;
+            command.Transaction = dbTransaction;
 
             foreach (var parameter in _parameters)
             {
@@ -121,7 +147,7 @@ namespace Toadstool
 
         private DbCommand BuildDbCommand(IDbConnectionWrapper dbConnectionContext)
         {
-            var command = Build(dbConnectionContext);
+            var command = Build(dbConnectionContext.DbConnection, dbConnectionContext.DbTransaction);
             if (!(command is DbCommand))
             {
                 throw new NotSupportedException("Command must be DbCommand");
