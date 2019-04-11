@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using Moq;
+using Moq.DataExtensions;
 using Xunit;
 
 namespace Toadstool.UnitTests
@@ -11,12 +12,11 @@ namespace Toadstool.UnitTests
 
         public DbCommandBuilderTests()
         {
-            var command = new Mock<IDbCommand>()
-                .SetupAllProperties();
-            _connection = new Mock<IDbConnection>()
+            var repository = new MockRepository(MockBehavior.Strict) { DefaultValue = DefaultValue.Mock };
+            _connection = repository.Create<IDbConnection>()
                 .SetupAllProperties();
             _connection.Setup(c => c.CreateCommand())
-                .Returns(command.Object);
+                .Returns(() => repository.CreateIDbCommand().Object);
         }
 
         [Fact]
@@ -41,6 +41,11 @@ namespace Toadstool.UnitTests
                 .WithCommandText(commandText)
                 .WithCommandTimeout(commandTimeout)
                 .WithCommandType(commandType)
+                .WithParameter("Free Beer", "Yay")
+                .WithParameters(new
+                {
+                    Free = "Beer"
+                })
                 ;
 
             //When
@@ -51,6 +56,10 @@ namespace Toadstool.UnitTests
             Assert.Equal(commandText, command.CommandText);
             Assert.Equal(commandTimeout, command.CommandTimeout);
             Assert.Equal(commandType, command.CommandType);
+            Assert.Equal("Free Beer", (command.Parameters[0] as IDbDataParameter).ParameterName);
+            Assert.Equal("Yay", (command.Parameters[0] as IDbDataParameter).Value);
+            Assert.Equal("Free", (command.Parameters[1] as IDbDataParameter).ParameterName);
+            Assert.Equal("Beer", (command.Parameters[1] as IDbDataParameter).Value);
         }
     }
 }
