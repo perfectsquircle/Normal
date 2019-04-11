@@ -1,3 +1,5 @@
+using System;
+
 namespace Toadstool.UnitTests.Fixtures
 {
     public class Bar
@@ -5,5 +7,6 @@ namespace Toadstool.UnitTests.Fixtures
         public int Alpha { get; set; }
         public string Beta { get; set; }
         public string Charlie { get; } = "Can't set me";
+        public DateTimeOffset? CreateDate { get; set; }
     }
 }
