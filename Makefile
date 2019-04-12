@@ -29,5 +29,5 @@ docker-pack: docker
 	|| docker rm ${DOCKER_NAME}
 	docker rm ${DOCKER_NAME}
 
-docker-test: docker	
-	docker run --rm ${DOCKER_TAG} make test
+docker-test:	
+	docker-compose up --build --abort-on-container-exit

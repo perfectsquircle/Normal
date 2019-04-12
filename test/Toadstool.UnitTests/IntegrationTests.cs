@@ -148,7 +148,7 @@ namespace Toadstool.UnitTests
         public static IEnumerable<object[]> GetDbConnection()
         {
             // yield return new SqlConnection("???"); TODO: support me
-            Func<IDbConnection> connectionCreator = () => new NpgsqlConnection("Host=localhost;Database=cfurano;");
+            Func<IDbConnection> connectionCreator = () => new NpgsqlConnection("Host=postgres;Database=postgres;Username=postgres;Password=toadstool");
             yield return new object[] { connectionCreator };
         }
     }

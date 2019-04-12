@@ -1,0 +1,14 @@
+version: '3'
+services:
+  integration-tests:
+    build: .
+    command: make test
+    links: 
+      - postgres
+  postgres:
+    image: postgres:11
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: toadstool
+    volumes: 
+      - ./test/postgres-init:/docker-entrypoint-initdb.d
