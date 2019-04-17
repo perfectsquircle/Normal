@@ -1,6 +1,7 @@
 version: '3'
 services:
   postgres:
+    container_name: toadstool_postgres_db
     image: postgres:latest
     restart: always
     environment:
@@ -10,6 +11,7 @@ services:
     ports:  
       - 5432:5432
   sqlserver:
+    container_name: toadstool_sqlserver_db
     image: mcr.microsoft.com/mssql/server:latest
     restart: always
     environment:
