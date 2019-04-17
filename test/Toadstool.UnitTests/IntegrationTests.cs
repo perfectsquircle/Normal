@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
@@ -21,7 +22,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, true as delta")
+                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .AsListOf<Bar>();
 
             //Then
@@ -147,9 +148,8 @@ namespace Toadstool.UnitTests
 
         public static IEnumerable<object[]> GetDbConnection()
         {
-            // yield return new SqlConnection("???"); TODO: support me
-            Func<IDbConnection> connectionCreator = () => new NpgsqlConnection("Host=postgres;Database=postgres;Username=postgres;Password=toadstool");
-            yield return new object[] { connectionCreator };
+            yield return new object[] { (Func<IDbConnection>)(() => new NpgsqlConnection("Host=localhost;Database=postgres;Username=postgres;Password=toadstool")) };
+            yield return new object[] { (Func<IDbConnection>)(() => new SqlConnection("Server=localhost;Uid=sa;Pwd=Toadstool123")) };
         }
     }
 }

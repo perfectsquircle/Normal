@@ -1,14 +1,19 @@
 version: '3'
 services:
-  integration-tests:
-    build: .
-    command: make test
-    links: 
-      - postgres
   postgres:
-    image: postgres:11
+    image: postgres:latest
     restart: always
     environment:
       POSTGRES_PASSWORD: toadstool
     volumes: 
       - ./test/postgres-init:/docker-entrypoint-initdb.d
+    ports:  
+      - 5432:5432
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:latest
+    restart: always
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Toadstool123
+    ports:  
+      - 1433:1433
