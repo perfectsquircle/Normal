@@ -18,8 +18,7 @@ namespace Toadstool
 
         public T Deserialize<T>(IDataRecord dataRecord)
         {
-            T obj = default(T);
-            obj = Activator.CreateInstance<T>();
+            T obj = CreateInstance<T>();
             var properties = GetRuntimeProperties(obj);
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
@@ -28,11 +27,13 @@ namespace Toadstool
                     continue;
                 }
                 var columnName = dataRecord.GetName(i);
-                if (!properties.ContainsKey(columnName.ToLowerInvariant()))
+                var variants = GetVariants(columnName);
+                var propertyName = variants.FirstOrDefault(p => properties.ContainsKey(p));
+                if (propertyName == default(string))
                 {
                     continue;
                 }
-                var property = properties[columnName.ToLowerInvariant()];
+                var property = properties[propertyName];
                 if (property == null || !property.CanWrite)
                 {
                     continue;
@@ -40,6 +41,21 @@ namespace Toadstool
                 property.SetValue(obj, dataRecord[columnName]);
             }
             return obj;
+        }
+
+        public virtual T CreateInstance<T>()
+        {
+            T obj = default(T);
+            obj = (T)Activator.CreateInstance<T>();
+            return obj;
+        }
+
+        public virtual IEnumerable<string> GetVariants(string columnName)
+        {
+            yield return columnName;
+            yield return columnName.ToLowerInvariant();
+            yield return columnName.Replace("_", "");
+            yield return columnName.ToLowerInvariant().Replace("_", "");
         }
 
         private IDictionary<string, PropertyInfo> GetRuntimeProperties<T>(T obj)

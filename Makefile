@@ -52,9 +52,9 @@ wait-for:
 
 # Stolen from https://github.com/Azure/azure-postgresql/tree/master/samples/databases/wide-world-importers
 docker-database-postgres: compose-up wide_world_importers_pg.dump wait-for
+	./wait-for localhost:5432
 	docker exec -it ${POSTGRES_CONTAINER} mkdir -p ${POSTGRES_BACKUP_DIR}
 	docker cp ${POSTGRES_BACKUP_NAME} ${POSTGRES_CONTAINER}:${POSTGRES_BACKUP_DIR}/${POSTGRES_BACKUP_NAME}
-	./wait-for localhost:5432
 	sleep 3
 	docker exec -it ${POSTGRES_CONTAINER} pg_restore -U postgres -w -v -Fc -1 -d wide_world_importers_pg ${POSTGRES_BACKUP_DIR}/${POSTGRES_BACKUP_NAME}
 
