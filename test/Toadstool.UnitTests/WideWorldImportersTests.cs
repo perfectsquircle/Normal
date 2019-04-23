@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Npgsql;
@@ -8,16 +11,20 @@ namespace Toadstool.UnitTests
 {
     public class WideWorldImportersTests
     {
-        [Fact]
-        public async Task ShouldSelectFromStockItems_SqlServer()
+        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=toadstool");
+        private static Func<IDbConnection> _sqlServerConnection = () => new SqlConnection("Server=localhost;Uid=sa;Pwd=Toadstool123;Database=WideWorldImporters");
+
+        [Theory]
+        [MemberData(nameof(GetSelectTestCases))]
+        public async Task ShouldSelectFromStockItems(Func<IDbConnection> dbConnection, string query)
         {
             //Given
             var context = new DbContext()
-                .WithConnection(() => new SqlConnection("Server=localhost;Uid=sa;Pwd=Toadstool123;Database=WideWorldImporters"));
+                .WithConnection(dbConnection);
 
             //When
             var results = await context
-                .Query("SELECT TOP 10 StockItemID, StockItemName FROM Warehouse.StockItems ORDER BY StockItemID")
+                .Query(query)
                 .AsListOf<StockItem>();
 
             //Then
@@ -30,26 +37,18 @@ namespace Toadstool.UnitTests
             Assert.Equal("USB food flash drive - chocolate bar", results[9].StockItemName);
         }
 
-        [Fact]
-        public async Task ShouldSelectFromStockItems_Postgres()
+        public static IEnumerable<object[]> GetSelectTestCases()
         {
-            //Given
-            var context = new DbContext()
-                .WithConnection(() => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=toadstool"));
-
-            //When
-            var results = await context
-                .Query("SELECT stock_item_id, stock_item_name FROM warehouse.stock_items ORDER BY stock_item_id LIMIT 10")
-                .AsListOf<StockItem>();
-
-            //Then
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            Assert.Equal(10, results.Count);
-            Assert.Equal(1, results[0].StockItemID);
-            Assert.Equal("USB missile launcher (Green)", results[0].StockItemName);
-            Assert.Equal(10, results[9].StockItemID);
-            Assert.Equal("USB food flash drive - chocolate bar", results[9].StockItemName);
+            yield return new object[]
+            {
+                _postgresConnection,
+                "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items ORDER BY stock_item_id LIMIT 10"
+            };
+            yield return new object[] {
+                _sqlServerConnection,
+                "SELECT TOP 10 StockItemID, StockItemName FROM Warehouse.StockItems ORDER BY StockItemID"
+            };
         }
+
     }
 }
