@@ -98,13 +98,10 @@ LIMIT 100";
             var results = await context
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
-                .Where("supplier_id = @supplierId")
-                .And("tax_rate = @taxRate")
+                .WhereEqual("supplier_id", 2)
+                .AndEqual("tax_rate", 15.0)
                 .OrderBy("stock_item_id")
                 .Query()
-                .WithParameter("supplierId", 2)
-                .WithParameter("brand", null) // not in query
-                .WithParameter("taxRate", 15.0)
                 .AsListOf<StockItem>();
 
             //Then

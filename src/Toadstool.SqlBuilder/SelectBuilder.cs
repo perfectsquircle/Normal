@@ -6,10 +6,12 @@ namespace Toadstool
     public class SelectBuilder : IBuildableQuery
     {
         private IList<string> _stuff = new List<string>();
+        public IDictionary<string, object> Parameters { get; }
         private readonly IDbContext _context;
 
         internal SelectBuilder(string[] selectList, IDbContext context = null)
         {
+            Parameters = new Dictionary<string, object>();
             AddStuff("SELECT", selectList);
             this._context = context;
         }
@@ -34,14 +36,23 @@ namespace Toadstool
             return AddStuff("WHERE", condition);
         }
 
+        public SelectBuilder WhereEqual(string columnName, object value)
+        {
+            var parameterName = RegisterParameter(value);
+            var condition = $"{columnName} = @{parameterName}";
+            return AddStuff("WHERE", condition);
+        }
+
         public SelectBuilder And(string condition)
         {
             return AddStuff("AND", condition);
         }
 
-        public SelectBuilder AndEqual(string left, object right)
+        public SelectBuilder AndEqual(string columnName, object value)
         {
-            throw new NotImplementedException();
+            var parameterName = RegisterParameter(value);
+            var condition = $"{columnName} = @{parameterName}";
+            return AddStuff("AND", condition);
         }
 
         public SelectBuilder Or(string condition)
@@ -93,6 +104,13 @@ namespace Toadstool
             var stuffString = string.Join(", ", stuff);
             _stuff.Add($"{keyword} {stuffString}");
             return this;
+        }
+
+        private string RegisterParameter(object value)
+        {
+            var parameterName = $"toadstool_parameter_{Parameters.Count + 1}";
+            Parameters.Add(parameterName, value);
+            return parameterName;
         }
     }
 }
