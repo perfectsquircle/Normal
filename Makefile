@@ -7,7 +7,7 @@ local:
 
 .PHONY: test
 test:
-	dotnet test test/Toadstool.UnitTests/
+	dotnet test 
 
 clean: 
 	rm -vrf out
