@@ -138,7 +138,7 @@ namespace Toadstool
             {
                 var dbParameter = command.CreateParameter();
                 dbParameter.ParameterName = parameter.Key;
-                dbParameter.Value = parameter.Value;
+                dbParameter.Value = parameter.Value ?? DBNull.Value;
                 command.Parameters.Add(dbParameter);
             }
 

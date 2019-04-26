@@ -65,7 +65,7 @@ namespace Toadstool.UnitTests
             var results = await context
                 .Query(query)
                 .WithParameter("supplierId", 2)
-                .WithParameter("brand", null)
+                .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)
                 .AsListOf<StockItem>();
 
