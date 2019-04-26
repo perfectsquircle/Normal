@@ -1,24 +1,21 @@
+using System;
 using System.Collections.Generic;
 
 namespace Toadstool
 {
-    public class SelectBuilder
+    public class SelectBuilder : IBuildableQuery
     {
-        // private readonly string[] _selectList;
-        // private string[] _fromList;
-        // private IList<string> _joinList = new List<string>();
-
         private IList<string> _stuff = new List<string>();
+        private readonly IDbContext _context;
 
-        internal SelectBuilder(string[] selectList)
+        internal SelectBuilder(string[] selectList, IDbContext context = null)
         {
-            // this._selectList = selectList;
             AddStuff("SELECT", selectList);
+            this._context = context;
         }
 
         public SelectBuilder From(params string[] fromList)
         {
-            // _fromList = from;
             return AddStuff("FROM", fromList);
         }
 
@@ -27,19 +24,34 @@ namespace Toadstool
             return AddStuff("JOIN", joinList);
         }
 
-        public SelectBuilder Where(string where)
+        public SelectBuilder LeftJoin(string joinList)
         {
-            return AddStuff("WHERE", where);
+            return AddStuff("LEFT JOIN", joinList);
         }
 
-        public SelectBuilder And(string and)
+        public SelectBuilder Where(string condition)
         {
-            return AddStuff("AND", and);
+            return AddStuff("WHERE", condition);
         }
 
-        public SelectBuilder Or(string or)
+        public SelectBuilder And(string condition)
         {
-            return AddStuff("OR", or);
+            return AddStuff("AND", condition);
+        }
+
+        public SelectBuilder AndEqual(string left, object right)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SelectBuilder Or(string condition)
+        {
+            return AddStuff("OR", condition);
+        }
+
+        public SelectBuilder GroupBy(params string[] groupingElements)
+        {
+            return AddStuff("GROUP BY", groupingElements);
         }
 
         public SelectBuilder Having(string having)
@@ -57,9 +69,23 @@ namespace Toadstool
             return AddStuff("LIMIT", limit.ToString());
         }
 
+        public SelectBuilder Offset(int offset)
+        {
+            return AddStuff("OFFSET", offset.ToString());
+        }
+
         public string Build()
         {
             return string.Join("\n", _stuff);
+        }
+
+        public IDbCommandBuilder Query()
+        {
+            if (_context == null)
+            {
+                throw new NotSupportedException("No context to execute against.");
+            }
+            return _context.Query(this);
         }
 
         private SelectBuilder AddStuff(string keyword, params string[] stuff)
