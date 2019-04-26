@@ -4,7 +4,7 @@ namespace Toadstool
     {
         public static SelectBuilder Select(params string[] selectList)
         {
-            return new SelectBuilder(string.Join(", ", selectList));
+            return new SelectBuilder(selectList);
         }
     }
 }
