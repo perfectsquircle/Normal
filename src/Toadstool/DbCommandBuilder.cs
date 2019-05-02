@@ -21,7 +21,7 @@ namespace Toadstool
         private readonly IDictionary<string, object> _parameters;
         private DbContext _dbContext;
 
-        public IDbCommandBuilder WithDbContext(DbContext dbContext)
+        internal IDbCommandBuilder WithDbContext(DbContext dbContext)
         {
             _dbContext = dbContext;
             return this;
@@ -107,12 +107,12 @@ namespace Toadstool
             }
         }
 
-        public async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connectionContext))
             {
-                return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                return (T)(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
             }
         }
 

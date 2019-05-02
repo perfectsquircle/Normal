@@ -45,15 +45,15 @@ namespace Toadstool.UnitTests
             //When
             var results = await context
                 .Query("select 1")
-                .ExecuteScalarAsync();
+                .ExecuteScalarAsync<int>();
 
             var results2 = await context
-                .Query("select 2")
-                .ExecuteScalarAsync();
+                .Query("select 'hello, there'")
+                .ExecuteScalarAsync<string>();
 
             //Then
-            Assert.Equal(1, results as int?);
-            Assert.Equal(2, results2 as int?);
+            Assert.Equal(1, results);
+            Assert.Equal("hello, there", results2);
         }
 
         [Theory]
@@ -67,20 +67,20 @@ namespace Toadstool.UnitTests
             //When
             var results = context
                 .Query("select 1")
-                .ExecuteScalarAsync();
+                .ExecuteScalarAsync<int>();
 
             var results2 = context
                 .Query("select 2")
-                .ExecuteScalarAsync();
+                .ExecuteScalarAsync<int>();
 
             var results3 = context
                 .Query("select 3")
-                .ExecuteScalarAsync();
+                .ExecuteScalarAsync<int>();
 
             //Then
-            Assert.Equal(1, await results as int?);
-            Assert.Equal(2, await results2 as int?);
-            Assert.Equal(3, await results3 as int?);
+            Assert.Equal(1, await results);
+            Assert.Equal(2, await results2);
+            Assert.Equal(3, await results3);
         }
 
         [Theory]
@@ -100,11 +100,11 @@ namespace Toadstool.UnitTests
 
                 var results = await context
                     .Query("select 1")
-                    .ExecuteScalarAsync();
+                    .ExecuteScalarAsync<int>();
 
                 var results2 = await context
                     .Query("select 2")
-                    .ExecuteScalarAsync();
+                    .ExecuteScalarAsync<int>();
 
                 var connection2 = context._activeDbConnectionContext.DbConnection;
                 var transaction2 = context._activeDbConnectionContext.DbTransaction;
@@ -112,8 +112,8 @@ namespace Toadstool.UnitTests
                 Assert.Same(connection1, connection2);
                 Assert.Same(transaction1, transaction2);
 
-                Assert.Equal(1, results as int?);
-                Assert.Equal(2, results2 as int?);
+                Assert.Equal(1, results);
+                Assert.Equal(2, results2);
                 Assert.False(transaction.IsComplete);
                 transaction.Commit();
                 Assert.True(transaction.IsComplete);
@@ -122,8 +122,8 @@ namespace Toadstool.UnitTests
 
             var results3 = await context
                     .Query("select 3")
-                    .ExecuteScalarAsync();
-            Assert.Equal(3, results3 as int?);
+                    .ExecuteScalarAsync<int>();
+            Assert.Equal(3, results3);
 
             using (var transaction = await context.BeginTransactionAsync())
             {
@@ -131,10 +131,10 @@ namespace Toadstool.UnitTests
 
                 var results = await context
                     .Query("select 4")
-                    .ExecuteScalarAsync();
+                    .ExecuteScalarAsync<int>();
 
                 //Then
-                Assert.Equal(4, results as int?);
+                Assert.Equal(4, results);
 
                 // TRANSACTION NOT COMMITTED
             };
@@ -142,8 +142,8 @@ namespace Toadstool.UnitTests
 
             var results4 = await context
                     .Query("select 6")
-                    .ExecuteScalarAsync();
-            Assert.Equal(6, results4 as int?);
+                    .ExecuteScalarAsync<int>();
+            Assert.Equal(6, results4);
         }
 
         public static IEnumerable<object[]> GetDbConnection()

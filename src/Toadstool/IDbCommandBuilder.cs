@@ -15,6 +15,6 @@ namespace Toadstool
         IDbCommandBuilder WithParameters(IDictionary<string, object> parameters);
         Task<IList<T>> AsListOf<T>(CancellationToken cancellationToken = default(CancellationToken));
         Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default(CancellationToken));
-        Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default(CancellationToken));
     }
 }
