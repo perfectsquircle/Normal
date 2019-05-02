@@ -34,8 +34,8 @@ namespace Toadstool.UnitTests
 @"SELECT customer_id, first_name, last_name
 FROM customers c
 JOIN orders o on o.customer_id = c.customer_id
-WHERE c.first_name is not null
-AND c.last_name is not null
+WHERE c.first_name IS NOT NULL
+AND c.last_name IS NOT NULL
 ORDER BY c.last_name
 LIMIT 100";
 

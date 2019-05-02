@@ -1,34 +1,26 @@
-using System;
-using System.Collections.Generic;
-
 namespace Toadstool
 {
-    public class SelectBuilder : IBuildableQuery
+    public class SelectBuilder : QueryBuilder
     {
-        private IList<string> _stuff = new List<string>();
-        public IDictionary<string, object> Parameters { get; }
-        private readonly IDbContext _context;
-
         internal SelectBuilder(string[] selectList, IDbContext context = null)
         {
-            Parameters = new Dictionary<string, object>();
-            AddStuff("SELECT", selectList);
+            AddLine("SELECT", selectList);
             this._context = context;
         }
 
         public SelectBuilder From(params string[] fromList)
         {
-            return AddStuff("FROM", fromList);
+            return AddLine("FROM", fromList);
         }
 
         public SelectBuilder Join(string joinList)
         {
-            return AddStuff("JOIN", joinList);
+            return AddLine("JOIN", joinList);
         }
 
         public SelectBuilder LeftJoin(string joinList)
         {
-            return AddStuff("LEFT JOIN", joinList);
+            return AddLine("LEFT JOIN", joinList);
         }
 
         public ConditionBuilder Where(string columnName)
@@ -48,55 +40,32 @@ namespace Toadstool
 
         public SelectBuilder GroupBy(params string[] groupingElements)
         {
-            return AddStuff("GROUP BY", groupingElements);
+            return AddLine("GROUP BY", groupingElements);
         }
 
         public SelectBuilder Having(string having)
         {
-            return AddStuff("HAVING", having);
+            return AddLine("HAVING", having);
         }
 
         public SelectBuilder OrderBy(string orderBy)
         {
-            return AddStuff("ORDER BY", orderBy);
+            return AddLine("ORDER BY", orderBy);
         }
 
         public SelectBuilder Limit(int limit)
         {
-            return AddStuff("LIMIT", limit.ToString());
+            return AddLine("LIMIT", limit.ToString());
         }
 
         public SelectBuilder Offset(int offset)
         {
-            return AddStuff("OFFSET", offset.ToString());
+            return AddLine("OFFSET", offset.ToString());
         }
 
-        public string Build()
+        internal new SelectBuilder AddLine(string keyword, params string[] columnNames)
         {
-            return string.Join("\n", _stuff);
-        }
-
-        public IDbCommandBuilder Query()
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context.Query(this);
-        }
-
-        internal SelectBuilder AddStuff(string keyword, params string[] stuff)
-        {
-            var stuffString = string.Join(", ", stuff);
-            _stuff.Add($"{keyword} {stuffString}");
-            return this;
-        }
-
-        internal string RegisterParameter(object value)
-        {
-            var parameterName = $"toadstool_parameter_{Parameters.Count + 1}";
-            Parameters.Add(parameterName, value);
-            return parameterName;
+            return base.AddLine(keyword, columnNames) as SelectBuilder;
         }
     }
 }

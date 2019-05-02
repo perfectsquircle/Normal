@@ -55,23 +55,23 @@ namespace Toadstool
 
         public SelectBuilder IsNull()
         {
-            return _parent.AddStuff(_keyword, $"{_columnName} IS NULL");
+            return _parent.AddLine(_keyword, $"{_columnName} IS NULL");
         }
 
         public SelectBuilder IsNotNull()
         {
-            return _parent.AddStuff(_keyword, $"{_columnName} IS NOT NULL");
+            return _parent.AddLine(_keyword, $"{_columnName} IS NOT NULL");
         }
 
         public ConditionBuilder And(string condition)
         {
-            _parent.AddStuff(_keyword, _columnName); // this is actually a full condition;
+            _parent.AddLine(_keyword, _columnName); // this is actually a full condition;
             return _parent.And(condition);
         }
 
         public ConditionBuilder Or(string columnName)
         {
-            _parent.AddStuff(_keyword, _columnName); // this is actually a full condition;
+            _parent.AddLine(_keyword, _columnName); // this is actually a full condition;
             return new ConditionBuilder(_parent, "OR", columnName);
         }
 
@@ -84,7 +84,7 @@ namespace Toadstool
         {
             var parameterName = _parent.RegisterParameter(value);
             var condition = $"{_columnName} {comparator} @{parameterName}";
-            return _parent.AddStuff(_keyword, condition);
+            return _parent.AddLine(_keyword, condition);
         }
     }
 }
