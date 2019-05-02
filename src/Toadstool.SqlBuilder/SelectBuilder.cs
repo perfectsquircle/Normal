@@ -31,33 +31,19 @@ namespace Toadstool
             return AddStuff("LEFT JOIN", joinList);
         }
 
-        public SelectBuilder Where(string condition)
+        public ConditionBuilder Where(string columnName)
         {
-            return AddStuff("WHERE", condition);
+            return new ConditionBuilder(this, "WHERE", columnName);
         }
 
-        public SelectBuilder WhereEqual(string columnName, object value)
+        public ConditionBuilder And(string columnName)
         {
-            var parameterName = RegisterParameter(value);
-            var condition = $"{columnName} = @{parameterName}";
-            return AddStuff("WHERE", condition);
+            return new ConditionBuilder(this, "AND", columnName);
         }
 
-        public SelectBuilder And(string condition)
+        public ConditionBuilder Or(string columnName)
         {
-            return AddStuff("AND", condition);
-        }
-
-        public SelectBuilder AndEqual(string columnName, object value)
-        {
-            var parameterName = RegisterParameter(value);
-            var condition = $"{columnName} = @{parameterName}";
-            return AddStuff("AND", condition);
-        }
-
-        public SelectBuilder Or(string condition)
-        {
-            return AddStuff("OR", condition);
+            return new ConditionBuilder(this, "AND", columnName);
         }
 
         public SelectBuilder GroupBy(params string[] groupingElements)
@@ -99,14 +85,14 @@ namespace Toadstool
             return _context.Query(this);
         }
 
-        private SelectBuilder AddStuff(string keyword, params string[] stuff)
+        internal SelectBuilder AddStuff(string keyword, params string[] stuff)
         {
             var stuffString = string.Join(", ", stuff);
             _stuff.Add($"{keyword} {stuffString}");
             return this;
         }
 
-        private string RegisterParameter(object value)
+        internal string RegisterParameter(object value)
         {
             var parameterName = $"toadstool_parameter_{Parameters.Count + 1}";
             Parameters.Add(parameterName, value);

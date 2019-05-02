@@ -43,8 +43,8 @@ LIMIT 100";
             var actual = Select("customer_id", "first_name", "last_name")
                 .From("customers c")
                 .Join("orders o on o.customer_id = c.customer_id")
-                .Where("c.first_name is not null")
-                .And("c.last_name is not null")
+                .Where("c.first_name").IsNotNull()
+                .And("c.last_name").IsNotNull()
                 .OrderBy("c.last_name")
                 .Limit(100)
                 .Build();
@@ -58,14 +58,13 @@ LIMIT 100";
         public async Task ShouldBeQueryable()
         {
             //Given
-            // SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @supplierId AND tax_rate = @taxRate ORDER BY stock_item_id
             var context = new DbContext().WithConnection(_postgresConnection);
 
             //When
             var query = Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("supplier_id = @supplierId")
-                .And("tax_rate = @taxRate")
+                .And("tax_rate = @taxRate").End()
                 .OrderBy("stock_item_id");
 
             var results = await context
@@ -91,15 +90,14 @@ LIMIT 100";
         public async Task ShouldBeQueryable2()
         {
             //Given
-            // SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @supplierId AND tax_rate = @taxRate ORDER BY stock_item_id
             var context = new DbContext().WithConnection(_postgresConnection);
 
             //When
             var results = await context
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
-                .WhereEqual("supplier_id", 2)
-                .AndEqual("tax_rate", 15.0)
+                .Where("supplier_id").EqualTo(2)
+                .And("tax_rate").EqualTo(15.0)
                 .OrderBy("stock_item_id")
                 .Query()
                 .AsListOf<StockItem>();
