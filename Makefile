@@ -9,7 +9,7 @@ local:
 test: databases
 	dotnet test 
 
-clean: down
+clean:
 	rm -vrf out
 	find . -name bin | xargs rm -vrf
 	find . -name obj | xargs rm -vrf

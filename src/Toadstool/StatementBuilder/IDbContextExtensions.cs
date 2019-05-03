@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Toadstool
@@ -10,28 +11,28 @@ namespace Toadstool
             return context.Query(statement.Build()).WithParameters(statement.Parameters);
         }
 
-        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IStatementBuilder statement)
+        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
         {
             return context
                 .Query(statement.Build())
                 .WithParameters(statement.Parameters)
-                .AsListOf<T>();
+                .AsListOf<T>(cancellationToken);
         }
 
-        public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder statement)
+        public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
         {
             return context
                 .Query(statement.Build())
                 .WithParameters(statement.Parameters)
-                .ExecuteNonQueryAsync();
+                .ExecuteNonQueryAsync(cancellationToken);
         }
 
-        public static Task<object> ExecuteScalarAsync(this IDbContext context, IStatementBuilder statement)
+        public static Task<T> ExecuteScalarAsync<T>(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
         {
             return context
                 .Query(statement.Build())
                 .WithParameters(statement.Parameters)
-                .ExecuteScalarAsync();
+                .ExecuteScalarAsync<T>(cancellationToken);
         }
 
         public static SelectBuilder Select(this IDbContext context, params string[] selectList)

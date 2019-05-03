@@ -62,13 +62,13 @@ namespace Toadstool
             return _context.ExecuteAsync(this);
         }
 
-        public Task<object> ExecuteScalarAsync()
+        public Task<T> ExecuteScalarAsync<T>()
         {
             if (_context == null)
             {
                 throw new NotSupportedException("No context to execute against.");
             }
-            return _context.ExecuteScalarAsync(this);
+            return _context.ExecuteScalarAsync<T>(this);
         }
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)

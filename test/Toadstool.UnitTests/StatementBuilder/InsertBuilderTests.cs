@@ -69,7 +69,7 @@ VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3),
                 .Select("color_name")
                 .From("warehouse.colors")
                 .Where("color_name").EqualTo("Gurple")
-                .ExecuteScalarAsync();
+                .ExecuteScalarAsync<string>();
 
             //Then
             Assert.Equal(1, rowsInserted);
