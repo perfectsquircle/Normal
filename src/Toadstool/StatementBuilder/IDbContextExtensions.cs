@@ -43,5 +43,10 @@ namespace Toadstool
         {
             return new InsertBuilder(tableName, columnNames, context);
         }
+
+        public static UpdateBuilder Update(this IDbContext context, string tableName)
+        {
+            return new UpdateBuilder(tableName, context);
+        }
     }
 }
