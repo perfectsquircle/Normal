@@ -1,11 +1,8 @@
 using System;
-using System.Linq;
 using System.Data;
-using System.Threading.Tasks;
 using Npgsql;
-using Toadstool.UnitTests.Fixtures;
 using Xunit;
-using static Toadstool.SqlBuilder;
+using static Toadstool.StatementBuilder;
 
 namespace Toadstool.UnitTests
 {

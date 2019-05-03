@@ -2,11 +2,11 @@ using System.Collections.Generic;
 
 namespace Toadstool
 {
-    public interface IQueryBuilder
+    public interface IStatementBuilder
     {
         string Build();
         IDictionary<string, object> Parameters { get; }
-        IQueryBuilder AddLine(string keyword, params string[] columnNames);
+        IStatementBuilder AddLine(string keyword, params string[] columnNames);
         string RegisterParameter(object value);
     }
 }

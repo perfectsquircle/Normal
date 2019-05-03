@@ -30,9 +30,15 @@ namespace Toadstool
 
         public void Dispose()
         {
-            IsComplete = true;
-            DbTransaction?.Dispose();
-            _onDisposed?.Invoke();
+            try
+            {
+                IsComplete = true;
+                DbTransaction?.Dispose();
+            }
+            finally
+            {
+                _onDisposed?.Invoke();
+            }
         }
     }
 }

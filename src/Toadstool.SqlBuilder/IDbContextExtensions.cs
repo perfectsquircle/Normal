@@ -5,12 +5,12 @@ namespace Toadstool
 {
     public static class IDbContextExtensions
     {
-        public static IDbCommandBuilder Query(this IDbContext context, IQueryBuilder query)
+        public static IDbCommandBuilder Query(this IDbContext context, IStatementBuilder query)
         {
             return context.Query(query.Build()).WithParameters(query.Parameters);
         }
 
-        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IQueryBuilder query)
+        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IStatementBuilder query)
         {
             return context
                 .Query(query.Build())
@@ -18,7 +18,7 @@ namespace Toadstool
                 .AsListOf<T>();
         }
 
-        public static Task<int> ExecuteAsync(this IDbContext context, IQueryBuilder query)
+        public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder query)
         {
             return context
                 .Query(query.Build())
@@ -26,7 +26,7 @@ namespace Toadstool
                 .ExecuteNonQueryAsync();
         }
 
-        public static Task<object> ExecuteScalarAsync(this IDbContext context, IQueryBuilder query)
+        public static Task<object> ExecuteScalarAsync(this IDbContext context, IStatementBuilder query)
         {
             return context
                 .Query(query.Build())

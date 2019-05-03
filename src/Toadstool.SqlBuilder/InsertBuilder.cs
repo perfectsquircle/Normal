@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Toadstool
 {
-    public class InsertBuilder : QueryBuilder
+    public class InsertBuilder : StatementBuilder
     {
         internal InsertBuilder(string tableName, string[] columnNames = null, IDbContext context = null)
         {

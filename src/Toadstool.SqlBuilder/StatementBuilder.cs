@@ -4,11 +4,26 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public abstract class QueryBuilder : IQueryBuilder
+    public abstract class StatementBuilder : IStatementBuilder
     {
         protected IList<string> _lines = new List<string>();
         public IDictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
         protected IDbContext _context;
+
+        public static SelectBuilder Select(params string[] selectList)
+        {
+            return new SelectBuilder(selectList);
+        }
+
+        public static InsertBuilder InsertInto(string tableName, params string[] columnNames)
+        {
+            return new InsertBuilder(tableName, columnNames);
+        }
+
+        public static UpdateBuilder Update(string tableName)
+        {
+            return new UpdateBuilder(tableName);
+        }
 
         public string Build()
         {
@@ -51,7 +66,7 @@ namespace Toadstool
             return _context.ExecuteScalarAsync(this);
         }
 
-        public IQueryBuilder AddLine(string keyword, params string[] columnNames)
+        public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {
             var columnNameString = string.Join(", ", columnNames);
             _lines.Add($"{keyword} {columnNameString}");

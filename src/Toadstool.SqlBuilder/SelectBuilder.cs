@@ -1,6 +1,6 @@
 namespace Toadstool
 {
-    public class SelectBuilder : QueryBuilder
+    public class SelectBuilder : StatementBuilder
     {
         internal SelectBuilder(string[] selectList, IDbContext context = null)
         {

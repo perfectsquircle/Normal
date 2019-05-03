@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Npgsql;
 using Toadstool.UnitTests.Fixtures;
 using Xunit;
-using static Toadstool.SqlBuilder;
+using static Toadstool.StatementBuilder;
+
 
 namespace Toadstool.UnitTests
 {

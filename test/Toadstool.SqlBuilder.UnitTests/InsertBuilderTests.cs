@@ -3,7 +3,7 @@ using System.Data;
 using System.Threading.Tasks;
 using Npgsql;
 using Xunit;
-using static Toadstool.SqlBuilder;
+using static Toadstool.StatementBuilder;
 
 namespace Toadstool.UnitTests
 {
@@ -53,7 +53,7 @@ VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3),
             Assert.Equal(expected, actual);
         }
 
-        [Fact(Skip = "Can't get no permission")]
+        [Fact]
         public async Task ShouldInsert()
         {
             //Given

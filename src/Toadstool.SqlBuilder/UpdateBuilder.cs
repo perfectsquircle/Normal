@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Toadstool
 {
-    public class UpdateBuilder : QueryBuilder
+    public class UpdateBuilder : StatementBuilder
     {
         internal UpdateBuilder(string tableName, IDbContext context = null)
         {
