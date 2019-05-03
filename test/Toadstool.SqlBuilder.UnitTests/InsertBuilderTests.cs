@@ -1,3 +1,7 @@
+using System;
+using System.Data;
+using System.Threading.Tasks;
+using Npgsql;
 using Xunit;
 using static Toadstool.SqlBuilder;
 
@@ -5,6 +9,8 @@ namespace Toadstool.UnitTests
 {
     public class InsertBuilderTests
     {
+        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
+
         [Fact]
         public void ShouldBeBuildable()
         {
@@ -45,6 +51,29 @@ VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3),
             //Then
             Assert.NotNull(actual);
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task ShouldInsert()
+        {
+            //Given
+            var context = new DbContext(_postgresConnection);
+
+            //When
+            var rowsInserted = await context
+                .InsertInto("warehouse.colors", "color_name", "last_edited_by")
+                .Values("Gurple", 1)
+                .ExecuteAsync();
+
+            var gurple = await context
+                .Select("color_name")
+                .From("warehouse.colors")
+                .Where("color_name").EqualTo("Gurple")
+                .ExecuteScalarAsync();
+
+            //Then
+            Assert.Equal(1, rowsInserted);
+            Assert.Equal("Gurple", gurple);
         }
     }
 }

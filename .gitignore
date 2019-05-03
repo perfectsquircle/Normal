@@ -308,6 +308,4 @@ __pycache__/
 # End of https://www.gitignore.io/api/visualstudio,visualstudiocode
 
 out/
-*.dump
-*.bak
-wait-for
+db/

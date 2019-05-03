@@ -13,6 +13,11 @@ namespace Toadstool
             DataRecordDeserializer = new DefaultDataRecordDeserializer();
         }
 
+        public DbContext(Func<IDbConnection> dbConnectionCreator) : this()
+        {
+            _dbConnectionCreator = dbConnectionCreator;
+        }
+
         internal IDataRecordDeserializer DataRecordDeserializer { get; private set; }
         internal IDbConnectionWrapper _activeDbConnectionContext;
         private Func<IDbConnection> _dbConnectionCreator;

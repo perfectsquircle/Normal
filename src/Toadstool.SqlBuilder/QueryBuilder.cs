@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Toadstool
 {
@@ -21,6 +22,33 @@ namespace Toadstool
                 throw new NotSupportedException("No context to execute against.");
             }
             return _context.Query(this);
+        }
+
+        public Task<IList<T>> AsListOf<T>()
+        {
+            if (_context == null)
+            {
+                throw new NotSupportedException("No context to execute against.");
+            }
+            return _context.AsListOf<T>(this);
+        }
+
+        public Task<int> ExecuteAsync()
+        {
+            if (_context == null)
+            {
+                throw new NotSupportedException("No context to execute against.");
+            }
+            return _context.ExecuteAsync(this);
+        }
+
+        public Task<object> ExecuteScalarAsync()
+        {
+            if (_context == null)
+            {
+                throw new NotSupportedException("No context to execute against.");
+            }
+            return _context.ExecuteScalarAsync(this);
         }
 
         internal IQueryBuilder AddLine(string keyword, params string[] columnNames)

@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_PASSWORD: toadstool
     volumes: 
-      - ./test/postgres-init:/docker-entrypoint-initdb.d
+      - ./db/postgres-init:/docker-entrypoint-initdb.d
     ports:  
       - 5432:5432
   sqlserver:

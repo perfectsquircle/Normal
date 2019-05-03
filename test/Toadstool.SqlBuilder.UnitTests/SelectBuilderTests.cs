@@ -11,7 +11,7 @@ namespace Toadstool.UnitTests
 {
     public class SelectBuilderTests
     {
-        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=toadstool");
+        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
 
         [Fact]
         public void ShouldCreateSelectBuilder()
@@ -99,7 +99,6 @@ LIMIT 100";
                 .Where("supplier_id").EqualTo(2)
                 .And("tax_rate").EqualTo(15.0)
                 .OrderBy("stock_item_id")
-                .Query()
                 .AsListOf<StockItem>();
 
             //Then
