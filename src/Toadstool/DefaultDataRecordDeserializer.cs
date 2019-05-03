@@ -1,25 +1,16 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Reflection;
 
 namespace Toadstool
 {
     internal class DefaultDataRecordDeserializer : IDataRecordDeserializer
     {
-        private readonly ConcurrentDictionary<string, IDictionary<string, PropertyInfo>> _runtimePropertyCache;
-
-        public DefaultDataRecordDeserializer()
-        {
-            _runtimePropertyCache = new ConcurrentDictionary<string, IDictionary<string, PropertyInfo>>();
-        }
-
         public T Deserialize<T>(IDataRecord dataRecord)
         {
             T obj = CreateInstance<T>();
-            var properties = GetRuntimeProperties(obj);
+            var properties = ReflectionHelper.ToDictionaryOfProperties(obj);
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
                 if (dataRecord.IsDBNull(i))
@@ -27,8 +18,12 @@ namespace Toadstool
                     continue;
                 }
                 var columnName = dataRecord.GetName(i);
-                var variants = GetVariants(columnName);
-                var propertyName = variants.FirstOrDefault(p => properties.ContainsKey(p));
+                var columnNameVariants = GetVariants(columnName);
+                var propertyName = properties.Keys.FirstOrDefault(p =>
+                {
+                    var propertyVariants = GetVariants(p);
+                    return propertyVariants.Intersect(columnNameVariants).Any();
+                });
                 if (propertyName == default(string))
                 {
                     continue;
@@ -56,19 +51,6 @@ namespace Toadstool
             yield return columnName.ToLowerInvariant();
             yield return columnName.Replace("_", "");
             yield return columnName.ToLowerInvariant().Replace("_", "");
-        }
-
-        private IDictionary<string, PropertyInfo> GetRuntimeProperties<T>(T obj)
-        {
-            var type = obj.GetType();
-            var key = type.FullName;
-            if (!_runtimePropertyCache.ContainsKey(key))
-            {
-                _runtimePropertyCache[key] = type
-                    .GetRuntimeProperties()
-                    .ToDictionary(p => p.Name.ToLowerInvariant());
-            }
-            return _runtimePropertyCache[key];
         }
     }
 }
