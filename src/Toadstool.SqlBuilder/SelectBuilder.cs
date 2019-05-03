@@ -23,19 +23,19 @@ namespace Toadstool
             return AddLine("LEFT JOIN", joinList);
         }
 
-        public ConditionBuilder Where(string columnName)
+        public ConditionBuilder<SelectBuilder> Where(string columnName)
         {
-            return new ConditionBuilder(this, "WHERE", columnName);
+            return new ConditionBuilder<SelectBuilder>(this, "WHERE", columnName);
         }
 
-        public ConditionBuilder And(string columnName)
+        public ConditionBuilder<SelectBuilder> And(string columnName)
         {
-            return new ConditionBuilder(this, "AND", columnName);
+            return new ConditionBuilder<SelectBuilder>(this, "AND", columnName);
         }
 
-        public ConditionBuilder Or(string columnName)
+        public ConditionBuilder<SelectBuilder> Or(string columnName)
         {
-            return new ConditionBuilder(this, "AND", columnName);
+            return new ConditionBuilder<SelectBuilder>(this, "OR", columnName);
         }
 
         public SelectBuilder GroupBy(params string[] groupingElements)

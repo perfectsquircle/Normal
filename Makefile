@@ -13,12 +13,13 @@ clean: down
 	rm -vrf out
 	find . -name bin | xargs rm -vrf
 	find . -name obj | xargs rm -vrf
+
+clean-databases: down
 	rm -f db/wait-for
 	rm -f db/$(POSTGRES_BACKUP_NAME)
 	rm -f db/$(SQL_SERVER_BACKUP_NAME)
 	rm -f db/postgres
 	rm -f db/sqlserver
-	rm -f db/up
 
 restore:
 	dotnet restore . -v q
@@ -37,8 +38,6 @@ docker-pack: docker
 
 down: 
 	docker-compose down -v
-	rm -f db/postgres
-	rm -f db/sqlserver
 	rm -f db/up
 
 db/up:

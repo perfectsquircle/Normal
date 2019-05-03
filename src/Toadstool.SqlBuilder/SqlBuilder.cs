@@ -11,5 +11,10 @@ namespace Toadstool
         {
             return new InsertBuilder(tableName, columnNames);
         }
+
+        public static UpdateBuilder Update(string tableName)
+        {
+            return new UpdateBuilder(tableName);
+        }
     }
 }

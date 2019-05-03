@@ -51,14 +51,14 @@ namespace Toadstool
             return _context.ExecuteScalarAsync(this);
         }
 
-        internal IQueryBuilder AddLine(string keyword, params string[] columnNames)
+        public IQueryBuilder AddLine(string keyword, params string[] columnNames)
         {
             var columnNameString = string.Join(", ", columnNames);
             _lines.Add($"{keyword} {columnNameString}");
             return this;
         }
 
-        internal string RegisterParameter(object value)
+        public string RegisterParameter(object value)
         {
             var parameterName = $"toadstool_parameter_{Parameters.Count + 1}";
             Parameters.Add(parameterName, value);
