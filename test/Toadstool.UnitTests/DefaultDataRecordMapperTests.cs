@@ -6,10 +6,10 @@ using Xunit;
 
 namespace Toadstool.UnitTests
 {
-    public class DefaultDataRecordDeserializerTests
+    public class DefaultDataRecordMapperTests
     {
         [Fact]
-        public void ShouldDeserializeDataRecord()
+        public void ShouldMapDataRecord()
         {
             //Given
             var repository = new MockRepository(MockBehavior.Strict) { DefaultValue = DefaultValue.Mock };
@@ -28,10 +28,11 @@ namespace Toadstool.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var deserializer = new DefaultDataRecordDeserializer();
+            var Mapper = new DefaultDataRecordMapper();
 
             //When
-            var result = deserializer.Deserialize<Bar>(record.Object);
+            var mapper = Mapper.CompileMapper<Bar>(record.Object);
+            var result = mapper.Invoke(record.Object);
 
             //Then
             Assert.NotNull(result);

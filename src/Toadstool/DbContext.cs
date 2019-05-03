@@ -10,7 +10,7 @@ namespace Toadstool
     {
         public DbContext()
         {
-            DataRecordDeserializer = new DefaultDataRecordDeserializer();
+            DataRecordMapper = new DefaultDataRecordMapper();
         }
 
         public DbContext(Func<IDbConnection> dbConnectionCreator) : this()
@@ -18,7 +18,7 @@ namespace Toadstool
             _dbConnectionCreator = dbConnectionCreator;
         }
 
-        internal IDataRecordDeserializer DataRecordDeserializer { get; private set; }
+        internal IDataRecordMapper DataRecordMapper { get; private set; }
         internal IDbConnectionWrapper _activeDbConnectionContext;
         private Func<IDbConnection> _dbConnectionCreator;
 
@@ -28,9 +28,9 @@ namespace Toadstool
             return this;
         }
 
-        public DbContext WithDataRecordDeserializer(IDataRecordDeserializer dataRecordDeserializer)
+        public DbContext WithDataRecorMapper(IDataRecordMapper dataRecordMapper)
         {
-            DataRecordDeserializer = dataRecordDeserializer;
+            DataRecordMapper = dataRecordMapper;
             return this;
         }
 

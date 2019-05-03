@@ -2,15 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 
 namespace Toadstool
 {
-    internal class DefaultDataRecordDeserializer : IDataRecordDeserializer
+    internal class DefaultDataRecordMapper : IDataRecordMapper
     {
-        public T Deserialize<T>(IDataRecord dataRecord)
+        public virtual Func<IDataRecord, T> CompileMapper<T>(IDataRecord dataReader)
         {
-            T obj = CreateInstance<T>();
-            var properties = ReflectionHelper.ToDictionaryOfProperties(obj);
+            var map = GetColumnToPropertyMap<T>(dataReader);
+
+            return (dataRecord) =>
+            {
+                var instance = CreateInstance<T>();
+                foreach (var kvp in map)
+                {
+                    kvp.Value.SetValue(instance, dataReader[kvp.Key]);
+                }
+                return instance;
+            };
+        }
+
+        public virtual IDictionary<string, PropertyInfo> GetColumnToPropertyMap<T>(IDataRecord dataRecord)
+        {
+            var map = new Dictionary<string, PropertyInfo>();
+            var properties = ReflectionHelper.ToDictionaryOfProperties(typeof(T));
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
                 if (dataRecord.IsDBNull(i))
@@ -33,16 +49,14 @@ namespace Toadstool
                 {
                     continue;
                 }
-                property.SetValue(obj, dataRecord[columnName]);
+                map.Add(columnName, property);
             }
-            return obj;
+            return map;
         }
 
         public virtual T CreateInstance<T>()
         {
-            T obj = default(T);
-            obj = (T)Activator.CreateInstance<T>();
-            return obj;
+            return Activator.CreateInstance<T>();
         }
 
         public virtual IEnumerable<string> GetVariants(string columnName)

@@ -162,9 +162,15 @@ namespace Toadstool
                 yield break;
             }
 
+            Func<IDataRecord, T> mapper = null;
+
             while (dataReader.Read())
             {
-                yield return _dbContext.DataRecordDeserializer.Deserialize<T>(dataReader);
+                if (mapper == null)
+                {
+                    mapper = _dbContext.DataRecordMapper.CompileMapper<T>(dataReader);
+                }
+                yield return mapper.Invoke(dataReader);
             }
             yield break;
         }

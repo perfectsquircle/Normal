@@ -91,7 +91,8 @@ namespace Toadstool.UnitTests
             _testOutput.WriteLine($"ADO average test results: {adoAverage}ms");
 
             //Then
-            Assert.True(adoAverage < toadstoolAverage);
+            Assert.InRange(toadstoolAverage, 0, 100); // Average is faster than 100ms
+            Assert.True(toadstoolAverage < adoAverage * 12); // It's less than 12 times slower than straight ADO
         }
     }
 }

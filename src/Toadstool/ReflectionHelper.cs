@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,6 +20,13 @@ namespace Toadstool
         {
             return target
                 .GetType()
+                .GetRuntimeProperties()
+                .ToDictionary(p => p.Name);
+        }
+
+        public static IDictionary<string, PropertyInfo> ToDictionaryOfProperties(Type type)
+        {
+            return type
                 .GetRuntimeProperties()
                 .ToDictionary(p => p.Name);
         }
