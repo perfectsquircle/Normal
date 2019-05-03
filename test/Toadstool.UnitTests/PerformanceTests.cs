@@ -18,7 +18,7 @@ namespace Toadstool.UnitTests
         }
 
         [Fact]
-        public async Task ItsFast()
+        public async Task ItsFastish()
         {
             //Given
             Func<NpgsqlConnection> connectionCreator = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
@@ -27,7 +27,7 @@ namespace Toadstool.UnitTests
             FROM purchasing.purchase_orders;";
 
             //When
-            const int testRuns = 10;
+            const int testRuns = 100;
             long toadstoolAverage = 0;
             long adoAverage = 0;
 
@@ -91,8 +91,8 @@ namespace Toadstool.UnitTests
             _testOutput.WriteLine($"ADO average test results: {adoAverage}ms");
 
             //Then
-            Assert.InRange(toadstoolAverage, 0, 100); // Average is faster than 100ms
-            Assert.True(toadstoolAverage < adoAverage * 12); // It's less than 12 times slower than straight ADO
+            Assert.InRange(toadstoolAverage, 0, 50); // Average is faster than 50ms
+            Assert.True(toadstoolAverage < adoAverage * 4); // It's less than 4 times slower than straight ADO
         }
     }
 }
