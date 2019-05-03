@@ -25,6 +25,11 @@ namespace Toadstool
             return new UpdateBuilder(tableName);
         }
 
+        public static DeleteBuilder DeleteFrom(string tableName)
+        {
+            return new DeleteBuilder(tableName);
+        }
+
         public string Build()
         {
             return string.Join("\n", _lines);

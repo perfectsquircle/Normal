@@ -3,20 +3,20 @@ using static Toadstool.StatementBuilder;
 
 namespace Toadstool.UnitTests
 {
-    public class UpdateBuilderTests
+    public class DeleteBuilderTests
     {
 
         [Fact]
-        public void ShouldCreateUpdateBuilder()
+        public void ShouldCreateDeleteBuilder()
         {
             //Given
 
             //When
-            var actual = Update("flark");
+            var actual = DeleteFrom("flark");
 
             //Then
             Assert.NotNull(actual);
-            Assert.IsType<UpdateBuilder>(actual);
+            Assert.IsType<DeleteBuilder>(actual);
         }
 
         [Fact]
@@ -24,13 +24,11 @@ namespace Toadstool.UnitTests
         {
             //Given
             var expected =
-@"UPDATE flarktown
-SET banana = 3
+@"DELETE FROM flarktown
 WHERE foo_bar = @toadstool_parameter_1";
 
             //When
-            var actual = Update("flarktown")
-                .Set("banana = 3")
+            var actual = DeleteFrom("flarktown")
                 .Where("foo_bar").EqualTo("goodbye")
                 .Build();
 
@@ -44,17 +42,14 @@ WHERE foo_bar = @toadstool_parameter_1";
         {
             //Given
             var expected =
-@"UPDATE flarktown
-SET banana = @toadstool_parameter_1, foo_bar = @toadstool_parameter_2
-WHERE foo_bar = @toadstool_parameter_3";
+@"DELETE FROM flarktown
+WHERE foo_bar = @toadstool_parameter_1
+AND bar_bat > @toadstool_parameter_2";
 
             //When
-            var actual = Update("flarktown")
-                .Set(
-                    "banana", 3,
-                    "foo_bar", "hello"
-                )
+            var actual = DeleteFrom("flarktown")
                 .Where("foo_bar").EqualTo("goodbye")
+                .And("bar_bat").GreaterThan(0)
                 .Build();
 
             //Then

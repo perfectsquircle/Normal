@@ -48,5 +48,10 @@ namespace Toadstool
         {
             return new UpdateBuilder(tableName, context);
         }
+
+        public static DeleteBuilder DeleteFrom(this IDbContext context, string tableName)
+        {
+            return new DeleteBuilder(tableName, context);
+        }
     }
 }
