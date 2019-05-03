@@ -32,7 +32,7 @@ namespace Toadstool.UnitTests
             //When
             var results = await context
                 .Query(query)
-                .AsListOf<StockItem>();
+                .ToListAsync<StockItem>();
 
             //Then
             Assert.NotNull(results);
@@ -67,7 +67,7 @@ namespace Toadstool.UnitTests
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)
-                .AsListOf<StockItem>();
+                .ToListAsync<StockItem>();
 
             //Then
             Assert.NotNull(results);
@@ -98,7 +98,7 @@ namespace Toadstool.UnitTests
             //When
             var results = await context
                 .Query(query)
-                .AsListOf<StockItem>();
+                .ToListAsync<StockItem>();
 
             //Then
             Assert.NotNull(results);

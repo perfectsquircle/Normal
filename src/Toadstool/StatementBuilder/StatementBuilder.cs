@@ -44,13 +44,13 @@ namespace Toadstool
             return _context.Query(this);
         }
 
-        public Task<IList<T>> AsListOf<T>()
+        public Task<IList<T>> ToListAsync<T>()
         {
             if (_context == null)
             {
                 throw new NotSupportedException("No context to execute against.");
             }
-            return _context.AsListOf<T>(this);
+            return _context.ToListAsync<T>(this);
         }
 
         public Task<int> ExecuteAsync()

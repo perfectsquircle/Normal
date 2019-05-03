@@ -88,13 +88,13 @@ namespace Toadstool
             return this;
         }
 
-        public async Task<IList<T>> AsListOf<T>(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connectionContext))
             using (var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false))
             {
-                return AsEnumerableOf<T>(reader).ToList();
+                return ToEnumerableAsync<T>(reader).ToList();
             }
         }
 
@@ -155,7 +155,7 @@ namespace Toadstool
             return command as DbCommand;
         }
 
-        private IEnumerable<T> AsEnumerableOf<T>(IDataReader dataReader)
+        private IEnumerable<T> ToEnumerableAsync<T>(IDataReader dataReader)
         {
             if (dataReader.FieldCount == 0)
             {

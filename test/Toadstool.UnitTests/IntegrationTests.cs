@@ -14,7 +14,7 @@ namespace Toadstool.UnitTests
     {
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task AsListOf(Func<IDbConnection> dbConnection)
+        public async Task ToListAsync(Func<IDbConnection> dbConnection)
         {
             //Given
             var context = new DbContext()
@@ -23,7 +23,7 @@ namespace Toadstool.UnitTests
             //When
             var results = await context
                 .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
-                .AsListOf<Bar>();
+                .ToListAsync<Bar>();
 
             //Then
             Assert.NotNull(results);

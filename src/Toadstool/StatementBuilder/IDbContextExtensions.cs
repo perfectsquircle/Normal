@@ -11,12 +11,12 @@ namespace Toadstool
             return context.Query(statement.Build()).WithParameters(statement.Parameters);
         }
 
-        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task<IList<T>> ToListAsync<T>(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
         {
             return context
                 .Query(statement.Build())
                 .WithParameters(statement.Parameters)
-                .AsListOf<T>(cancellationToken);
+                .ToListAsync<T>(cancellationToken);
         }
 
         public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))

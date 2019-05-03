@@ -73,7 +73,7 @@ LIMIT 100";
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)
-                .AsListOf<StockItem>();
+                .ToListAsync<StockItem>();
 
             //Then
             Assert.NotNull(results);
@@ -100,7 +100,7 @@ LIMIT 100";
                 .Where("supplier_id").EqualTo(2)
                 .And("tax_rate").EqualTo(15.0)
                 .OrderBy("stock_item_id")
-                .AsListOf<StockItem>();
+                .ToListAsync<StockItem>();
 
             //Then
             Assert.NotNull(results);
