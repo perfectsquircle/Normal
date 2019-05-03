@@ -5,32 +5,32 @@ namespace Toadstool
 {
     public static class IDbContextExtensions
     {
-        public static IDbCommandBuilder Query(this IDbContext context, IStatementBuilder query)
+        public static IDbCommandBuilder Query(this IDbContext context, IStatementBuilder statement)
         {
-            return context.Query(query.Build()).WithParameters(query.Parameters);
+            return context.Query(statement.Build()).WithParameters(statement.Parameters);
         }
 
-        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IStatementBuilder query)
+        public static Task<IList<T>> AsListOf<T>(this IDbContext context, IStatementBuilder statement)
         {
             return context
-                .Query(query.Build())
-                .WithParameters(query.Parameters)
+                .Query(statement.Build())
+                .WithParameters(statement.Parameters)
                 .AsListOf<T>();
         }
 
-        public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder query)
+        public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder statement)
         {
             return context
-                .Query(query.Build())
-                .WithParameters(query.Parameters)
+                .Query(statement.Build())
+                .WithParameters(statement.Parameters)
                 .ExecuteNonQueryAsync();
         }
 
-        public static Task<object> ExecuteScalarAsync(this IDbContext context, IStatementBuilder query)
+        public static Task<object> ExecuteScalarAsync(this IDbContext context, IStatementBuilder statement)
         {
             return context
-                .Query(query.Build())
-                .WithParameters(query.Parameters)
+                .Query(statement.Build())
+                .WithParameters(statement.Parameters)
                 .ExecuteScalarAsync();
         }
 
