@@ -41,12 +41,5 @@ namespace Toadstool
             }).ToArray();
             return $"({string.Join(", ", parameterStrings)})";
         }
-
-        public InsertBuilder Select(Func<SelectBuilder> select)
-        {
-            var selectBuilder = select.Invoke();
-            AddLine($"({selectBuilder.Build()})");
-            return this;
-        }
     }
 }
