@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Copyright>2019 Calvin Furano</Copyright>
+
+    <PackageReleaseNotes>https://github.com/perfectsquircle/toadstool</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/perfectsquircle/toadstool</PackageProjectUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/perfectsquircle/toadstool</RepositoryUrl>
+  </PropertyGroup>
+</Project>
