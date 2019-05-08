@@ -9,13 +9,14 @@
 Query the database with ease
 
 ```csharp
-var context = new DbContext()
-    .WithConnection(() => new NpgsqlConnection("Host=localhost;Database=whatever;"));
+var context = new DbContext(() => new NpgsqlConnection("..."));
 
-var results = await context
-    .Query("select a, b, c from bar where foo = @foo")
-    .WithParameter("foo", "something")
-    .ToListAsync<Bar>();
+var stockItems = await context
+    .Select("stock_item_id", "stock_item_name")
+    .From("warehouse.stock_items")
+    .Where("supplier_id").EqualTo(2)
+    .OrderBy("stock_item_name")
+    .ToListAsync<StockItem>();
 ```
 
 
