@@ -22,7 +22,7 @@ namespace Toadstool.UnitTests
 
             //When
             List<Bar> results = await context
-                .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
             //Then
@@ -44,11 +44,11 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query("select 1")
+                .Command("select 1")
                 .ExecuteScalarAsync<int>();
 
             var results2 = await context
-                .Query("select 'hello, there'")
+                .Command("select 'hello, there'")
                 .ExecuteScalarAsync<string>();
 
             //Then
@@ -66,15 +66,15 @@ namespace Toadstool.UnitTests
 
             //When
             var results = context
-                .Query("select 1")
+                .Command("select 1")
                 .ExecuteScalarAsync<int>();
 
             var results2 = context
-                .Query("select 2")
+                .Command("select 2")
                 .ExecuteScalarAsync<int>();
 
             var results3 = context
-                .Query("select 3")
+                .Command("select 3")
                 .ExecuteScalarAsync<int>();
 
             //Then
@@ -141,7 +141,7 @@ namespace Toadstool.UnitTests
             Assert.Null(context._activeDbConnectionContext);
 
             var results4 = await context
-                    .Query("select 6")
+                    .Command("select 6")
                     .ExecuteScalarAsync<int>();
             Assert.Equal(6, results4);
         }

@@ -1,14 +1,10 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Toadstool
 {
     public static class IDbContextExtensions
     {
-        public static IDbCommandBuilder Query(this IDbContext context, IStatementBuilder statement)
+        public static IDbCommandBuilder Command(this IDbContext context, IStatementBuilder statement)
         {
-            return context.Query(statement.Build()).WithParameters(statement.Parameters);
+            return context.Command(statement.Build()).WithParameters(statement.Parameters);
         }
 
         public static SelectBuilder Select(this IDbContext context, params string[] selectList)

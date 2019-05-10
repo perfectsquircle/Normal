@@ -36,13 +36,13 @@ namespace Toadstool
             return string.Join("\n", _lines);
         }
 
-        public IDbCommandBuilder Query()
+        public IDbCommandBuilder ToCommand()
         {
             if (_context == null)
             {
                 throw new NotSupportedException("No context to execute against.");
             }
-            return _context.Query(this);
+            return _context.Command(this);
         }
 
         public Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
@@ -53,7 +53,7 @@ namespace Toadstool
             }
             // return _context.ToListAsync<T>(this);
             return _context
-                .Query(this.Build())
+                .Command(this.Build())
                 .WithParameters(this.Parameters)
                 .ToListAsync<T>(cancellationToken);
         }
@@ -65,7 +65,7 @@ namespace Toadstool
                 throw new NotSupportedException("No context to execute against.");
             }
             return _context
-                .Query(this.Build())
+                .Command(this.Build())
                 .WithParameters(this.Parameters)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
@@ -77,7 +77,7 @@ namespace Toadstool
                 throw new NotSupportedException("No context to execute against.");
             }
             return _context
-                .Query(this.Build())
+                .Command(this.Build())
                 .WithParameters(this.Parameters)
                 .ExecuteScalarAsync<T>(cancellationToken);
         }

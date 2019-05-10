@@ -37,7 +37,7 @@ namespace Toadstool.UnitTests
                 for (int i = 0; i < testRuns; i++)
                 {
                     var results = await context
-                        .Query(select)
+                        .Command(select)
                         .ToListAsync<PurchaseOrder>();
 
                     Assert.Equal(2074, results.Count);

@@ -31,7 +31,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query(query)
+                .Command(query)
                 .ToListAsync<StockItem>();
 
             //Then
@@ -63,7 +63,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query(query)
+                .Command(query)
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)
@@ -97,7 +97,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Query(query)
+                .Command(query)
                 .ToListAsync<StockItem>();
 
             //Then

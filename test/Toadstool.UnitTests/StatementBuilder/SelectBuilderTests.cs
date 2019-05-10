@@ -69,7 +69,7 @@ LIMIT 100";
                 .OrderBy("stock_item_id");
 
             var results = await context
-                .Query(query)
+                .Command(query)
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)

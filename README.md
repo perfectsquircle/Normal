@@ -109,13 +109,13 @@ class Customer {
 
 // Do a SELECT then map the results to a list.
 List<Customer> customers = await context
-    .Query(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
+    .Command(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ToListAsync<Customer>();
 
 // Execute an INSERT
 int rowsAffected = await context
-    .Query(@"INSERT INTO customer(fist_name, last_name) VALUES (@firstName, @lastName)")
+    .Command(@"INSERT INTO customer(fist_name, last_name) VALUES (@firstName, @lastName)")
     .WithParameters(new {
         firstName = "Jose",
         lastName = "Cuervo"
@@ -124,25 +124,25 @@ int rowsAffected = await context
 
 // Execute an UPDATE
 int rowsAffected = await context
-    .Query(@"UPDATE customer SET first_name = @firstName where last_name = @lastName")
+    .Command(@"UPDATE customer SET first_name = @firstName where last_name = @lastName")
     .WithParameter("firstName", "Jerry")
     .WithParameter("lastName", "Cuervo")
     .ExecuteNonQueryAsync();
 
 // Execute a DELETE
 int rowsAffected = await context
-    .Query(@"DELETE FROM customer where last_name = @lastName")
+    .Command(@"DELETE FROM customer where last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ExecuteNonQueryAsync();
 
 // Execute a scalar
 string firstName = await context
-    .Query(@"SELECT first_name FROM customer WHERE id = 42")
+    .Command(@"SELECT first_name FROM customer WHERE id = 42")
     .ExecuteAsync<string>();
 
 // Execute a stored procedure
 List<Customers> customers = await context
-    .Query(@"spGetCustomers")
+    .Command(@"spGetCustomers")
     .WithParameter("lastName", "Cuervo")
     .WithCommandType(CommandType.StoredProcedure)
     .ToListAsync<Customer>();
