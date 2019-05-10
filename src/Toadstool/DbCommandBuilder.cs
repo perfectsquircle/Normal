@@ -88,7 +88,7 @@ namespace Toadstool
             return this;
         }
 
-        public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connectionContext))

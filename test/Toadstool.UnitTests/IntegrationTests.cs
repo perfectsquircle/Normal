@@ -21,7 +21,7 @@ namespace Toadstool.UnitTests
                 .WithConnection(dbConnection);
 
             //When
-            var results = await context
+            List<Bar> results = await context
                 .Query("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
@@ -99,11 +99,11 @@ namespace Toadstool.UnitTests
                 var transaction1 = context._activeDbConnectionContext.DbTransaction;
 
                 var results = await context
-                    .Query("select 1")
+                    .Select("1")
                     .ExecuteScalarAsync<int>();
 
                 var results2 = await context
-                    .Query("select 2")
+                    .Select("2")
                     .ExecuteScalarAsync<int>();
 
                 var connection2 = context._activeDbConnectionContext.DbConnection;
@@ -117,11 +117,11 @@ namespace Toadstool.UnitTests
                 Assert.False(transaction.IsComplete);
                 transaction.Commit();
                 Assert.True(transaction.IsComplete);
-            };
+            }
             Assert.Null(context._activeDbConnectionContext);
 
             var results3 = await context
-                    .Query("select 3")
+                    .Select("3")
                     .ExecuteScalarAsync<int>();
             Assert.Equal(3, results3);
 
@@ -130,7 +130,7 @@ namespace Toadstool.UnitTests
                 Assert.NotNull(context._activeDbConnectionContext);
 
                 var results = await context
-                    .Query("select 4")
+                    .Select("4")
                     .ExecuteScalarAsync<int>();
 
                 //Then

@@ -11,30 +11,6 @@ namespace Toadstool
             return context.Query(statement.Build()).WithParameters(statement.Parameters);
         }
 
-        public static Task<IList<T>> ToListAsync<T>(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return context
-                .Query(statement.Build())
-                .WithParameters(statement.Parameters)
-                .ToListAsync<T>(cancellationToken);
-        }
-
-        public static Task<int> ExecuteAsync(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return context
-                .Query(statement.Build())
-                .WithParameters(statement.Parameters)
-                .ExecuteNonQueryAsync(cancellationToken);
-        }
-
-        public static Task<T> ExecuteScalarAsync<T>(this IDbContext context, IStatementBuilder statement, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            return context
-                .Query(statement.Build())
-                .WithParameters(statement.Parameters)
-                .ExecuteScalarAsync<T>(cancellationToken);
-        }
-
         public static SelectBuilder Select(this IDbContext context, params string[] selectList)
         {
             return new SelectBuilder(selectList, context);
