@@ -47,7 +47,7 @@ The entrypoint into the Toadstool API is the `DbContext` class. Typically, only 
 var context = new DbContext();
 ```
 
-The context must be able to create new instances of `IDbConnection`, so we pass it a "connection creator", which is just a lambda that returns a connection with the driver of our choosing.
+The context must be able to create new instances of `IDbConnection`, so we pass it a "connection factory", which is just a lambda that returns a new connection with the driver of our choosing.
 
 ```csharp
 var context = new DbContext(() => new SqlConnection("Server=...")); // Use with SQL Server
@@ -155,14 +155,14 @@ To start a new database transaction, call `BeginTransactionAsync` on `DbContext`
 ```csharp
 using (var transaction = await context.BeginTransactionAsync())
 {
-    var results1 = await context.Select("1").Execute<int>(); // Automatically joins the transaction
-    var results2 = await context.Select("2").Execute<int>(); // Automatically joins the transaction
+    var results1 = await context.Select("1").ExecuteAsync<int>(); // Automatically joins the transaction
+    var results2 = await context.Select("2").ExecuteAsync<int>(); // Automatically joins the transaction
 
     transaction.Commit();
 } 
 
 // Transaction is disposed, context returns to normal connection pool.
-var results3 = await context.Select("3").Execute<int>(); // Normal "anonymous" call (not in transaction)
+var results3 = await context.Select("3").ExecuteAsync<int>(); // Normal "anonymous" call (not in transaction)
 ```
 
 This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories, each of those repositories shares the same `DbContext` instance....
