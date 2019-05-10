@@ -28,7 +28,12 @@ namespace Toadstool
             }
         }
 
-        public async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) => (await ToListAsync<T>(cancellationToken)).First();
+        public async Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default) => (await ToListAsync<T>(cancellationToken)).FirstOrDefault();
+        public async Task<T> SingleAsync<T>(CancellationToken cancellationToken = default) => (await ToListAsync<T>(cancellationToken)).Single();
+        public async Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) => (await ToListAsync<T>(cancellationToken)).SingleOrDefault();
+
+        public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connectionContext))
@@ -37,7 +42,7 @@ namespace Toadstool
             }
         }
 
-        public async Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connectionContext))

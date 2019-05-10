@@ -78,7 +78,7 @@ int rowsAffected = await context
         new object[] { "Peter", "Rabbit", 100 },
         new object[] { "Santa", "Clause", 1000 },
     )
-    .ExecuteNonQueryAsync();
+    .Execute();
 
 // Execute an UPDATE
 int rowsAffected = await context
@@ -88,13 +88,13 @@ int rowsAffected = await context
         "last_name", "Seinfeld"
     )
     .Where("last_name").EqualTo("Cuervo")
-    .ExecuteNonQueryAsync();
+    .Execute();
 
 // Execute a DELETE
 int rowsAffected = await context
     DeleteFrom("customer")
     .Where("last_name").EqualTo("Cuervo")
-    .ExecuteNonQueryAsync();
+    .Execute();
 ```
 
 ### Custom Statements
@@ -120,20 +120,20 @@ int rowsAffected = await context
         firstName = "Jose",
         lastName = "Cuervo"
     })
-    .ExecuteNonQueryAsync();
+    .Execute();
 
 // Execute an UPDATE
 int rowsAffected = await context
     .Command(@"UPDATE customer SET first_name = @firstName where last_name = @lastName")
     .WithParameter("firstName", "Jerry")
     .WithParameter("lastName", "Cuervo")
-    .ExecuteNonQueryAsync();
+    .Execute();
 
 // Execute a DELETE
 int rowsAffected = await context
     .Command(@"DELETE FROM customer where last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
-    .ExecuteNonQueryAsync();
+    .Execute();
 
 // Execute a scalar
 string firstName = await context
@@ -155,14 +155,14 @@ To start a new database transaction, call `BeginTransactionAsync` on `DbContext`
 ```csharp
 using (var transaction = await context.BeginTransactionAsync())
 {
-    var results1 = await context.Select("1").ExecuteScalarAsync<int>(); // Automatically joins the transaction
-    var results2 = await context.Select("2").ExecuteScalarAsync<int>(); // Automatically joins the transaction
+    var results1 = await context.Select("1").Execute<int>(); // Automatically joins the transaction
+    var results2 = await context.Select("2").Execute<int>(); // Automatically joins the transaction
 
     transaction.Commit();
 } 
 
 // Transaction is disposed, context returns to normal connection pool.
-var results3 = await context.Select("3").ExecuteScalarAsync<int>(); // Normal "anonymous" call (not in transaction)
+var results3 = await context.Select("3").Execute<int>(); // Normal "anonymous" call (not in transaction)
 ```
 
 This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories, each of those repositories shares the same `DbContext` instance....

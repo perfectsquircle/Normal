@@ -19,6 +19,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Toadstool</AssemblyName>
     <RootNamespace>Toadstool</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;1705;CS1591</NoWarn>

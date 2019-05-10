@@ -36,6 +36,172 @@ namespace Toadstool.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
+        public async Task ToListAsyncIsEmpty(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            List<Bar> results = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .ToListAsync<Bar>();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.Empty(results);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task FirstAsync(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var bar = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .FirstAsync<Bar>();
+
+            //Then
+            Assert.NotNull(bar);
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task FirstAsyncThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
+            {
+                var bar = await context
+                    .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                    .FirstAsync<Bar>();
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task FirstOrDefaultAsync(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var bar = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .FirstOrDefaultAsync<Bar>();
+
+            //Then
+            Assert.NotNull(bar);
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task FirstOrDefaultAsyncIsNull(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var bar = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .FirstOrDefaultAsync<Bar>();
+
+            //Then
+            Assert.Null(bar);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SingleAsync(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var bar = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .SingleAsync<Bar>();
+
+            //Then
+            Assert.NotNull(bar);
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SingleAsyncThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
+            {
+                var bar = await context
+                    .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                    .SingleAsync<Bar>();
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SingleOrDefaultAsync(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var bar = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .SingleOrDefaultAsync<Bar>();
+
+            //Then
+            Assert.NotNull(bar);
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SingleOrDefaultAsyncIsNull(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var bar = await context
+                .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .SingleOrDefaultAsync<Bar>();
+
+            //Then
+            Assert.Null(bar);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
         public async Task MultipleQueries(Func<IDbConnection> dbConnection)
         {
             //Given
@@ -45,11 +211,11 @@ namespace Toadstool.UnitTests
             //When
             var results = await context
                 .Command("select 1")
-                .ExecuteScalarAsync<int>();
+                .ExecuteAsync<int>();
 
             var results2 = await context
                 .Command("select 'hello, there'")
-                .ExecuteScalarAsync<string>();
+                .ExecuteAsync<string>();
 
             //Then
             Assert.Equal(1, results);
@@ -67,15 +233,15 @@ namespace Toadstool.UnitTests
             //When
             var results = context
                 .Command("select 1")
-                .ExecuteScalarAsync<int>();
+                .ExecuteAsync<int>();
 
             var results2 = context
                 .Command("select 2")
-                .ExecuteScalarAsync<int>();
+                .ExecuteAsync<int>();
 
             var results3 = context
                 .Command("select 3")
-                .ExecuteScalarAsync<int>();
+                .ExecuteAsync<int>();
 
             //Then
             Assert.Equal(1, await results);
@@ -100,11 +266,11 @@ namespace Toadstool.UnitTests
 
                 var results = await context
                     .Select("1")
-                    .ExecuteScalarAsync<int>();
+                    .ExecuteAsync<int>();
 
                 var results2 = await context
                     .Select("2")
-                    .ExecuteScalarAsync<int>();
+                    .ExecuteAsync<int>();
 
                 var connection2 = context._activeDbConnectionContext.DbConnection;
                 var transaction2 = context._activeDbConnectionContext.DbTransaction;
@@ -122,7 +288,7 @@ namespace Toadstool.UnitTests
 
             var results3 = await context
                     .Select("3")
-                    .ExecuteScalarAsync<int>();
+                    .ExecuteAsync<int>();
             Assert.Equal(3, results3);
 
             using (var transaction = await context.BeginTransactionAsync())
@@ -131,7 +297,7 @@ namespace Toadstool.UnitTests
 
                 var results = await context
                     .Select("4")
-                    .ExecuteScalarAsync<int>();
+                    .ExecuteAsync<int>();
 
                 //Then
                 Assert.Equal(4, results);
@@ -142,7 +308,7 @@ namespace Toadstool.UnitTests
 
             var results4 = await context
                     .Command("select 6")
-                    .ExecuteScalarAsync<int>();
+                    .ExecuteAsync<int>();
             Assert.Equal(6, results4);
         }
 

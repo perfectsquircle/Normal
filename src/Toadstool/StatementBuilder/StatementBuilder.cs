@@ -67,10 +67,10 @@ namespace Toadstool
             return _context
                 .Command(this.Build())
                 .WithParameters(this.Parameters)
-                .ExecuteNonQueryAsync(cancellationToken);
+                .ExecuteAsync(cancellationToken);
         }
 
-        public Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
+        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_context == null)
             {
@@ -79,7 +79,7 @@ namespace Toadstool
             return _context
                 .Command(this.Build())
                 .WithParameters(this.Parameters)
-                .ExecuteScalarAsync<T>(cancellationToken);
+                .ExecuteAsync<T>(cancellationToken);
         }
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
