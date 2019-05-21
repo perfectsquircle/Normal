@@ -6,15 +6,10 @@
 
 ## Features
 
-* Wraps ADO.NET with a friendly, builder-pattern API.
-  * Create parameters inline while building statement.
-  * Map DataReader results to strongly typed list.
-  * Async-first
-* Makes repository pattern easier.
-  * CRUD operations don't require boilerplate of creating a new connection and disposing it.
-  * Transaction state is carried between different repositories.
-* Fast enough.
-  * Only a slight performance penalty over straight ADO.NET.
+* Wraps ADO.NET with an async-first and fluent API.
+* Maps DataReader results to a strongly typed list of objects.
+* CRUD operations don't require boilerplate of creating a new connection, opening, and disposing it.
+* Transaction state can be carried between different repositories.
 
 ```csharp
 var stockItems = await context
@@ -41,17 +36,19 @@ PM> Install-Package Toadstool
 
 ### DbContext
 
-The entrypoint into the Toadstool API is the `DbContext` class. Typically, only one of these should be created per database.
+The entrypoint into the Toadstool API is the `DbContext` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.)
 
 ```csharp
 var context = new DbContext();
 ```
 
-The context must be able to create new instances of `IDbConnection`, so we pass it a "connection factory", which is just a lambda that returns a new connection with the driver of our choosing.
+The context must be able to create new instances of `IDbConnection`, so we pass it a "connection factory", which is just a function that returns a new connection with the driver of our choosing.
 
 ```csharp
-var context = new DbContext(() => new SqlConnection("Server=...")); // Use with SQL Server
-var context = new DbContext(() => new NpgsqlConnection("Host=...")); // Use with PostgreSQL
+// Use with SQL Server
+var context = new DbContext(() => new SqlConnection("Server=...")); 
+// Use with PostgreSQL
+var context = new DbContext(() => new NpgsqlConnection("Host=...")); 
 ```
 
 ### Statement Builder
@@ -155,8 +152,10 @@ To start a new database transaction, call `BeginTransactionAsync` on `DbContext`
 ```csharp
 using (var transaction = await context.BeginTransactionAsync())
 {
-    var results1 = await context.Select("1").ExecuteAsync<int>(); // Automatically joins the transaction
-    var results2 = await context.Select("2").ExecuteAsync<int>(); // Automatically joins the transaction
+    // Automatically joins the transaction
+    var results1 = await context.Select("1").ExecuteAsync<int>(); 
+    // Automatically joins the transaction
+    var results2 = await context.Select("2").ExecuteAsync<int>();
 
     transaction.Commit();
 } 
@@ -165,23 +164,28 @@ using (var transaction = await context.BeginTransactionAsync())
 var results3 = await context.Select("3").ExecuteAsync<int>(); // Normal "anonymous" call (not in transaction)
 ```
 
-This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories, each of those repositories shares the same `DbContext` instance....
+**Please note, `DbContext` is not thread-safe. Instances should not be shared across threads.**
+
+This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance....
 
 ```csharp
 public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetails orderDetails)
 {
     using (var transaction = await _context.BeginTransactionAsync())
     {
-        var userId = await _userRepository.CreateCustomer(customerDetails); // Automatically joins the transaction
-        var orderId = await _orderRepository.CreateOrder(orderDetails); // Automatically joins the transaction
-        var fulfillmentTicket = await _fulfillmentRepository.CreateFulfillmentTicket(userId, orderId); // Automatically joins the transaction
+        // Automatically joins the transaction
+        var userId = await _userRepository.CreateCustomer(customerDetails);
+        // Automatically joins the transaction
+        var orderId = await _orderRepository.CreateOrder(orderDetails); 
+        // Automatically joins the transaction
+        var fulfillmentTicket = await _fulfillmentRepository.CreateFulfillmentTicket(userId, orderId);
 
         transaction.Commit();
     }
 }
 ```
 
-Traditionally (with ADO or Dapper) you would have to pass around instances to your `IDbConnection` and `IDbTransaction` which is messy, or resort to using TransactionScope, which some developers believe is Dark Magic.
+Traditionally (with ADO or Dapper) you would have to pass around instances to your `IDbConnection` and `IDbTransaction` which is messy, rewrite a boilerplate connection provider class every time, or resort to using TransactionScope, which some developers believe is Dark Magic.
 
 ### Dependency Injection
 
@@ -192,6 +196,8 @@ services.AddScoped<IDbContext>(
     (sp) => new DbContext(() => new SqlConnection("Server=..."))
 );
 ```
+
+This way, everything in the same request scope can share transactions.
 
 ## Building
 
@@ -221,7 +227,8 @@ See https://github.com/dotnet/sdk/issues/335
 Prerequisites:
 * .NET Core SDK 2.1
 * Gnu Make
-* Docker 
+* Docker
+* Bash
 
 Running the integration tests requires having a recent version of Docker installed. Two database servers (PostgreSQL and SQL Server) will be brought up with 
 
@@ -241,7 +248,15 @@ To bring down the servers and clean up the backup files,
 make clean-databases
 ```
 
+## Motivation
 
+I was curious about how Dapper was implemented, so I went to read the source code. I was horrified at the [method sprawl](https://github.com/StackExchange/Dapper/blob/master/Dapper/SqlMapper.Async.cs) and the classes thousands of lines long.
+
+To better understand the problem space, I set out to write a clone. Using the builder-pattern, I was quickly able to match the core Dapper API `.Query()` in a much tighter code base.
+
+I understand that Dapper has grown organically over the years to solve a thousand edge cases that I don't even know about. It's also faster than Toadstool ever will be. However this was a good learning experience.
+
+Additionally, I wanted to solve transaction management without the dark magic of `TransactionScope`. When you're implementing the repository pattern in raw ADO.NET or Dapper, there isn't any default way to share a transaction across multiple repository methods, or multiple repositories for that matter. 
 
 ---
 
