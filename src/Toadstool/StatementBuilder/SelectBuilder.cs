@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Toadstool
 {
     public class SelectBuilder : StatementBuilder
@@ -62,6 +67,18 @@ namespace Toadstool
         {
             return AddLine("OFFSET", offset.ToString());
         }
+
+        public Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().ToListAsync<T>();
+
+        public Task<T> FirstAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().FirstAsync<T>();
+        public Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().FirstOrDefaultAsync<T>();
+        public Task<T> SingleAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().SingleAsync<T>();
+        public Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().SingleOrDefaultAsync<T>();
 
         internal new SelectBuilder AddLine(string keyword, params string[] columnNames)
         {

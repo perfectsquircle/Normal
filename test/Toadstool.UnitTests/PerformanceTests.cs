@@ -37,7 +37,7 @@ namespace Toadstool.UnitTests
                 for (int i = 0; i < testRuns; i++)
                 {
                     var results = await context
-                        .Query(select)
+                        .Command(select)
                         .ToListAsync<PurchaseOrder>();
 
                     Assert.Equal(2074, results.Count);
@@ -92,7 +92,7 @@ namespace Toadstool.UnitTests
 
             //Then
             Assert.InRange(toadstoolAverage, 0, 50); // Average is faster than 50ms
-            Assert.True(toadstoolAverage < adoAverage * 4); // It's less than 4 times slower than straight ADO
+            Assert.True(toadstoolAverage <= (adoAverage + 20)); // It's less than 20ms slower
         }
     }
 }

@@ -69,7 +69,7 @@ LIMIT 100";
                 .OrderBy("stock_item_id");
 
             var results = await context
-                .Query(query)
+                .Command(query)
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)
@@ -112,6 +112,84 @@ LIMIT 100";
             var last = results.Last();
             Assert.Equal(152, last.StockItemID);
             Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
+        }
+
+        [Fact]
+        public async Task FirstOrDefaultAsync()
+        {
+            //Given
+            var context = new DbContext().WithConnection(_postgresConnection);
+
+            //When
+            var stockItem = await context
+                .Select("stock_item_id", "stock_item_name")
+                .From("warehouse.stock_items")
+                .Where("supplier_id").EqualTo(2)
+                .And("tax_rate").EqualTo(15.0)
+                .OrderBy("stock_item_id")
+                .FirstOrDefaultAsync<StockItem>();
+
+            //Then
+            Assert.NotNull(stockItem);
+            Assert.Equal(150, stockItem.StockItemID);
+            Assert.Equal("Pack of 12 action figures (variety)", stockItem.StockItemName);
+        }
+
+        [Fact]
+        public async Task FirstAsync()
+        {
+            //Given
+            var context = new DbContext().WithConnection(_postgresConnection);
+
+            //When
+            var stockItem = await context
+                .Select("stock_item_id", "stock_item_name")
+                .From("warehouse.stock_items")
+                .Where("supplier_id").EqualTo(2)
+                .And("tax_rate").EqualTo(15.0)
+                .OrderBy("stock_item_id")
+                .FirstAsync<StockItem>();
+
+            //Then
+            Assert.NotNull(stockItem);
+            Assert.Equal(150, stockItem.StockItemID);
+            Assert.Equal("Pack of 12 action figures (variety)", stockItem.StockItemName);
+        }
+
+        [Fact]
+        public async Task SingleAsync()
+        {
+            //Given
+            var context = new DbContext().WithConnection(_postgresConnection);
+
+            //When
+            var stockItem = await context
+                .Select("stock_item_id", "stock_item_name")
+                .From("warehouse.stock_items")
+                .Where("stock_item_id").EqualTo(150)
+                .SingleAsync<StockItem>();
+
+            //Then
+            Assert.NotNull(stockItem);
+            Assert.Equal(150, stockItem.StockItemID);
+            Assert.Equal("Pack of 12 action figures (variety)", stockItem.StockItemName);
+        }
+
+        [Fact]
+        public async Task SingleOrDefualtAsync()
+        {
+            //Given
+            var context = new DbContext().WithConnection(_postgresConnection);
+
+            //When
+            var stockItem = await context
+                .Select("stock_item_id", "stock_item_name")
+                .From("warehouse.stock_items")
+                .Where("stock_item_id").EqualTo(999999)
+                .SingleOrDefaultAsync<StockItem>();
+
+            //Then
+            Assert.Null(stockItem);
         }
     }
 }

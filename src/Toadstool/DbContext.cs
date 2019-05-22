@@ -34,7 +34,7 @@ namespace Toadstool
             return this;
         }
 
-        public IDbCommandBuilder Query(string commandText)
+        public IDbCommandBuilder Command(string commandText)
         {
             return new DbCommandBuilder()
                 .WithDbContext(this)

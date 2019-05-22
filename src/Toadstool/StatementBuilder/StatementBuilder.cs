@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Toadstool
@@ -35,41 +36,22 @@ namespace Toadstool
             return string.Join("\n", _lines);
         }
 
-        public IDbCommandBuilder Query()
+        public IDbCommandBuilder ToCommand()
         {
             if (_context == null)
             {
                 throw new NotSupportedException("No context to execute against.");
             }
-            return _context.Query(this);
+            return _context
+                .Command(this)
+                .WithParameters(this.Parameters);
         }
 
-        public Task<IList<T>> ToListAsync<T>()
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context.ToListAsync<T>(this);
-        }
+        public Task<int> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+             ToCommand().ExecuteAsync(cancellationToken);
 
-        public Task<int> ExecuteAsync()
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context.ExecuteAsync(this);
-        }
-
-        public Task<T> ExecuteScalarAsync<T>()
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context.ExecuteScalarAsync<T>(this);
-        }
+        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().ExecuteAsync<T>(cancellationToken);
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {

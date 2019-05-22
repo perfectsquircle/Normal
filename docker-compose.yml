@@ -2,7 +2,7 @@ version: '3'
 services:
   postgres:
     container_name: toadstool_postgres_db
-    image: postgres:latest
+    image: postgres:10
     restart: always
     environment:
       POSTGRES_PASSWORD: toadstool

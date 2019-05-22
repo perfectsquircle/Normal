@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!--  NuGet Metadata -->
     <Title>Toadstool</Title>
     <PackageId>Toadstool</PackageId>
-    <VersionPrefix>0.2.0</VersionPrefix>
-    <PackageTags>orm;sql;micro-orm</PackageTags>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Description>The Dapper alternative that nobody asked for.</Description>
     <Authors>Calvin Furano</Authors>
+    <Copyright>2019 Calvin Furano</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>orm;sql;micro-orm</PackageTags>
+    <PackageProjectUrl>https://github.com/perfectsquircle/toadstool</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/perfectsquircle/toadstool</RepositoryUrl>
+
+    <!-- Project Configuration -->
     <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Toadstool</AssemblyName>
     <RootNamespace>Toadstool</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;1705;CS1591</NoWarn>
