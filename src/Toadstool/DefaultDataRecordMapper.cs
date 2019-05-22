@@ -17,7 +17,12 @@ namespace Toadstool
                 var instance = CreateInstance<T>();
                 foreach (var kvp in map)
                 {
-                    kvp.Value.SetValue(instance, dataReader[kvp.Key]);
+                    var value = dataReader[kvp.Key];
+                    if (value == DBNull.Value)
+                    {
+                        continue;
+                    }
+                    kvp.Value.SetValue(instance, value);
                 }
                 return instance;
             };
@@ -29,10 +34,6 @@ namespace Toadstool
             var properties = ReflectionHelper.ToDictionaryOfProperties(typeof(T));
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
-                if (dataRecord.IsDBNull(i))
-                {
-                    continue;
-                }
                 var columnName = dataRecord.GetName(i);
                 var columnNameVariants = GetVariants(columnName);
                 var propertyName = properties.Keys.FirstOrDefault(p =>
