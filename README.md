@@ -67,6 +67,12 @@ List<Customer> customers = await context
     .Where("last_name").EqualTo("Cuervo")
     .ToListAsync<Customer>();
 
+// Do a SELECT then grab the first result.
+Customer customer = await context
+    .Select("first_name", "last_name", "age")
+    .From("customer")
+    .Where("customer_id").EqualTo(777)
+    .FirstOrDefaultAsync<Customer>();
 
 // Execute an INSERT
 int rowsAffected = await context
