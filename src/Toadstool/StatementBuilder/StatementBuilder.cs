@@ -42,45 +42,16 @@ namespace Toadstool
             {
                 throw new NotSupportedException("No context to execute against.");
             }
-            return _context.Command(this);
+            return _context
+                .Command(this)
+                .WithParameters(this.Parameters);
         }
 
-        public Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            // return _context.ToListAsync<T>(this);
-            return _context
-                .Command(this.Build())
-                .WithParameters(this.Parameters)
-                .ToListAsync<T>(cancellationToken);
-        }
+        public Task<int> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+             ToCommand().ExecuteAsync(cancellationToken);
 
-        public Task<int> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context
-                .Command(this.Build())
-                .WithParameters(this.Parameters)
-                .ExecuteAsync(cancellationToken);
-        }
-
-        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context
-                .Command(this.Build())
-                .WithParameters(this.Parameters)
-                .ExecuteAsync<T>(cancellationToken);
-        }
+        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+            ToCommand().ExecuteAsync<T>(cancellationToken);
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {
