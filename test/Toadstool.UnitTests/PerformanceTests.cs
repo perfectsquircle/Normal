@@ -92,7 +92,7 @@ namespace Toadstool.UnitTests
 
             //Then
             Assert.InRange(toadstoolAverage, 0, 50); // Average is faster than 50ms
-            Assert.True(toadstoolAverage < (adoAverage + 20)); // It's less than 20ms slower
+            Assert.True(toadstoolAverage <= (adoAverage + 20)); // It's less than 20ms slower
         }
     }
 }
