@@ -11,6 +11,7 @@ namespace Toadstool
     internal partial class DbCommandBuilder : IDbCommandExecutor
     {
         private DbContext _dbContext;
+        private IDataRecordMapper _dataRecordMapper = new DefaultDataRecordMapper();
 
         internal IDbCommandBuilder WithDbContext(DbContext dbContext)
         {
@@ -20,6 +21,9 @@ namespace Toadstool
 
         public async Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
             (await WithReader(reader => ToEnumerable<T>(reader).ToList(), cancellationToken));
+
+        public async Task<List<T>> ToListAsync<T>(Func<IDataRecord, T> mapper, CancellationToken cancellationToken = default(CancellationToken)) =>
+            (await WithReader(reader => ToEnumerable<T>(reader, mapper).ToList(), cancellationToken));
 
         public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable<T>(reader).First(), cancellationToken));
@@ -48,33 +52,14 @@ namespace Toadstool
             }
         }
 
-        internal IDbCommand Build(IDbConnection dbConnection, IDbTransaction dbTransaction = null)
+        private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
         {
-            var command = dbConnection.CreateCommand();
-            if (_commandText != null)
+            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connectionContext))
+            using (var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false))
             {
-                command.CommandText = _commandText;
+                return callback.Invoke(reader);
             }
-            if (_commandTimeout != null)
-            {
-                command.CommandTimeout = _commandTimeout.Value;
-            }
-            if (_commandType != null)
-            {
-                command.CommandType = _commandType.Value;
-            }
-            command.Connection = dbConnection;
-            command.Transaction = dbTransaction;
-
-            foreach (var parameter in _parameters)
-            {
-                var dbParameter = command.CreateParameter();
-                dbParameter.ParameterName = parameter.Key;
-                dbParameter.Value = parameter.Value ?? DBNull.Value;
-                command.Parameters.Add(dbParameter);
-            }
-
-            return command;
         }
 
         private DbCommand BuildDbCommand(IDbConnectionWrapper dbConnectionContext)
@@ -87,31 +72,20 @@ namespace Toadstool
             return command as DbCommand;
         }
 
-        private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
+        private IEnumerable<T> ToEnumerable<T>(IDataReader dataReader)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
-            using (var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false))
-            {
-                return callback.Invoke(reader);
-            }
+            return ToEnumerable<T>(dataReader, _dataRecordMapper.CompileMapper<T>(dataReader));
         }
 
-        private IEnumerable<T> ToEnumerable<T>(IDataReader dataReader)
+        private IEnumerable<T> ToEnumerable<T>(IDataReader dataReader, Func<IDataRecord, T> mapper)
         {
             if (dataReader.FieldCount == 0)
             {
                 yield break;
             }
 
-            Func<IDataRecord, T> mapper = null;
-
             while (dataReader.Read())
             {
-                if (mapper == null)
-                {
-                    mapper = _dbContext.DataRecordMapper.CompileMapper<T>(dataReader);
-                }
                 yield return mapper.Invoke(dataReader);
             }
             yield break;

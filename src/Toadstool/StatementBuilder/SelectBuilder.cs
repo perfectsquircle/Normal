@@ -69,16 +69,16 @@ namespace Toadstool
         }
 
         public Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
-            ToCommand().ToListAsync<T>();
+            ToCommand().ToListAsync<T>(cancellationToken);
 
         public Task<T> FirstAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
-            ToCommand().FirstAsync<T>();
+            ToCommand().FirstAsync<T>(cancellationToken);
         public Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
-            ToCommand().FirstOrDefaultAsync<T>();
+            ToCommand().FirstOrDefaultAsync<T>(cancellationToken);
         public Task<T> SingleAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
-            ToCommand().SingleAsync<T>();
+            ToCommand().SingleAsync<T>(cancellationToken);
         public Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
-            ToCommand().SingleOrDefaultAsync<T>();
+            ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
 
         internal new SelectBuilder AddLine(string keyword, params string[] columnNames)
         {

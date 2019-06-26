@@ -260,9 +260,9 @@ namespace Toadstool.UnitTests
             //When
             using (var transaction = await context.BeginTransactionAsync())
             {
-                Assert.NotNull(context._activeDbConnectionContext);
-                var connection1 = context._activeDbConnectionContext.DbConnection;
-                var transaction1 = context._activeDbConnectionContext.DbTransaction;
+                Assert.NotNull(context._activeDbConnectionWrapper);
+                var connection1 = context._activeDbConnectionWrapper.DbConnection;
+                var transaction1 = context._activeDbConnectionWrapper.DbTransaction;
 
                 var results = await context
                     .Select("1")
@@ -272,8 +272,8 @@ namespace Toadstool.UnitTests
                     .Select("2")
                     .ExecuteAsync<int>();
 
-                var connection2 = context._activeDbConnectionContext.DbConnection;
-                var transaction2 = context._activeDbConnectionContext.DbTransaction;
+                var connection2 = context._activeDbConnectionWrapper.DbConnection;
+                var transaction2 = context._activeDbConnectionWrapper.DbTransaction;
 
                 Assert.Same(connection1, connection2);
                 Assert.Same(transaction1, transaction2);
@@ -284,7 +284,7 @@ namespace Toadstool.UnitTests
                 transaction.Commit();
                 Assert.True(transaction.IsComplete);
             }
-            Assert.Null(context._activeDbConnectionContext);
+            Assert.Null(context._activeDbConnectionWrapper);
 
             var results3 = await context
                     .Select("3")
@@ -293,7 +293,7 @@ namespace Toadstool.UnitTests
 
             using (var transaction = await context.BeginTransactionAsync())
             {
-                Assert.NotNull(context._activeDbConnectionContext);
+                Assert.NotNull(context._activeDbConnectionWrapper);
 
                 var results = await context
                     .Select("4")
@@ -304,7 +304,7 @@ namespace Toadstool.UnitTests
 
                 // TRANSACTION NOT COMMITTED
             };
-            Assert.Null(context._activeDbConnectionContext);
+            Assert.Null(context._activeDbConnectionWrapper);
 
             var results4 = await context
                     .Command("select 6")

@@ -10,7 +10,6 @@ namespace Toadstool
     {
         public DbContext()
         {
-            DataRecordMapper = new DefaultDataRecordMapper();
         }
 
         public DbContext(Func<IDbConnection> dbConnectionCreator) : this()
@@ -18,19 +17,12 @@ namespace Toadstool
             _dbConnectionCreator = dbConnectionCreator;
         }
 
-        internal IDataRecordMapper DataRecordMapper { get; private set; }
-        internal IDbConnectionWrapper _activeDbConnectionContext;
+        internal IDbConnectionWrapper _activeDbConnectionWrapper;
         private Func<IDbConnection> _dbConnectionCreator;
 
         public DbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
         {
             _dbConnectionCreator = dbConnectionCreator;
-            return this;
-        }
-
-        public DbContext WithDataRecorMapper(IDataRecordMapper dataRecordMapper)
-        {
-            DataRecordMapper = dataRecordMapper;
             return this;
         }
 
@@ -43,14 +35,14 @@ namespace Toadstool
 
         public async Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (_activeDbConnectionContext != null)
+            if (_activeDbConnectionWrapper != null)
             {
                 CleanupActiveContext();
             }
             var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
             var transaction = dbConnection.BeginTransaction();
             var transactionContext = new DbTransactionWrapper(transaction, CleanupActiveContext);
-            _activeDbConnectionContext = new DbConnectionWrapper(dbConnection, transactionContext);
+            _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transactionContext);
             return transactionContext;
         }
 
@@ -66,9 +58,9 @@ namespace Toadstool
                 throw new InvalidOperationException("No DB Connection Creator");
             }
 
-            if (_activeDbConnectionContext != null)
+            if (_activeDbConnectionWrapper != null)
             {
-                return _activeDbConnectionContext;
+                return _activeDbConnectionWrapper;
             }
             else
             {
@@ -95,8 +87,8 @@ namespace Toadstool
 
         private void CleanupActiveContext()
         {
-            _activeDbConnectionContext?.Dispose();
-            _activeDbConnectionContext = null;
+            _activeDbConnectionWrapper?.Dispose();
+            _activeDbConnectionWrapper = null;
         }
     }
 }

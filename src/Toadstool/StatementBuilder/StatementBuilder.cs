@@ -43,8 +43,7 @@ namespace Toadstool
                 throw new NotSupportedException("No context to execute against.");
             }
             return _context
-                .Command(this)
-                .WithParameters(this.Parameters);
+                .Command(this);
         }
 
         public Task<int> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken)) =>

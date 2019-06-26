@@ -76,5 +76,34 @@ namespace Toadstool
             }
             return this;
         }
+
+        internal IDbCommand Build(IDbConnection dbConnection, IDbTransaction dbTransaction = null)
+        {
+            var command = dbConnection.CreateCommand();
+            if (_commandText != null)
+            {
+                command.CommandText = _commandText;
+            }
+            if (_commandTimeout != null)
+            {
+                command.CommandTimeout = _commandTimeout.Value;
+            }
+            if (_commandType != null)
+            {
+                command.CommandType = _commandType.Value;
+            }
+            command.Connection = dbConnection;
+            command.Transaction = dbTransaction;
+
+            foreach (var parameter in _parameters)
+            {
+                var dbParameter = command.CreateParameter();
+                dbParameter.ParameterName = parameter.Key;
+                dbParameter.Value = parameter.Value ?? DBNull.Value;
+                command.Parameters.Add(dbParameter);
+            }
+
+            return command;
+        }
     }
 }
