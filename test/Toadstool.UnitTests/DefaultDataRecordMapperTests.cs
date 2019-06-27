@@ -28,10 +28,10 @@ namespace Toadstool.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var Mapper = new DefaultDataRecordMapper();
+            var defaultMapper = new DefaultDataRecordMapper();
 
             //When
-            var mapper = Mapper.CompileMapper<Bar>(record.Object);
+            var mapper = defaultMapper.CompileMapper<Bar>(record.Object);
             var result = mapper.Invoke(record.Object);
 
             //Then
@@ -40,6 +40,40 @@ namespace Toadstool.UnitTests
             Assert.Equal("Your lucky day", result.Beta);
             Assert.Equal(now, result.CreateDate);
             Assert.Equal("Can't set me", result.Charlie);
+        }
+
+        [Fact]
+        public void ShouldMapToDynamic()
+        {
+            //Given
+            var repository = new MockRepository(MockBehavior.Strict) { DefaultValue = DefaultValue.Mock };
+            var now = DateTimeOffset.Now;
+            var record = repository.CreateIDataRecord(new object[] {
+                new {
+                    Name = "alpha", Value = 777,
+                },
+                new {
+                    Name = "beta", Value = "Your lucky day",
+                },
+                new {
+                    Name = "charlie", Value = "Punk",
+                },
+                new {
+                    Name = "createDate", Value = now,
+               }
+            });
+            var defaultMapper = new DefaultDataRecordMapper();
+
+            //When
+            var mapper = defaultMapper.CompileMapper(record.Object);
+            var result = mapper.Invoke(record.Object);
+
+            //Then
+            Assert.NotNull(result);
+            Assert.Equal(777, result.alpha);
+            Assert.Equal("Your lucky day", result.beta);
+            Assert.Equal("Punk", result.charlie);
+            Assert.Equal(now, result.createDate);
         }
     }
 }

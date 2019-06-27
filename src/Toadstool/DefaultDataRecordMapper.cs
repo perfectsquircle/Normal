@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
@@ -66,6 +67,20 @@ namespace Toadstool
             yield return columnName.ToLowerInvariant();
             yield return columnName.Replace("_", "");
             yield return columnName.ToLowerInvariant().Replace("_", "");
+        }
+
+        public virtual Func<IDataRecord, dynamic> CompileMapper(IDataRecord dataReader)
+        {
+            return (dataRecord) =>
+            {
+                var instance = new ExpandoObject();
+                for (var i = 0; i < dataRecord.FieldCount; i++)
+                {
+                    var columnName = dataRecord.GetName(i);
+                    ((IDictionary<string, object>)instance)[columnName] = dataRecord[i];
+                }
+                return instance;
+            };
         }
     }
 }
