@@ -71,13 +71,18 @@ namespace Toadstool
 
         public virtual Func<IDataRecord, dynamic> CompileMapper(IDataRecord dataReader)
         {
+            var columnNames = new List<string>();
+            for (var i = 0; i < dataReader.FieldCount; i++)
+            {
+                columnNames.Add(dataReader.GetName(i));
+            }
+
             return (dataRecord) =>
             {
                 var instance = new ExpandoObject();
-                for (var i = 0; i < dataRecord.FieldCount; i++)
+                foreach (var columnName in columnNames)
                 {
-                    var columnName = dataRecord.GetName(i);
-                    ((IDictionary<string, object>)instance)[columnName] = dataRecord[i];
+                    ((IDictionary<string, object>)instance)[columnName] = dataRecord[columnName];
                 }
                 return instance;
             };
