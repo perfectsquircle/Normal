@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toadstool", "src\Toadstool\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toadstool.UnitTests", "test\Toadstool.UnitTests\Toadstool.UnitTests.csproj", "{C816A8B2-D85F-C95F-2FC9-B07CDAD33940}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toadstool.PerformanceTests", "test\Toadstool.PerformanceTests\Toadstool.PerformanceTests.csproj", "{63F9EA98-08A6-4885-8BFC-E138CEB9CACC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{C816A8B2-D85F-C95F-2FC9-B07CDAD33940}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C816A8B2-D85F-C95F-2FC9-B07CDAD33940}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C816A8B2-D85F-C95F-2FC9-B07CDAD33940}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63F9EA98-08A6-4885-8BFC-E138CEB9CACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63F9EA98-08A6-4885-8BFC-E138CEB9CACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63F9EA98-08A6-4885-8BFC-E138CEB9CACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63F9EA98-08A6-4885-8BFC-E138CEB9CACC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -38,5 +44,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{26D2B4DC-5A02-5EF9-CE34-BABA603EAA94} = {2E063904-DDE9-BD62-49D9-B9CDE5F8A509}
 		{C816A8B2-D85F-C95F-2FC9-B07CDAD33940} = {B7032C72-3248-9A6F-D3F3-676AC8D05167}
+		{63F9EA98-08A6-4885-8BFC-E138CEB9CACC} = {B7032C72-3248-9A6F-D3F3-676AC8D05167}
 	EndGlobalSection
 EndGlobal

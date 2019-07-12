@@ -1,8 +1,8 @@
 using System;
 
-namespace Toadstool.UnitTests.Fixtures
+namespace Toadstool.PerformanceTests.Fixtures
 {
-    class PurchaseOrder
+    public class PurchaseOrder
     {
         public int PurchaseOrderId { get; set; }
         public int SupplierId { get; set; }
