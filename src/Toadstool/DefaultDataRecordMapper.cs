@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
 using System.Linq;
-using System.Reflection;
 using FastMember;
 
 namespace Toadstool
@@ -53,7 +52,9 @@ namespace Toadstool
         private IDictionary<string, string> GetColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
         {
             var map = new Dictionary<string, string>();
-            var members = typeAccessor.GetMembers();
+            var members = typeAccessor
+                .GetMembers()
+                .Where(m => m.CanWrite);
 
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
@@ -64,7 +65,7 @@ namespace Toadstool
                     var propertyVariants = GetVariants(m.Name);
                     return propertyVariants.Intersect(columnNameVariants).Any();
                 });
-                if (member == default(Member) || !member.CanWrite)
+                if (member == default(Member))
                 {
                     continue;
                 }

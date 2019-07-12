@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using FastMember;
 
 namespace Toadstool
 {
@@ -9,26 +8,11 @@ namespace Toadstool
     {
         public static IDictionary<string, object> ToDictionary(object target)
         {
-            return target
-                .GetType()
-                .GetRuntimeProperties()
-                .Where(p => p.CanRead)
-                .ToDictionary(p => p.Name, p => p.GetValue(target));
-        }
-
-        public static IDictionary<string, PropertyInfo> ToDictionaryOfProperties(object target)
-        {
-            return target
-                .GetType()
-                .GetRuntimeProperties()
-                .ToDictionary(p => p.Name);
-        }
-
-        public static IDictionary<string, PropertyInfo> ToDictionaryOfProperties(Type type)
-        {
-            return type
-                .GetRuntimeProperties()
-                .ToDictionary(p => p.Name);
+            var typeAccessor = TypeAccessor.Create(target.GetType());
+            return typeAccessor
+                .GetMembers()
+                .Where(m => m.CanRead)
+                .ToDictionary(m => m.Name, m => typeAccessor[target, m.Name]);
         }
     }
 }
