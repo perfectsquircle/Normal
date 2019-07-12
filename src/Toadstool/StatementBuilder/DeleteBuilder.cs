@@ -2,10 +2,9 @@ namespace Toadstool
 {
     public class DeleteBuilder : StatementBuilder
     {
-        internal DeleteBuilder(string tableName, IDbContext context = null)
+        internal DeleteBuilder(string tableName)
         {
             AddLine("DELETE FROM", tableName);
-            this._context = context;
         }
 
         public ConditionBuilder<DeleteBuilder> Where(string columnName)
@@ -21,6 +20,12 @@ namespace Toadstool
         public ConditionBuilder<DeleteBuilder> Or(string columnName)
         {
             return new ConditionBuilder<DeleteBuilder>(this, "OR", columnName);
+        }
+
+        internal new DeleteBuilder WithContext(IDbContext context)
+        {
+            base.WithContext(context);
+            return this;
         }
     }
 }

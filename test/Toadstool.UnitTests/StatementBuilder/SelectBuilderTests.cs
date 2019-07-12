@@ -34,7 +34,8 @@ namespace Toadstool.UnitTests
             var expected =
 @"SELECT customer_id, first_name, last_name
 FROM customers c
-JOIN orders o on o.customer_id = c.customer_id
+JOIN orders o
+ON o.customer_id = c.customer_id
 WHERE c.first_name IS NOT NULL
 AND c.last_name IS NOT NULL
 ORDER BY c.last_name
@@ -43,7 +44,8 @@ LIMIT 100";
             //When
             var actual = Select("customer_id", "first_name", "last_name")
                 .From("customers c")
-                .Join("orders o on o.customer_id = c.customer_id")
+                .Join("orders o")
+                .On("o.customer_id = c.customer_id")
                 .Where("c.first_name").IsNotNull()
                 .And("c.last_name").IsNotNull()
                 .OrderBy("c.last_name")

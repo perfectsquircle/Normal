@@ -16,11 +16,14 @@ namespace Toadstool.UnitTests
         {
             //Given
             var expected =
-@"INSERT INTO customer (first_name, last_name, age) 
-VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3)";
+@"INSERT INTO customer
+(first_name, last_name, age)
+VALUES
+(@toadstool_1, @toadstool_2, @toadstool_3)";
 
             //When
-            var actual = InsertInto("customer", "first_name", "last_name", "age")
+            var actual = InsertInto("customer")
+                .Columns("first_name", "last_name", "age")
                 .Values("Jose", "Cuervo", 100)
                 .Build();
 
@@ -34,18 +37,19 @@ VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3)"
         {
             //Given
             var expected =
-@"INSERT INTO customer (first_name, last_name, age) 
-VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3),
-(@toadstool_parameter_4, @toadstool_parameter_5, @toadstool_parameter_6),
-(@toadstool_parameter_7, @toadstool_parameter_8, @toadstool_parameter_9)";
+@"INSERT INTO customer
+(first_name, last_name, age)
+VALUES
+(@toadstool_1, @toadstool_2, @toadstool_3)
+,(@toadstool_4, @toadstool_5, @toadstool_6)
+,(@toadstool_7, @toadstool_8, @toadstool_9)";
 
             //When
-            var actual = InsertInto("customer", "first_name", "last_name", "age")
-                .Values(
-                    new object[] { "Jose", "Cuervo", 100 },
-                    new object[] { "Jose", "Cuervo", 200 },
-                    new object[] { "Jose", "Cuervo", 300 }
-                )
+            var actual = InsertInto("customer")
+                .Columns("first_name", "last_name", "age")
+                .Values("Jose", "Cuervo", 100)
+                .Values("Jose", "Cuervo", 200)
+                .Values("Jose", "Cuervo", 300)
                 .Build();
 
             //Then
@@ -61,7 +65,8 @@ VALUES (@toadstool_parameter_1, @toadstool_parameter_2, @toadstool_parameter_3),
 
             //When
             var rowsInserted = await context
-                .InsertInto("warehouse.colors", "color_name", "last_edited_by")
+                .InsertInto("warehouse.colors")
+                .Columns("color_name", "last_edited_by")
                 .Values("Gurple", 1)
                 .ExecuteAsync();
 

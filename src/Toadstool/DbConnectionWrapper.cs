@@ -9,17 +9,17 @@ namespace Toadstool
         {
             this.DbConnection = dbConnection;
         }
-        internal DbConnectionWrapper(IDbConnection dbConnection, DbTransactionWrapper transactionContext)
+        internal DbConnectionWrapper(IDbConnection dbConnection, DbTransactionWrapper transactionWrapper)
         {
             this.DbConnection = dbConnection;
-            this._dbTransactionContext = transactionContext;
+            this._dbTransactionWrapper = transactionWrapper;
         }
 
         public IDbConnection DbConnection { get; }
-        public IDbTransaction DbTransaction => _dbTransactionContext?.DbTransaction;
+        public IDbTransaction DbTransaction => _dbTransactionWrapper?.DbTransaction;
         public CommandBehavior CommandBehavior => _isComplete ? CommandBehavior.CloseConnection : CommandBehavior.Default;
-        private DbTransactionWrapper _dbTransactionContext;
-        private bool _isComplete => _dbTransactionContext?.IsComplete ?? true;
+        private DbTransactionWrapper _dbTransactionWrapper;
+        private bool _isComplete => _dbTransactionWrapper?.IsComplete ?? true;
 
 
         public void Dispose()

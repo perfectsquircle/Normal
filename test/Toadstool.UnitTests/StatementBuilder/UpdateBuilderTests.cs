@@ -25,12 +25,12 @@ namespace Toadstool.UnitTests
             //Given
             var expected =
 @"UPDATE flarktown
-SET banana = 3
-WHERE foo_bar = @toadstool_parameter_1";
+SET banana = @toadstool_1
+WHERE foo_bar = @toadstool_2";
 
             //When
             var actual = Update("flarktown")
-                .Set("banana = 3")
+                .Set("banana").EqualTo(3)
                 .Where("foo_bar").EqualTo("goodbye")
                 .Build();
 
@@ -45,15 +45,14 @@ WHERE foo_bar = @toadstool_parameter_1";
             //Given
             var expected =
 @"UPDATE flarktown
-SET banana = @toadstool_parameter_1, foo_bar = @toadstool_parameter_2
-WHERE foo_bar = @toadstool_parameter_3";
+SET banana = @toadstool_1
+, foo_bar = @toadstool_2
+WHERE foo_bar = @toadstool_3";
 
             //When
             var actual = Update("flarktown")
-                .Set(
-                    "banana", 3,
-                    "foo_bar", "hello"
-                )
+                .Set("banana").EqualTo(3)
+                .Set("foo_bar").EqualTo("hello")
                 .Where("foo_bar").EqualTo("goodbye")
                 .Build();
 

@@ -37,18 +37,18 @@ namespace Toadstool
         {
             if (_activeDbConnectionWrapper != null)
             {
-                CleanupActiveContext();
+                CleanupActiveConnection();
             }
             var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
             var transaction = dbConnection.BeginTransaction();
-            var transactionContext = new DbTransactionWrapper(transaction, CleanupActiveContext);
-            _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transactionContext);
-            return transactionContext;
+            var transactionWrapper = new DbTransactionWrapper(transaction, CleanupActiveConnection);
+            _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transactionWrapper);
+            return transactionWrapper;
         }
 
         public void Dispose()
         {
-            CleanupActiveContext();
+            CleanupActiveConnection();
         }
 
         internal virtual async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
@@ -85,7 +85,7 @@ namespace Toadstool
             await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        private void CleanupActiveContext()
+        private void CleanupActiveConnection()
         {
             _activeDbConnectionWrapper?.Dispose();
             _activeDbConnectionWrapper = null;

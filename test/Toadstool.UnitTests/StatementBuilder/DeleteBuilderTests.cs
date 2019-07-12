@@ -25,7 +25,7 @@ namespace Toadstool.UnitTests
             //Given
             var expected =
 @"DELETE FROM flarktown
-WHERE foo_bar = @toadstool_parameter_1";
+WHERE foo_bar = @toadstool_1";
 
             //When
             var actual = DeleteFrom("flarktown")
@@ -43,8 +43,8 @@ WHERE foo_bar = @toadstool_parameter_1";
             //Given
             var expected =
 @"DELETE FROM flarktown
-WHERE foo_bar = @toadstool_parameter_1
-AND bar_bat > @toadstool_parameter_2";
+WHERE foo_bar = @toadstool_1
+AND bar_bat > @toadstool_2";
 
             //When
             var actual = DeleteFrom("flarktown")
