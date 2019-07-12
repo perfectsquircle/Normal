@@ -4,6 +4,7 @@ using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using FastMember;
 
 namespace Toadstool
 {
@@ -11,65 +12,26 @@ namespace Toadstool
     {
         public virtual Func<IDataRecord, T> CompileMapper<T>(IDataRecord dataReader)
         {
-            var map = GetColumnToPropertyMap<T>(dataReader);
+            var typeAccessor = TypeAccessor.Create(typeof(T));
+            var columnToPropertyMap = GetColumnToPropertyMap(dataReader, typeAccessor);
 
             return (dataRecord) =>
             {
-                var instance = CreateInstance<T>();
-                foreach (var kvp in map)
+                var instance = typeAccessor.CreateNew();
+                foreach (var columnToProperty in columnToPropertyMap)
                 {
-                    var value = dataReader[kvp.Key];
-                    if (value == DBNull.Value)
+                    var fieldValue = dataRecord[columnToProperty.Key];
+                    if (fieldValue == DBNull.Value)
                     {
                         continue;
                     }
-                    kvp.Value.SetValue(instance, value);
+                    typeAccessor[instance, columnToProperty.Value] = fieldValue;
                 }
-                return instance;
+                return (T)instance;
             };
         }
 
-        public virtual IDictionary<string, PropertyInfo> GetColumnToPropertyMap<T>(IDataRecord dataRecord)
-        {
-            var map = new Dictionary<string, PropertyInfo>();
-            var properties = ReflectionHelper.ToDictionaryOfProperties(typeof(T));
-            for (var i = 0; i < dataRecord.FieldCount; i++)
-            {
-                var columnName = dataRecord.GetName(i);
-                var columnNameVariants = GetVariants(columnName);
-                var propertyName = properties.Keys.FirstOrDefault(p =>
-                {
-                    var propertyVariants = GetVariants(p);
-                    return propertyVariants.Intersect(columnNameVariants).Any();
-                });
-                if (propertyName == default(string))
-                {
-                    continue;
-                }
-                var property = properties[propertyName];
-                if (property == null || !property.CanWrite)
-                {
-                    continue;
-                }
-                map.Add(columnName, property);
-            }
-            return map;
-        }
-
-        public virtual T CreateInstance<T>()
-        {
-            return Activator.CreateInstance<T>();
-        }
-
-        public virtual IEnumerable<string> GetVariants(string columnName)
-        {
-            yield return columnName;
-            yield return columnName.ToLowerInvariant();
-            yield return columnName.Replace("_", "");
-            yield return columnName.ToLowerInvariant().Replace("_", "");
-        }
-
-        public virtual Func<IDataRecord, dynamic> CompileMapper(IDataRecord dataReader)
+        public Func<IDataRecord, dynamic> CompileMapper(IDataRecord dataReader)
         {
             var columnNames = new List<string>();
             for (var i = 0; i < dataReader.FieldCount; i++)
@@ -79,13 +41,44 @@ namespace Toadstool
 
             return (dataRecord) =>
             {
-                var instance = new ExpandoObject();
+                IDictionary<string, object> instance = new ExpandoObject();
                 foreach (var columnName in columnNames)
                 {
-                    ((IDictionary<string, object>)instance)[columnName] = dataRecord[columnName];
+                    instance[columnName] = dataRecord[columnName];
                 }
                 return instance;
             };
+        }
+
+        private IDictionary<string, string> GetColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
+        {
+            var map = new Dictionary<string, string>();
+            var members = typeAccessor.GetMembers();
+
+            for (var i = 0; i < dataRecord.FieldCount; i++)
+            {
+                var columnName = dataRecord.GetName(i);
+                var columnNameVariants = GetVariants(columnName);
+                var member = members.FirstOrDefault(m =>
+                {
+                    var propertyVariants = GetVariants(m.Name);
+                    return propertyVariants.Intersect(columnNameVariants).Any();
+                });
+                if (member == default(Member) || !member.CanWrite)
+                {
+                    continue;
+                }
+                map.Add(columnName, member.Name);
+            }
+            return map;
+        }
+
+        private IEnumerable<string> GetVariants(string columnName)
+        {
+            yield return columnName;
+            yield return columnName.ToLowerInvariant();
+            yield return columnName.Replace("_", "");
+            yield return columnName.ToLowerInvariant().Replace("_", "");
         }
     }
 }
