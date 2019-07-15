@@ -1,32 +1,35 @@
-using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Toadstool
 {
     public class UpdateBuilder : StatementBuilder
     {
-        internal UpdateBuilder(string tableName, IDbContext context = null)
+        private bool _setCalled = false;
+
+        internal UpdateBuilder(string tableName)
         {
             AddLine("UPDATE", tableName);
-            this._context = context;
         }
 
-        public UpdateBuilder Set(string expression)
+        public ConditionBuilder<UpdateBuilder> Set(string columnName)
         {
-            return AddLine("SET", expression);
-        }
-
-        public UpdateBuilder Set(params object[] setPairs)
-        {
-            var setList = new List<string>();
-            for (var i = 0; i < setPairs.Length; i += 2)
+            string keyword = "SET";
+            if (_setCalled)
             {
-                var left = Convert.ToString(setPairs[i]);
-                var right = setPairs[i + 1];
-
-                var parameterName = RegisterParameter(right);
-                setList.Add($"{left} = @{parameterName}");
+                keyword = ",";
             }
+            _setCalled = true;
+            return new ConditionBuilder<UpdateBuilder>(this, keyword, columnName);
+        }
+
+        public UpdateBuilder Set(object setBuilder)
+        {
+            var setPairs = ReflectionHelper.ToDictionary(setBuilder);
+            var setList = setPairs.Select(setPair =>
+            {
+                var parameterName = RegisterParameter(setPair.Value);
+                return $"{setPair.Key} = @{parameterName}";
+            });
             return AddLine("SET", setList.ToArray());
         }
 
@@ -48,6 +51,12 @@ namespace Toadstool
         internal new UpdateBuilder AddLine(string keyword, params string[] columnNames)
         {
             return base.AddLine(keyword, columnNames) as UpdateBuilder;
+        }
+
+        internal new UpdateBuilder WithContext(IDbContext context)
+        {
+            base.WithContext(context);
+            return this;
         }
     }
 }

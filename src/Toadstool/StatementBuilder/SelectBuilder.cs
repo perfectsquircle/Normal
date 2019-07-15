@@ -7,10 +7,9 @@ namespace Toadstool
 {
     public class SelectBuilder : StatementBuilder
     {
-        internal SelectBuilder(string[] selectList, IDbContext context = null)
+        internal SelectBuilder(string[] selectList)
         {
             AddLine("SELECT", selectList);
-            this._context = context;
         }
 
         public SelectBuilder From(params string[] fromList)
@@ -18,14 +17,19 @@ namespace Toadstool
             return AddLine("FROM", fromList);
         }
 
-        public SelectBuilder Join(string joinList)
+        public SelectBuilder Join(string tableName)
         {
-            return AddLine("JOIN", joinList);
+            return AddLine("JOIN", tableName);
         }
 
-        public SelectBuilder LeftJoin(string joinList)
+        public SelectBuilder LeftJoin(string tableName)
         {
-            return AddLine("LEFT JOIN", joinList);
+            return AddLine("LEFT JOIN", tableName);
+        }
+
+        public SelectBuilder On(string clause)
+        {
+            return AddLine("ON", clause);
         }
 
         public ConditionBuilder<SelectBuilder> Where(string columnName)
@@ -93,6 +97,12 @@ namespace Toadstool
         internal new SelectBuilder AddLine(string keyword, params string[] columnNames)
         {
             return base.AddLine(keyword, columnNames) as SelectBuilder;
+        }
+
+        internal new SelectBuilder WithContext(IDbContext context)
+        {
+            base.WithContext(context);
+            return this;
         }
     }
 }

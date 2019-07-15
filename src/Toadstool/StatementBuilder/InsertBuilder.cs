@@ -1,45 +1,52 @@
-using System;
 using System.Linq;
 
 namespace Toadstool
 {
     public class InsertBuilder : StatementBuilder
     {
-        internal InsertBuilder(string tableName, string[] columnNames = null, IDbContext context = null)
+        private bool _valuesCalled = false;
+
+        internal InsertBuilder(string tableName)
         {
-            if (columnNames != null)
-            {
-                AddLine($"INSERT INTO {tableName} ({string.Join(", ", columnNames)})");
-            }
-            else
-            {
-                AddLine($"INSERT INTO {tableName}");
-            }
-            this._context = context;
+            AddLine($"INSERT INTO {tableName}");
         }
 
-        public InsertBuilder Values(params object[][] valueRows)
+        public InsertBuilder Columns(params string[] columnNames)
         {
-            var valueRowStrings = valueRows.Select(GetValueRowParameterString);
-            var values = string.Join(",\n", valueRowStrings);
-            AddLine("VALUES", values);
+            AddLine($"({string.Join(", ", columnNames)})");
             return this;
         }
 
         public InsertBuilder Values(params object[] valueRow)
         {
-            AddLine("VALUES", GetValueRowParameterString(valueRow));
+            var values = GetValueRowParameterString(valueRow);
+            if (_valuesCalled)
+            {
+                AddLine($",{values}");
+            }
+            else
+            {
+                AddLine("VALUES");
+                AddLine(values);
+            }
+            _valuesCalled = true;
             return this;
         }
 
-        public string GetValueRowParameterString(object[] valueRow)
+        private string GetValueRowParameterString(object[] valueRow)
         {
             var parameterStrings = valueRow.Select(valueRowValue =>
             {
-                string parameterName = RegisterParameter(valueRowValue);
+                var parameterName = RegisterParameter(valueRowValue);
                 return $"@{parameterName}";
             }).ToArray();
             return $"({string.Join(", ", parameterStrings)})";
+        }
+
+        internal new InsertBuilder WithContext(IDbContext context)
+        {
+            base.WithContext(context);
+            return this;
         }
     }
 }

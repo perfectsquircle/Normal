@@ -76,26 +76,23 @@ Customer customer = await context
 
 // Execute an INSERT
 int rowsAffected = await context
-    InsertInto("customer", "first_name", "last_name", "age")
-    .Values(
-        new object[] { "Peter", "Rabbit", 100 },
-        new object[] { "Santa", "Clause", 1000 },
-    )
+    .InsertInto("customer")
+    .Columns("first_name", "last_name", "age")
+    .Values("Peter", "Rabbit", 100)
+    .Values("Santa", "Clause", 1000)
     .Execute();
 
 // Execute an UPDATE
 int rowsAffected = await context
-    Update("customer")
-    .Set(
-        "first_name", "Jerry",
-        "last_name", "Seinfeld"
-    )
+    .Update("customer")
+    .Set("first_name").EqualTo("Jerry")
+    .Set("last_name").EqualTo("Seinfeld")
     .Where("last_name").EqualTo("Cuervo")
     .Execute();
 
 // Execute a DELETE
 int rowsAffected = await context
-    DeleteFrom("customer")
+    .DeleteFrom("customer")
     .Where("last_name").EqualTo("Cuervo")
     .Execute();
 ```
