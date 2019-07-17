@@ -6,18 +6,16 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public class DbContext : IDbContext
+    public class DbContext : IDbContext, IDbTransactionWrapper
     {
-        public DbContext()
-        {
-        }
+        public DbContext() { }
 
         public DbContext(Func<IDbConnection> dbConnectionCreator) : this()
         {
             _dbConnectionCreator = dbConnectionCreator;
         }
 
-        internal IDbConnectionWrapper _activeDbConnectionWrapper;
+        internal DbConnectionWrapper _activeDbConnectionWrapper;
         private Func<IDbConnection> _dbConnectionCreator;
 
         public DbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
@@ -41,9 +39,18 @@ namespace Toadstool
             }
             var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
             var transaction = dbConnection.BeginTransaction();
-            var transactionWrapper = new DbTransactionWrapper(transaction, CleanupActiveConnection);
-            _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transactionWrapper);
-            return transactionWrapper;
+            _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transaction);
+            return this;
+        }
+
+        public void Commit()
+        {
+            _activeDbConnectionWrapper?.Commit();
+        }
+
+        public void Rollback()
+        {
+            _activeDbConnectionWrapper?.Rollback();
         }
 
         public void Dispose()
@@ -53,11 +60,6 @@ namespace Toadstool
 
         internal virtual async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            if (_dbConnectionCreator == null)
-            {
-                throw new InvalidOperationException("No DB Connection Creator");
-            }
-
             if (_activeDbConnectionWrapper != null)
             {
                 return _activeDbConnectionWrapper;
@@ -70,6 +72,10 @@ namespace Toadstool
 
         private async Task<IDbConnection> GetAnonymousConnectionAsync(CancellationToken cancellationToken)
         {
+            if (_dbConnectionCreator == null)
+            {
+                throw new InvalidOperationException("No DB Connection Creator");
+            }
             var connection = _dbConnectionCreator.Invoke();
             await OpenConnectionAsync(connection, cancellationToken);
             return connection;
@@ -87,8 +93,14 @@ namespace Toadstool
 
         private void CleanupActiveConnection()
         {
-            _activeDbConnectionWrapper?.Dispose();
-            _activeDbConnectionWrapper = null;
+            try
+            {
+                _activeDbConnectionWrapper?.Dispose(true);
+            }
+            finally
+            {
+                _activeDbConnectionWrapper = null;
+            }
         }
     }
 }

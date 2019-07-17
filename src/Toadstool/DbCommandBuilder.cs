@@ -77,9 +77,9 @@ namespace Toadstool
             return this;
         }
 
-        internal IDbCommand Build(IDbConnection dbConnection, IDbTransaction dbTransaction = null)
+        internal IDbCommand Build(IDbConnectionWrapper connection)
         {
-            var command = dbConnection.CreateCommand();
+            var command = connection.CreateCommand();
             if (_commandText != null)
             {
                 command.CommandText = _commandText;
@@ -92,8 +92,6 @@ namespace Toadstool
             {
                 command.CommandType = _commandType.Value;
             }
-            command.Connection = dbConnection;
-            command.Transaction = dbTransaction;
 
             foreach (var parameter in _parameters)
             {

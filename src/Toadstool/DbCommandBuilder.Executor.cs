@@ -45,8 +45,8 @@ namespace Toadstool
 
         public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connection))
             {
                 return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -54,8 +54,8 @@ namespace Toadstool
 
         public async Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connection))
             {
                 return (T)(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
             }
@@ -63,17 +63,17 @@ namespace Toadstool
 
         private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
-            using (var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connection))
+            using (var reader = await command.ExecuteReaderAsync(connection.CommandBehavior, cancellationToken).ConfigureAwait(false))
             {
                 return callback.Invoke(reader);
             }
         }
 
-        private DbCommand BuildDbCommand(IDbConnectionWrapper dbConnectionContext)
+        private DbCommand BuildDbCommand(IDbConnectionWrapper connection)
         {
-            var command = Build(dbConnectionContext.DbConnection, dbConnectionContext.DbTransaction);
+            var command = Build(connection);
             if (!(command is DbCommand))
             {
                 throw new NotSupportedException("Command must be DbCommand");

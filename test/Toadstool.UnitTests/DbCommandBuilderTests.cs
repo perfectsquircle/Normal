@@ -8,12 +8,12 @@ namespace Toadstool.UnitTests
 {
     public class DbCommandBuilderTests
     {
-        private readonly Mock<IDbConnection> _connection;
+        private readonly Mock<IDbConnectionWrapper> _connection;
 
         public DbCommandBuilderTests()
         {
             var repository = new MockRepository(MockBehavior.Strict) { DefaultValue = DefaultValue.Mock };
-            _connection = repository.Create<IDbConnection>()
+            _connection = repository.Create<IDbConnectionWrapper>()
                 .SetupAllProperties();
             _connection.Setup(c => c.CreateCommand())
                 .Returns(() => repository.CreateIDbCommand().Object);
