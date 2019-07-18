@@ -1,31 +1,25 @@
 namespace Toadstool
 {
-    public class DeleteBuilder : StatementBuilder
+    internal class DeleteBuilder : StatementBuilder, IDeleteBuilder
     {
-        internal DeleteBuilder(string tableName)
+        public DeleteBuilder(string tableName)
         {
             AddLine("DELETE FROM", tableName);
         }
 
-        public ConditionBuilder<DeleteBuilder> Where(string columnName)
+        public IConditionBuilder<IDeleteBuilder> Where(string columnName)
         {
-            return new ConditionBuilder<DeleteBuilder>(this, "WHERE", columnName);
+            return new ConditionBuilder<IDeleteBuilder>(this, "WHERE", columnName);
         }
 
-        public ConditionBuilder<DeleteBuilder> And(string columnName)
+        public IConditionBuilder<IDeleteBuilder> And(string columnName)
         {
-            return new ConditionBuilder<DeleteBuilder>(this, "AND", columnName);
+            return new ConditionBuilder<IDeleteBuilder>(this, "AND", columnName);
         }
 
-        public ConditionBuilder<DeleteBuilder> Or(string columnName)
+        public IConditionBuilder<IDeleteBuilder> Or(string columnName)
         {
-            return new ConditionBuilder<DeleteBuilder>(this, "OR", columnName);
-        }
-
-        internal new DeleteBuilder WithContext(IDbContext context)
-        {
-            base.WithContext(context);
-            return this;
+            return new ConditionBuilder<IDeleteBuilder>(this, "OR", columnName);
         }
     }
 }

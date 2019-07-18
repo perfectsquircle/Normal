@@ -21,7 +21,7 @@ namespace Toadstool.UnitTests
                 .WithConnection(dbConnection);
 
             //When
-            List<Bar> results = await context
+            IList<Bar> results = await context
                 .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
@@ -43,7 +43,7 @@ namespace Toadstool.UnitTests
                 .WithConnection(dbConnection);
 
             //When
-            List<Bar> results = await context
+            IList<Bar> results = await context
                 .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToListAsync<Bar>();
 
@@ -260,9 +260,7 @@ namespace Toadstool.UnitTests
             //When
             using (var transaction = await context.BeginTransactionAsync())
             {
-                Assert.NotNull(context._activeDbConnectionWrapper);
-                var connection1 = context._activeDbConnectionWrapper._dbConnection;
-                var transaction1 = context._activeDbConnectionWrapper._dbTransaction;
+                var connection1 = context.GetOpenConnectionAsync(default);
 
                 var results = await context
                     .Select("1 as alpha")
@@ -272,17 +270,14 @@ namespace Toadstool.UnitTests
                     .Select("2 as alpha")
                     .SingleAsync<Bar>();
 
-                var connection2 = context._activeDbConnectionWrapper._dbConnection;
-                var transaction2 = context._activeDbConnectionWrapper._dbTransaction;
+                var connection2 = context.GetOpenConnectionAsync(default); ;
 
                 Assert.Same(connection1, connection2);
-                Assert.Same(transaction1, transaction2);
 
                 Assert.Equal(1, results.Alpha);
                 Assert.Equal(2, results2.Alpha);
                 transaction.Commit();
             }
-            Assert.Null(context._activeDbConnectionWrapper);
 
             var results3 = await context
                 .Select("3 as alpha")
@@ -291,8 +286,6 @@ namespace Toadstool.UnitTests
 
             using (var transaction = await context.BeginTransactionAsync())
             {
-                Assert.NotNull(context._activeDbConnectionWrapper);
-
                 var results4 = await context
                     .Select("4 as alpha")
                     .SingleAsync<Bar>();
@@ -302,7 +295,6 @@ namespace Toadstool.UnitTests
 
                 // TRANSACTION NOT COMMITTED
             };
-            Assert.Null(context._activeDbConnectionWrapper);
 
             var results5 = await context
                     .Select("5 as alpha")

@@ -6,8 +6,8 @@ namespace Toadstool
     internal class DbConnectionWrapper : IDbConnectionWrapper, IDbTransactionWrapper
     {
         public CommandBehavior CommandBehavior => _transactionIsComplete ? CommandBehavior.CloseConnection : CommandBehavior.Default;
-        internal IDbConnection _dbConnection;
-        internal IDbTransaction _dbTransaction;
+        private IDbConnection _dbConnection;
+        private IDbTransaction _dbTransaction;
         private bool _transactionIsComplete;
 
         public DbConnectionWrapper(IDbConnection dbConnection)

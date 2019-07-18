@@ -15,7 +15,7 @@ namespace Toadstool
             _dbConnectionCreator = dbConnectionCreator;
         }
 
-        internal DbConnectionWrapper _activeDbConnectionWrapper;
+        private DbConnectionWrapper _activeDbConnectionWrapper;
         private Func<IDbConnection> _dbConnectionCreator;
 
         public DbContext WithConnection(Func<IDbConnection> dbConnectionCreator)

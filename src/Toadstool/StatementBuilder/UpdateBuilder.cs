@@ -2,16 +2,16 @@ using System.Linq;
 
 namespace Toadstool
 {
-    public class UpdateBuilder : StatementBuilder
+    internal class UpdateBuilder : StatementBuilder, IUpdateBuilder
     {
         private bool _setCalled = false;
 
-        internal UpdateBuilder(string tableName)
+        public UpdateBuilder(string tableName)
         {
             AddLine("UPDATE", tableName);
         }
 
-        public ConditionBuilder<UpdateBuilder> Set(string columnName)
+        public IConditionBuilder<IUpdateBuilder> Set(string columnName)
         {
             string keyword = "SET";
             if (_setCalled)
@@ -19,10 +19,10 @@ namespace Toadstool
                 keyword = ",";
             }
             _setCalled = true;
-            return new ConditionBuilder<UpdateBuilder>(this, keyword, columnName);
+            return new ConditionBuilder<IUpdateBuilder>(this, keyword, columnName);
         }
 
-        public UpdateBuilder Set(object setBuilder)
+        public IUpdateBuilder Set(object setBuilder)
         {
             var setPairs = ReflectionHelper.ToDictionary(setBuilder);
             var setList = setPairs.Select(setPair =>
@@ -33,30 +33,24 @@ namespace Toadstool
             return AddLine("SET", setList.ToArray());
         }
 
-        public ConditionBuilder<UpdateBuilder> Where(string columnName)
+        public IConditionBuilder<IUpdateBuilder> Where(string columnName)
         {
-            return new ConditionBuilder<UpdateBuilder>(this, "WHERE", columnName);
+            return new ConditionBuilder<IUpdateBuilder>(this, "WHERE", columnName);
         }
 
-        public ConditionBuilder<UpdateBuilder> And(string columnName)
+        public IConditionBuilder<IUpdateBuilder> And(string columnName)
         {
-            return new ConditionBuilder<UpdateBuilder>(this, "AND", columnName);
+            return new ConditionBuilder<IUpdateBuilder>(this, "AND", columnName);
         }
 
-        public ConditionBuilder<UpdateBuilder> Or(string columnName)
+        public IConditionBuilder<IUpdateBuilder> Or(string columnName)
         {
-            return new ConditionBuilder<UpdateBuilder>(this, "OR", columnName);
+            return new ConditionBuilder<IUpdateBuilder>(this, "OR", columnName);
         }
 
-        internal new UpdateBuilder AddLine(string keyword, params string[] columnNames)
+        public new IUpdateBuilder AddLine(string keyword, params string[] columnNames)
         {
-            return base.AddLine(keyword, columnNames) as UpdateBuilder;
-        }
-
-        internal new UpdateBuilder WithContext(IDbContext context)
-        {
-            base.WithContext(context);
-            return this;
+            return base.AddLine(keyword, columnNames) as IUpdateBuilder;
         }
     }
 }

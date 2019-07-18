@@ -77,7 +77,7 @@ namespace Toadstool
             return this;
         }
 
-        internal IDbCommand Build(IDbConnectionWrapper connection)
+        public IDbCommand Build(IDbConnectionWrapper connection)
         {
             var command = connection.CreateCommand();
             if (_commandText != null)

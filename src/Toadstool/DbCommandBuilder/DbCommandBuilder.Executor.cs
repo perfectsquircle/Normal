@@ -13,14 +13,14 @@ namespace Toadstool
         private DbContext _dbContext;
         private IDataRecordMapper _dataRecordMapper = new DefaultDataRecordMapper();
 
-        internal IDbCommandBuilder WithDbContext(DbContext dbContext)
+        public IDbCommandBuilder WithDbContext(DbContext dbContext)
         {
             _dbContext = dbContext;
             return this;
         }
 
         // GENERICS
-        public async Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
+        public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable<T>(reader).ToList(), cancellationToken));
         public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable<T>(reader).First(), cancellationToken));
@@ -32,7 +32,7 @@ namespace Toadstool
             (await WithReader(reader => ToEnumerable<T>(reader).SingleOrDefault(), cancellationToken));
 
         // DYNAMICS
-        public async Task<List<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
+        public async Task<IList<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable(reader).ToList(), cancellationToken));
         public async Task<dynamic> FirstAsync(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable(reader).First(), cancellationToken));
