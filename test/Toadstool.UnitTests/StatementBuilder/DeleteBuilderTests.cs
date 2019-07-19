@@ -1,5 +1,4 @@
 using Xunit;
-using static Toadstool.StatementBuilder;
 
 namespace Toadstool.UnitTests
 {
@@ -12,7 +11,7 @@ namespace Toadstool.UnitTests
             //Given
 
             //When
-            var actual = DeleteFrom("flark");
+            var actual = new DeleteBuilder("flark");
 
             //Then
             Assert.NotNull(actual);
@@ -28,7 +27,7 @@ namespace Toadstool.UnitTests
 WHERE foo_bar = @toadstool_1";
 
             //When
-            var actual = DeleteFrom("flarktown")
+            var actual = new DeleteBuilder("flarktown")
                 .Where("foo_bar").EqualTo("goodbye")
                 .Build();
 
@@ -47,7 +46,7 @@ WHERE foo_bar = @toadstool_1
 AND bar_bat > @toadstool_2";
 
             //When
-            var actual = DeleteFrom("flarktown")
+            var actual = new DeleteBuilder("flarktown")
                 .Where("foo_bar").EqualTo("goodbye")
                 .And("bar_bat").GreaterThan(0)
                 .Build();

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Npgsql;
 using Toadstool.UnitTests.Fixtures;
 using Xunit;
-using static Toadstool.StatementBuilder;
 
 
 namespace Toadstool.UnitTests
@@ -20,7 +19,7 @@ namespace Toadstool.UnitTests
             //Given
 
             //When
-            var actual = Select("a, b, c");
+            var actual = new SelectBuilder("a, b, c");
 
             //Then
             Assert.NotNull(actual);
@@ -42,7 +41,7 @@ ORDER BY c.last_name
 LIMIT 100";
 
             //When
-            var actual = Select("customer_id", "first_name", "last_name")
+            var actual = new SelectBuilder("customer_id", "first_name", "last_name")
                 .From("customers c")
                 .Join("orders o")
                 .On("o.customer_id = c.customer_id")
@@ -55,38 +54,6 @@ LIMIT 100";
             //Then
             Assert.NotNull(actual);
             Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public async Task ShouldBeQueryable()
-        {
-            //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
-
-            //When
-            var query = Select("stock_item_id", "stock_item_name")
-                .From("warehouse.stock_items")
-                .Where("supplier_id = @supplierId")
-                .And("tax_rate = @taxRate").End()
-                .OrderBy("stock_item_id");
-
-            var results = await context
-                .Command(query)
-                .WithParameter("supplierId", 2)
-                .WithParameter("brand", null) // not in query
-                .WithParameter("taxRate", 15.0)
-                .ToListAsync<StockItem>();
-
-            //Then
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            Assert.Equal(3, results.Count);
-            var first = results.First();
-            Assert.Equal(150, first.StockItemID);
-            Assert.Equal("Pack of 12 action figures (variety)", first.StockItemName);
-            var last = results.Last();
-            Assert.Equal(152, last.StockItemID);
-            Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
         }
 
         [Fact]

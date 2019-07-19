@@ -5,74 +5,74 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public class SelectBuilder : StatementBuilder
+    internal class SelectBuilder : StatementBuilder, ISelectBuilder
     {
-        internal SelectBuilder(string[] selectList)
+        public SelectBuilder(params string[] selectList)
         {
             AddLine("SELECT", selectList);
         }
 
-        public SelectBuilder From(params string[] fromList)
+        public ISelectBuilder From(params string[] fromList)
         {
             return AddLine("FROM", fromList);
         }
 
-        public SelectBuilder Join(string tableName)
+        public ISelectBuilder Join(string tableName)
         {
             return AddLine("JOIN", tableName);
         }
 
-        public SelectBuilder LeftJoin(string tableName)
+        public ISelectBuilder LeftJoin(string tableName)
         {
             return AddLine("LEFT JOIN", tableName);
         }
 
-        public SelectBuilder On(string clause)
+        public ISelectBuilder On(string clause)
         {
             return AddLine("ON", clause);
         }
 
-        public ConditionBuilder<SelectBuilder> Where(string columnName)
+        public IConditionBuilder<ISelectBuilder> Where(string columnName)
         {
-            return new ConditionBuilder<SelectBuilder>(this, "WHERE", columnName);
+            return new ConditionBuilder<ISelectBuilder>(this, "WHERE", columnName);
         }
 
-        public ConditionBuilder<SelectBuilder> And(string columnName)
+        public IConditionBuilder<ISelectBuilder> And(string columnName)
         {
-            return new ConditionBuilder<SelectBuilder>(this, "AND", columnName);
+            return new ConditionBuilder<ISelectBuilder>(this, "AND", columnName);
         }
 
-        public ConditionBuilder<SelectBuilder> Or(string columnName)
+        public IConditionBuilder<ISelectBuilder> Or(string columnName)
         {
-            return new ConditionBuilder<SelectBuilder>(this, "OR", columnName);
+            return new ConditionBuilder<ISelectBuilder>(this, "OR", columnName);
         }
 
-        public SelectBuilder GroupBy(params string[] groupingElements)
+        public ISelectBuilder GroupBy(params string[] groupingElements)
         {
             return AddLine("GROUP BY", groupingElements);
         }
 
-        public SelectBuilder Having(string having)
+        public ISelectBuilder Having(string having)
         {
             return AddLine("HAVING", having);
         }
 
-        public SelectBuilder OrderBy(string orderBy)
+        public ISelectBuilder OrderBy(string orderBy)
         {
             return AddLine("ORDER BY", orderBy);
         }
 
-        public SelectBuilder Limit(int limit)
+        public ISelectBuilder Limit(int limit)
         {
             return AddLine("LIMIT", limit.ToString());
         }
 
-        public SelectBuilder Offset(int offset)
+        public ISelectBuilder Offset(int offset)
         {
             return AddLine("OFFSET", offset.ToString());
         }
 
-        public Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
+        public Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().ToListAsync<T>(cancellationToken);
         public Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().FirstAsync<T>(cancellationToken);
@@ -83,7 +83,7 @@ namespace Toadstool
         public Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
 
-        public Task<List<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
+        public Task<IList<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
             ToCommand().ToListAsync(cancellationToken);
         public Task<dynamic> FirstAsync(CancellationToken cancellationToken = default) =>
             ToCommand().FirstAsync(cancellationToken);
@@ -94,15 +94,9 @@ namespace Toadstool
         public Task<dynamic> SingleOrDefaultAsync(CancellationToken cancellationToken = default) =>
             ToCommand().SingleOrDefaultAsync(cancellationToken);
 
-        internal new SelectBuilder AddLine(string keyword, params string[] columnNames)
+        private new ISelectBuilder AddLine(string keyword, params string[] columnNames)
         {
-            return base.AddLine(keyword, columnNames) as SelectBuilder;
-        }
-
-        internal new SelectBuilder WithContext(IDbContext context)
-        {
-            base.WithContext(context);
-            return this;
+            return base.AddLine(keyword, columnNames) as ISelectBuilder;
         }
     }
 }

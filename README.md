@@ -61,7 +61,7 @@ class Customer {
 }
 
 // Do a SELECT then map the results to a list.
-List<Customer> customers = await context
+IList<Customer> customers = await context
     .Select("first_name", "last_name", "age")
     .From("customer")
     .Where("last_name").EqualTo("Cuervo")
@@ -108,7 +108,7 @@ class Customer {
 }
 
 // Do a SELECT then map the results to a list.
-List<Customer> customers = await context
+IList<Customer> customers = await context
     .Command(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ToListAsync<Customer>();

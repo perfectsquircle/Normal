@@ -6,52 +6,22 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public abstract class StatementBuilder : IStatementBuilder
+    internal abstract class StatementBuilder : IStatementBuilder
     {
-        protected IList<string> _lines = new List<string>();
-        public IDictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
-        protected IDbContext _context;
-
-        public static SelectBuilder Select(params string[] selectList)
-        {
-            return new SelectBuilder(selectList);
-        }
-
-        public static InsertBuilder InsertInto(string tableName)
-        {
-            return new InsertBuilder(tableName);
-        }
-
-        public static UpdateBuilder Update(string tableName)
-        {
-            return new UpdateBuilder(tableName);
-        }
-
-        public static DeleteBuilder DeleteFrom(string tableName)
-        {
-            return new DeleteBuilder(tableName);
-        }
+        private IList<string> _lines = new List<string>();
+        private IDictionary<string, object> _parameters = new Dictionary<string, object>();
+        private IDbContext _context;
 
         public string Build()
         {
             return string.Join("\n", _lines);
         }
 
-        public IDbCommandBuilder ToCommand()
-        {
-            if (_context == null)
-            {
-                throw new NotSupportedException("No context to execute against.");
-            }
-            return _context.Command(this);
-        }
-
-        public Task<int> ExecuteAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task<int> ExecuteAsync(CancellationToken cancellationToken = default) =>
              ToCommand().ExecuteAsync(cancellationToken);
 
-        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().ExecuteAsync<T>(cancellationToken);
-
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {
@@ -68,15 +38,26 @@ namespace Toadstool
 
         public string RegisterParameter(object value)
         {
-            var parameterName = $"toadstool_{Parameters.Count + 1}";
-            Parameters.Add(parameterName, value);
+            var parameterName = $"toadstool_{_parameters.Count + 1}";
+            _parameters.Add(parameterName, value);
             return parameterName;
         }
 
-        protected StatementBuilder WithContext(IDbContext context)
+        public StatementBuilder WithContext(IDbContext context)
         {
             _context = context;
             return this;
+        }
+
+        protected IDbCommandBuilder ToCommand()
+        {
+            if (_context == null)
+            {
+                throw new NotSupportedException("No context to execute against.");
+            }
+            return _context
+                .Command(this.Build())
+                .WithParameters(this._parameters);
         }
     }
 }

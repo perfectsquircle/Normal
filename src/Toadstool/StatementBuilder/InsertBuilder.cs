@@ -2,22 +2,22 @@ using System.Linq;
 
 namespace Toadstool
 {
-    public class InsertBuilder : StatementBuilder
+    internal class InsertBuilder : StatementBuilder, IInsertBuilder
     {
         private bool _valuesCalled = false;
 
-        internal InsertBuilder(string tableName)
+        public InsertBuilder(string tableName)
         {
             AddLine($"INSERT INTO {tableName}");
         }
 
-        public InsertBuilder Columns(params string[] columnNames)
+        public IInsertBuilder Columns(params string[] columnNames)
         {
             AddLine($"({string.Join(", ", columnNames)})");
             return this;
         }
 
-        public InsertBuilder Values(params object[] valueRow)
+        public IInsertBuilder Values(params object[] valueRow)
         {
             var values = GetValueRowParameterString(valueRow);
             if (_valuesCalled)
@@ -41,12 +41,6 @@ namespace Toadstool
                 return $"@{parameterName}";
             }).ToArray();
             return $"({string.Join(", ", parameterStrings)})";
-        }
-
-        internal new InsertBuilder WithContext(IDbContext context)
-        {
-            base.WithContext(context);
-            return this;
         }
     }
 }

@@ -13,14 +13,14 @@ namespace Toadstool
         private DbContext _dbContext;
         private IDataRecordMapper _dataRecordMapper = new DefaultDataRecordMapper();
 
-        internal IDbCommandBuilder WithDbContext(DbContext dbContext)
+        public IDbCommandBuilder WithDbContext(DbContext dbContext)
         {
             _dbContext = dbContext;
             return this;
         }
 
         // GENERICS
-        public async Task<List<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
+        public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable<T>(reader).ToList(), cancellationToken));
         public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable<T>(reader).First(), cancellationToken));
@@ -32,7 +32,7 @@ namespace Toadstool
             (await WithReader(reader => ToEnumerable<T>(reader).SingleOrDefault(), cancellationToken));
 
         // DYNAMICS
-        public async Task<List<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
+        public async Task<IList<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable(reader).ToList(), cancellationToken));
         public async Task<dynamic> FirstAsync(CancellationToken cancellationToken = default) =>
             (await WithReader(reader => ToEnumerable(reader).First(), cancellationToken));
@@ -45,8 +45,8 @@ namespace Toadstool
 
         public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connection))
             {
                 return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -54,8 +54,8 @@ namespace Toadstool
 
         public async Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connection))
             {
                 return (T)(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
             }
@@ -63,17 +63,17 @@ namespace Toadstool
 
         private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
         {
-            using (var connectionContext = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = BuildDbCommand(connectionContext))
-            using (var reader = await command.ExecuteReaderAsync(connectionContext.CommandBehavior, cancellationToken).ConfigureAwait(false))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var command = BuildDbCommand(connection))
+            using (var reader = await command.ExecuteReaderAsync(connection.CommandBehavior, cancellationToken).ConfigureAwait(false))
             {
                 return callback.Invoke(reader);
             }
         }
 
-        private DbCommand BuildDbCommand(IDbConnectionWrapper dbConnectionContext)
+        private DbCommand BuildDbCommand(IDbConnectionWrapper connection)
         {
-            var command = Build(dbConnectionContext.DbConnection, dbConnectionContext.DbTransaction);
+            var command = Build(connection);
             if (!(command is DbCommand))
             {
                 throw new NotSupportedException("Command must be DbCommand");

@@ -6,6 +6,5 @@ namespace Toadstool
     {
         void Commit();
         void Rollback();
-        bool IsComplete { get; }
     }
 }

@@ -4,7 +4,7 @@
     <!--  NuGet Metadata -->
     <Title>Toadstool</Title>
     <PackageId>Toadstool</PackageId>
-    <VersionPrefix>0.5.0</VersionPrefix>
+    <VersionPrefix>0.6.0</VersionPrefix>
     <Description>The Dapper alternative that nobody asked for.</Description>
     <Authors>Calvin Furano</Authors>
     <Copyright>2019 Calvin Furano</Copyright>
