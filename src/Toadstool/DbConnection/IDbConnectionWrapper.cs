@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    internal interface IDbConnectionWrapper : IDisposable
+    internal interface IDbConnectionWrapper : IDbTransactionWrapper, IDisposable
     {
         IDbCommand CreateCommand();
         CommandBehavior CommandBehavior { get; }

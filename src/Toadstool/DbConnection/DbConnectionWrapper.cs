@@ -3,7 +3,7 @@ using System.Data;
 
 namespace Toadstool
 {
-    internal class DbConnectionWrapper : IDbConnectionWrapper, IDbTransactionWrapper
+    internal class DbConnectionWrapper : IDbConnectionWrapper
     {
         public CommandBehavior CommandBehavior => _transactionIsComplete ? CommandBehavior.CloseConnection : CommandBehavior.Default;
         private IDbConnection _dbConnection;

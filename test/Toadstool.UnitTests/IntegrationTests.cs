@@ -260,7 +260,7 @@ namespace Toadstool.UnitTests
             //When
             using (var transaction = await context.BeginTransactionAsync())
             {
-                var connection1 = context.GetOpenConnectionAsync(default);
+                var connection1 = await context.GetOpenConnectionAsync(default);
 
                 var results = await context
                     .Select("1 as alpha")
@@ -270,7 +270,7 @@ namespace Toadstool.UnitTests
                     .Select("2 as alpha")
                     .SingleAsync<Bar>();
 
-                var connection2 = context.GetOpenConnectionAsync(default); ;
+                var connection2 = await context.GetOpenConnectionAsync(default); ;
 
                 Assert.Same(connection1, connection2);
 

@@ -10,12 +10,12 @@ namespace Toadstool
 {
     internal partial class DbCommandBuilder : IDbCommandExecutor
     {
-        private DbContext _dbContext;
+        private IDbConnectionProvider _dbConnectionProvider;
         private IDataRecordMapper _dataRecordMapper = new DefaultDataRecordMapper();
 
-        public IDbCommandBuilder WithDbContext(DbContext dbContext)
+        public IDbCommandBuilder WithDbConnectionProvider(IDbConnectionProvider dbConnectionProvider)
         {
-            _dbContext = dbContext;
+            _dbConnectionProvider = dbConnectionProvider;
             return this;
         }
 
@@ -45,7 +45,7 @@ namespace Toadstool
 
         public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
             {
                 return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -54,7 +54,7 @@ namespace Toadstool
 
         public async Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default)
         {
-            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
             {
                 return (T)(await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false));
@@ -63,7 +63,7 @@ namespace Toadstool
 
         private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
         {
-            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
             using (var reader = await command.ExecuteReaderAsync(connection.CommandBehavior, cancellationToken).ConfigureAwait(false))
             {
