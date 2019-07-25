@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    internal interface IDbConnectionProvider
+    internal interface IDbConnectionProvider : IDbTransactionWrapper
     {
         Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken);
+        Task BeginTransactionAsync(CancellationToken cancellationToken);
     }
 }

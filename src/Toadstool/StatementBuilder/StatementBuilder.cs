@@ -17,6 +17,28 @@ namespace Toadstool
             return string.Join("\n", _lines);
         }
 
+        public Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().ToListAsync<T>(cancellationToken);
+        public Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().FirstAsync<T>(cancellationToken);
+        public Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().FirstOrDefaultAsync<T>(cancellationToken);
+        public Task<T> SingleAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().SingleAsync<T>(cancellationToken);
+        public Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
+
+        public Task<IList<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
+            ToCommand().ToListAsync(cancellationToken);
+        public Task<dynamic> FirstAsync(CancellationToken cancellationToken = default) =>
+            ToCommand().FirstAsync(cancellationToken);
+        public Task<dynamic> FirstOrDefaultAsync(CancellationToken cancellationToken = default) =>
+            ToCommand().FirstOrDefaultAsync(cancellationToken);
+        public Task<dynamic> SingleAsync(CancellationToken cancellationToken = default) =>
+            ToCommand().SingleAsync(cancellationToken);
+        public Task<dynamic> SingleOrDefaultAsync(CancellationToken cancellationToken = default) =>
+            ToCommand().SingleOrDefaultAsync(cancellationToken);
+
         public Task<int> ExecuteAsync(CancellationToken cancellationToken = default) =>
              ToCommand().ExecuteAsync(cancellationToken);
 

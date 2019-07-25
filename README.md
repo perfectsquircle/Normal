@@ -167,8 +167,6 @@ using (var transaction = await context.BeginTransactionAsync())
 var results3 = await context.Select("3").ExecuteAsync<int>(); // Normal "anonymous" call (not in transaction)
 ```
 
-**Please note, `DbContext` is not thread-safe. Instances should not be shared across threads.**
-
 This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance....
 
 ```csharp

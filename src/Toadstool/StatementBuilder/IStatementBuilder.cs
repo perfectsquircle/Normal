@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public interface IStatementBuilder
+    public interface IStatementBuilder : IDbCommandExecutor
     {
         string Build();
-        Task<int> ExecuteAsync(CancellationToken cancellationToken = default);
-        Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default);
     }
 }
