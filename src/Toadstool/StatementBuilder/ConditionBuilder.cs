@@ -1,6 +1,7 @@
 namespace Toadstool
 {
-    internal class ConditionBuilder<TParent> : IConditionBuilder<TParent> where TParent : IStatementBuilder
+    internal class ConditionBuilder<TParent> : IConditionBuilder<TParent>
+        where TParent : IStatementBuilder
     {
         private readonly StatementBuilder _parent;
         private readonly string _keyword;

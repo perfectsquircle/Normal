@@ -5,22 +5,23 @@ namespace Toadstool
 {
     internal class DbConnectionWrapper : IDbConnectionWrapper
     {
-        public CommandBehavior CommandBehavior => _transactionIsComplete ? CommandBehavior.CloseConnection : CommandBehavior.Default;
         private IDbConnection _dbConnection;
         private IDbTransaction _dbTransaction;
         private bool _transactionIsComplete;
 
         public DbConnectionWrapper(IDbConnection dbConnection)
         {
-            this._dbConnection = dbConnection;
+            _dbConnection = dbConnection;
             _transactionIsComplete = true;
         }
 
         public DbConnectionWrapper(IDbConnection dbConnection, IDbTransaction transaction)
         {
-            this._dbConnection = dbConnection;
-            this._dbTransaction = transaction;
+            _dbConnection = dbConnection;
+            _dbTransaction = transaction;
         }
+
+        public CommandBehavior CommandBehavior => _transactionIsComplete ? CommandBehavior.CloseConnection : CommandBehavior.Default;
 
         public IDbCommand CreateCommand()
         {
@@ -47,7 +48,7 @@ namespace Toadstool
             Dispose(false);
         }
 
-        public void Dispose(bool force = false)
+        public void Dispose(bool force)
         {
             if (force || _transactionIsComplete)
             {

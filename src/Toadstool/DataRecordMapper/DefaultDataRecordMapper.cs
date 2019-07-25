@@ -49,7 +49,7 @@ namespace Toadstool
             };
         }
 
-        private IDictionary<string, string> GetColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
+        private static IDictionary<string, string> GetColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
         {
             var map = new Dictionary<string, string>();
             var members = typeAccessor
@@ -74,12 +74,12 @@ namespace Toadstool
             return map;
         }
 
-        private IEnumerable<string> GetVariants(string columnName)
+        private static IEnumerable<string> GetVariants(string columnName)
         {
             yield return columnName;
             yield return columnName.ToLowerInvariant();
-            yield return columnName.Replace("_", "");
-            yield return columnName.ToLowerInvariant().Replace("_", "");
+            yield return columnName.Replace("_", string.Empty);
+            yield return columnName.ToLowerInvariant().Replace("_", string.Empty);
         }
     }
 }

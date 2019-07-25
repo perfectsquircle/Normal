@@ -10,7 +10,9 @@ namespace Toadstool
     {
         private Func<IDbConnection> _dbConnectionCreator;
         private DbConnectionWrapper _activeDbConnectionWrapper;
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+#pragma warning disable CC0033
+        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1); // TODO: dispose me
+#pragma warning restore CC0033
 
         public DbConnectionProvider(Func<IDbConnection> dbConnectionCreator)
         {
@@ -66,7 +68,6 @@ namespace Toadstool
             finally
             {
                 _semaphore.Release();
-
             }
         }
 
@@ -96,6 +97,16 @@ namespace Toadstool
             }
         }
 
+        private static async Task OpenConnectionAsync(IDbConnection connection, CancellationToken cancellationToken)
+        {
+            if (!(connection is DbConnection))
+            {
+                throw new NotSupportedException("Connection must be DbConnection");
+            }
+            var dbConnection = connection as DbConnection;
+            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task<IDbConnection> GetAnonymousConnectionAsync(CancellationToken cancellationToken)
         {
             if (_dbConnectionCreator == null)
@@ -105,16 +116,6 @@ namespace Toadstool
             var connection = _dbConnectionCreator.Invoke();
             await OpenConnectionAsync(connection, cancellationToken);
             return connection;
-        }
-
-        private static async Task OpenConnectionAsync(IDbConnection connection, CancellationToken cancellationToken)
-        {
-            if (!(connection is DbConnection))
-            {
-                throw new NotSupportedException("Connection must be DbConnection");
-            }
-            var dbConnection = connection as DbConnection;
-            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private void CleanupActiveConnection()

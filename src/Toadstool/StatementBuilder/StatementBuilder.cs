@@ -78,8 +78,8 @@ namespace Toadstool
                 throw new NotSupportedException("No context to execute against.");
             }
             return _context
-                .Command(this.Build())
-                .WithParameters(this._parameters);
+                .Command(Build())
+                .WithParameters(_parameters);
         }
     }
 }

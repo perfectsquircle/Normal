@@ -13,7 +13,7 @@ namespace Toadstool
 
         public IConditionBuilder<IUpdateBuilder> Set(string columnName)
         {
-            string keyword = "SET";
+            var keyword = "SET";
             if (_setCalled)
             {
                 keyword = ",";

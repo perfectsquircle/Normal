@@ -7,14 +7,17 @@ namespace Toadstool
 {
     public class DbContext : IDbContext
     {
-        public DbContext() { }
+        private IDbConnectionProvider _dbConnectionProvider;
 
-        public DbContext(Func<IDbConnection> dbConnectionCreator) : this()
+        public DbContext()
+        {
+        }
+
+        public DbContext(Func<IDbConnection> dbConnectionCreator)
+            : this()
         {
             _dbConnectionProvider = new DbConnectionProvider(dbConnectionCreator);
         }
-
-        private IDbConnectionProvider _dbConnectionProvider;
 
         public IDbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
         {
