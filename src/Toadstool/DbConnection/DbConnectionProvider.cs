@@ -10,9 +10,7 @@ namespace Toadstool
     {
         private Func<IDbConnection> _dbConnectionCreator;
         private DbConnectionWrapper _activeDbConnectionWrapper;
-#pragma warning disable CC0033
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1); // TODO: dispose me
-#pragma warning restore CC0033
+        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public DbConnectionProvider(Func<IDbConnection> dbConnectionCreator)
         {
@@ -39,7 +37,7 @@ namespace Toadstool
             }
         }
 
-        public async Task BeginTransactionAsync(CancellationToken cancellationToken)
+        public async Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -51,32 +49,7 @@ namespace Toadstool
                 var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
                 var transaction = dbConnection.BeginTransaction();
                 _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transaction);
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
-
-        public void Commit()
-        {
-            try
-            {
-                _semaphore.Wait();
-                _activeDbConnectionWrapper?.Commit();
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
-
-        public void Rollback()
-        {
-            try
-            {
-                _semaphore.Wait();
-                _activeDbConnectionWrapper?.Rollback();
+                return new DbTransactionWrapper(transaction, CleanupActiveConnection);
             }
             finally
             {
@@ -86,15 +59,8 @@ namespace Toadstool
 
         public void Dispose()
         {
-            try
-            {
-                _semaphore.Wait();
-                CleanupActiveConnection();
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            _semaphore?.Dispose();
+            CleanupActiveConnection();
         }
 
         private static async Task OpenConnectionAsync(IDbConnection connection, CancellationToken cancellationToken)
@@ -127,6 +93,33 @@ namespace Toadstool
             finally
             {
                 _activeDbConnectionWrapper = null;
+            }
+        }
+
+        private class DbTransactionWrapper : IDbTransactionWrapper
+        {
+            private readonly IDbConnectionWrapper _connection;
+            private Action _onDisposed;
+
+            public DbTransactionWrapper(IDbConnectionWrapper connection, Action onDisposed)
+            {
+                _connection = connection;
+                _onDisposed = onDisposed;
+            }
+
+            public void Commit()
+            {
+                _connection.Commit();
+            }
+
+            public void Rollback()
+            {
+                _connection.Rollback();
+            }
+
+            public void Dispose()
+            {
+                _onDisposed.Invoke();
             }
         }
     }

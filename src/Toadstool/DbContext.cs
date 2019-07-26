@@ -34,8 +34,7 @@ namespace Toadstool
 
         public async Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
-            await _dbConnectionProvider.BeginTransactionAsync(cancellationToken);
-            return _dbConnectionProvider;
+            return await _dbConnectionProvider.BeginTransactionAsync(cancellationToken);
         }
 
         public void Dispose()
