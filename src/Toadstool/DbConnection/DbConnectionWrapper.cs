@@ -29,16 +29,6 @@ namespace Toadstool
             return command;
         }
 
-        public void Commit()
-        {
-            _dbTransaction?.Commit();
-        }
-
-        public void Rollback()
-        {
-            _dbTransaction?.Rollback();
-        }
-
         public void Dispose()
         {
             Dispose(false);

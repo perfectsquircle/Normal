@@ -63,16 +63,6 @@ namespace Toadstool
             CleanupActiveConnection();
         }
 
-        private static async Task OpenConnectionAsync(IDbConnection connection, CancellationToken cancellationToken)
-        {
-            if (!(connection is DbConnection))
-            {
-                throw new NotSupportedException("Connection must be DbConnection");
-            }
-            var dbConnection = connection as DbConnection;
-            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        }
-
         private async Task<IDbConnection> GetAnonymousConnectionAsync(CancellationToken cancellationToken)
         {
             if (_dbConnectionCreator == null)
@@ -80,7 +70,12 @@ namespace Toadstool
                 throw new InvalidOperationException("No DB Connection Creator");
             }
             var connection = _dbConnectionCreator.Invoke();
-            await OpenConnectionAsync(connection, cancellationToken);
+            if (!(connection is DbConnection))
+            {
+                throw new NotSupportedException("Connection must be DbConnection");
+            }
+            var dbConnection = connection as DbConnection;
+            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             return connection;
         }
 
@@ -98,23 +93,23 @@ namespace Toadstool
 
         private class DbTransactionWrapper : IDbTransactionWrapper
         {
-            private readonly IDbConnectionWrapper _connection;
+            private readonly IDbTransaction _transaction;
             private Action _onDisposed;
 
-            public DbTransactionWrapper(IDbConnectionWrapper connection, Action onDisposed)
+            public DbTransactionWrapper(IDbTransaction connection, Action onDisposed)
             {
-                _connection = connection;
+                _transaction = connection;
                 _onDisposed = onDisposed;
             }
 
             public void Commit()
             {
-                _connection.Commit();
+                _transaction.Commit();
             }
 
             public void Rollback()
             {
-                _connection.Rollback();
+                _transaction.Rollback();
             }
 
             public void Dispose()
