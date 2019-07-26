@@ -75,7 +75,7 @@ namespace Toadstool
         {
             if (_context == null)
             {
-                throw new NotSupportedException("No context to execute against.");
+                throw new InvalidOperationException("No context to execute against.");
             }
             return _context
                 .Command(Build())

@@ -296,6 +296,40 @@ namespace Toadstool.UnitTests
             Assert.Equal(5, results5.Alpha);
         }
 
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task NestedTransactionThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = await context.BeginTransactionAsync();
+                var transaction2 = await context.BeginTransactionAsync();
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SimultaneousTransactionThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = context.BeginTransactionAsync();
+                var transaction2 = context.BeginTransactionAsync();
+                var transaction3 = context.BeginTransactionAsync();
+                await Task.WhenAll(transaction, transaction2, transaction3);
+            });
+        }
+
         public static IEnumerable<object[]> GetDbConnection()
         {
             yield return new object[] { (Func<IDbConnection>)(() => new NpgsqlConnection("Host=localhost;Database=postgres;Username=postgres;Password=toadstool")) };

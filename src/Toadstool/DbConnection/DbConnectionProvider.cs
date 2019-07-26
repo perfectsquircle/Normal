@@ -44,7 +44,7 @@ namespace Toadstool
                 await _semaphore.WaitAsync();
                 if (_activeDbConnectionWrapper != null)
                 {
-                    CleanupActiveConnection();
+                    throw new InvalidOperationException("Transaction already in progress");
                 }
                 var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
                 var transaction = dbConnection.BeginTransaction();
