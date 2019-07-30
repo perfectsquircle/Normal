@@ -10,7 +10,6 @@ namespace Toadstool
     {
         private Func<IDbConnection> _dbConnectionCreator;
         private DbConnectionWrapper _activeDbConnectionWrapper;
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public DbConnectionProvider(Func<IDbConnection> dbConnectionCreator)
         {
@@ -19,47 +18,30 @@ namespace Toadstool
 
         public async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            try
+            if (_activeDbConnectionWrapper != null)
             {
-                await _semaphore.WaitAsync();
-                if (_activeDbConnectionWrapper != null)
-                {
-                    return _activeDbConnectionWrapper;
-                }
-                else
-                {
-                    return new DbConnectionWrapper(await GetAnonymousConnectionAsync(cancellationToken));
-                }
+                return _activeDbConnectionWrapper;
             }
-            finally
+            else
             {
-                _semaphore.Release();
+                return new DbConnectionWrapper(await GetAnonymousConnectionAsync(cancellationToken));
             }
         }
 
         public async Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken)
         {
-            try
+            if (_activeDbConnectionWrapper != null)
             {
-                await _semaphore.WaitAsync();
-                if (_activeDbConnectionWrapper != null)
-                {
-                    throw new InvalidOperationException("Transaction already in progress");
-                }
-                var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
-                var transaction = dbConnection.BeginTransaction();
-                _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transaction);
-                return new DbTransactionWrapper(transaction, CleanupActiveConnection);
+                throw new InvalidOperationException("Transaction already in progress");
             }
-            finally
-            {
-                _semaphore.Release();
-            }
+            var dbConnection = await GetAnonymousConnectionAsync(cancellationToken);
+            var transaction = dbConnection.BeginTransaction();
+            _activeDbConnectionWrapper = new DbConnectionWrapper(dbConnection, transaction);
+            return new DbTransactionWrapper(transaction, CleanupActiveConnection);
         }
 
         public void Dispose()
         {
-            _semaphore?.Dispose();
             CleanupActiveConnection();
         }
 
