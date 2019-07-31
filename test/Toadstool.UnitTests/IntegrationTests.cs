@@ -260,8 +260,6 @@ namespace Toadstool.UnitTests
             //When
             using (var transaction = await context.BeginTransactionAsync())
             {
-                var connection1 = await context.GetOpenConnectionAsync(default);
-
                 var results = await context
                     .Select("1 as alpha")
                     .SingleAsync<Bar>();
@@ -269,10 +267,6 @@ namespace Toadstool.UnitTests
                 var results2 = await context
                     .Select("2 as alpha")
                     .SingleAsync<Bar>();
-
-                var connection2 = await context.GetOpenConnectionAsync(default); ;
-
-                Assert.Same(connection1, connection2);
 
                 Assert.Equal(1, results.Alpha);
                 Assert.Equal(2, results2.Alpha);
@@ -300,6 +294,40 @@ namespace Toadstool.UnitTests
                     .Select("5 as alpha")
                     .SingleAsync<Bar>();
             Assert.Equal(5, results5.Alpha);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task NestedTransactionThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = await context.BeginTransactionAsync();
+                var transaction2 = await context.BeginTransactionAsync();
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SimultaneousTransactionThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = context.BeginTransactionAsync();
+                var transaction2 = context.BeginTransactionAsync();
+                var transaction3 = context.BeginTransactionAsync();
+                await Task.WhenAll(transaction, transaction2, transaction3);
+            });
         }
 
         public static IEnumerable<object[]> GetDbConnection()

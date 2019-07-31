@@ -1,12 +1,11 @@
 using System;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    internal interface IDbConnectionWrapper : IDbTransactionWrapper, IDisposable
+    internal interface IDbConnectionWrapper : IDisposable
     {
-        IDbCommand CreateCommand();
         CommandBehavior CommandBehavior { get; }
+        IDbCommand CreateCommand();
     }
 }
