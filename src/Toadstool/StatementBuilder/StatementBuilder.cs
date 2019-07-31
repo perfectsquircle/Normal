@@ -27,21 +27,8 @@ namespace Toadstool
             ToCommand().SingleAsync<T>(cancellationToken);
         public Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
-
-        public Task<IList<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
-            ToCommand().ToListAsync(cancellationToken);
-        public Task<dynamic> FirstAsync(CancellationToken cancellationToken = default) =>
-            ToCommand().FirstAsync(cancellationToken);
-        public Task<dynamic> FirstOrDefaultAsync(CancellationToken cancellationToken = default) =>
-            ToCommand().FirstOrDefaultAsync(cancellationToken);
-        public Task<dynamic> SingleAsync(CancellationToken cancellationToken = default) =>
-            ToCommand().SingleAsync(cancellationToken);
-        public Task<dynamic> SingleOrDefaultAsync(CancellationToken cancellationToken = default) =>
-            ToCommand().SingleOrDefaultAsync(cancellationToken);
-
         public Task<int> ExecuteAsync(CancellationToken cancellationToken = default) =>
              ToCommand().ExecuteAsync(cancellationToken);
-
         public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().ExecuteAsync<T>(cancellationToken);
 

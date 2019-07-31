@@ -84,6 +84,33 @@ LIMIT 100";
         }
 
         [Fact]
+        public async Task ShouldBeQueryableDynamic()
+        {
+            //Given
+            var context = new DbContext().WithConnection(_postgresConnection);
+
+            //When
+            var results = await context
+                .Select("stock_item_id", "stock_item_name")
+                .From("warehouse.stock_items")
+                .Where("supplier_id").EqualTo(2)
+                .And("tax_rate").EqualTo(15.0)
+                .OrderBy("stock_item_id")
+                .ToListAsync<dynamic>();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            Assert.Equal(3, results.Count);
+            var first = results.First();
+            Assert.Equal(150, first.stock_item_id);
+            Assert.Equal("Pack of 12 action figures (variety)", first.stock_item_name);
+            var last = results.Last();
+            Assert.Equal(152, last.stock_item_id);
+            Assert.Equal("Pack of 12 action figures (female)", last.stock_item_name);
+        }
+
+        [Fact]
         public async Task FirstOrDefaultAsync()
         {
             //Given

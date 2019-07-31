@@ -31,18 +31,6 @@ namespace Toadstool
         public async Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
             await WithReader(reader => ToEnumerable<T>(reader).SingleOrDefault(), cancellationToken);
 
-        // DYNAMICS
-        public async Task<IList<dynamic>> ToListAsync(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable(reader).ToList(), cancellationToken);
-        public async Task<dynamic> FirstAsync(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable(reader).First(), cancellationToken);
-        public async Task<dynamic> FirstOrDefaultAsync(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable(reader).FirstOrDefault(), cancellationToken);
-        public async Task<dynamic> SingleAsync(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable(reader).Single(), cancellationToken);
-        public async Task<dynamic> SingleOrDefaultAsync(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable(reader).SingleOrDefault(), cancellationToken);
-
         public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
@@ -78,11 +66,6 @@ namespace Toadstool
         private IEnumerable<T> ToEnumerable<T>(IDataReader dataReader)
         {
             return ToEnumerable<T>(dataReader, _dataRecordMapper.CompileMapper<T>(dataReader));
-        }
-
-        private IEnumerable<dynamic> ToEnumerable(IDataReader dataReader)
-        {
-            return ToEnumerable(dataReader, _dataRecordMapper.CompileMapper(dataReader));
         }
 
         private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)

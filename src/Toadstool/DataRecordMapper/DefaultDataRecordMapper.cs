@@ -9,7 +9,32 @@ namespace Toadstool
 {
     internal class DefaultDataRecordMapper : IDataRecordMapper
     {
-        public virtual Func<IDataRecord, T> CompileMapper<T>(IDataRecord dataReader)
+        public Func<IDataRecord, T> CompileMapper<T>(IDataRecord dataReader)
+        {
+            var type = typeof(T);
+            if (type.IsPrimitive)
+            {
+                return CompilePrimitiveMapper<T>();
+            }
+            else if (type == typeof(object))
+            {
+                return CompileDynamicMapper<T>(dataReader);
+            }
+            else
+            {
+                return CompileClassMapper<T>(dataReader);
+            }
+        }
+
+        private static Func<IDataRecord, T> CompilePrimitiveMapper<T>()
+        {
+            return (dataRecord) =>
+            {
+                return (T)dataRecord[0];
+            };
+        }
+
+        private static Func<IDataRecord, T> CompileClassMapper<T>(IDataRecord dataReader)
         {
             var typeAccessor = TypeAccessor.Create(typeof(T));
             var columnToPropertyMap = GetColumnToPropertyMap(dataReader, typeAccessor);
@@ -30,7 +55,7 @@ namespace Toadstool
             };
         }
 
-        public Func<IDataRecord, dynamic> CompileMapper(IDataRecord dataReader)
+        private static Func<IDataRecord, T> CompileDynamicMapper<T>(IDataRecord dataReader)
         {
             var columnNames = new List<string>();
             for (var i = 0; i < dataReader.FieldCount; i++)
@@ -45,7 +70,7 @@ namespace Toadstool
                 {
                     instance[columnName] = dataRecord[columnName];
                 }
-                return instance;
+                return (T)instance;
             };
         }
 
