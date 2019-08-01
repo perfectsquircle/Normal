@@ -61,7 +61,7 @@ class Customer {
 }
 
 // Do a SELECT then map the results to a list.
-List<Customer> customers = await context
+IList<Customer> customers = await context
     .Select("first_name", "last_name", "age")
     .From("customer")
     .Where("last_name").EqualTo("Cuervo")
@@ -108,7 +108,7 @@ class Customer {
 }
 
 // Do a SELECT then map the results to a list.
-List<Customer> customers = await context
+IList<Customer> customers = await context
     .Command(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ToListAsync<Customer>();
@@ -166,8 +166,6 @@ using (var transaction = await context.BeginTransactionAsync())
 // Transaction is disposed, context returns to normal connection pool.
 var results3 = await context.Select("3").ExecuteAsync<int>(); // Normal "anonymous" call (not in transaction)
 ```
-
-**Please note, `DbContext` is not thread-safe. Instances should not be shared across threads.**
 
 This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance....
 

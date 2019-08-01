@@ -6,15 +6,15 @@ namespace Toadstool
 {
     internal partial class DbCommandBuilder : IDbCommandBuilder
     {
-        public DbCommandBuilder()
-        {
-            _parameters = new Dictionary<string, object>();
-        }
-
         private string _commandText;
         private int? _commandTimeout;
         private CommandType? _commandType;
         private readonly IDictionary<string, object> _parameters;
+
+        public DbCommandBuilder()
+        {
+            _parameters = new Dictionary<string, object>();
+        }
 
         public IDbCommandBuilder WithCommandText(string commandText)
         {
@@ -23,19 +23,19 @@ namespace Toadstool
                 throw new ArgumentNullException(nameof(commandText));
             }
 
-            this._commandText = commandText;
+            _commandText = commandText;
             return this;
         }
 
         public IDbCommandBuilder WithCommandTimeout(int commandTimeout)
         {
-            this._commandTimeout = commandTimeout;
+            _commandTimeout = commandTimeout;
             return this;
         }
 
         public IDbCommandBuilder WithCommandType(CommandType commandType)
         {
-            this._commandType = commandType;
+            _commandType = commandType;
             return this;
         }
 
@@ -77,9 +77,9 @@ namespace Toadstool
             return this;
         }
 
-        internal IDbCommand Build(IDbConnection dbConnection, IDbTransaction dbTransaction = null)
+        public IDbCommand Build(IDbConnectionWrapper connection)
         {
-            var command = dbConnection.CreateCommand();
+            var command = connection.CreateCommand();
             if (_commandText != null)
             {
                 command.CommandText = _commandText;
@@ -92,8 +92,6 @@ namespace Toadstool
             {
                 command.CommandType = _commandType.Value;
             }
-            command.Connection = dbConnection;
-            command.Transaction = dbTransaction;
 
             foreach (var parameter in _parameters)
             {

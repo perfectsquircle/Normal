@@ -21,7 +21,7 @@ namespace Toadstool.UnitTests
                 .WithConnection(dbConnection);
 
             //When
-            List<Bar> results = await context
+            IList<Bar> results = await context
                 .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
@@ -43,7 +43,7 @@ namespace Toadstool.UnitTests
                 .WithConnection(dbConnection);
 
             //When
-            List<Bar> results = await context
+            IList<Bar> results = await context
                 .Command("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToListAsync<Bar>();
 
@@ -260,56 +260,74 @@ namespace Toadstool.UnitTests
             //When
             using (var transaction = await context.BeginTransactionAsync())
             {
-                Assert.NotNull(context._activeDbConnectionWrapper);
-                var connection1 = context._activeDbConnectionWrapper.DbConnection;
-                var transaction1 = context._activeDbConnectionWrapper.DbTransaction;
-
                 var results = await context
-                    .Select("1")
-                    .ExecuteAsync<int>();
+                    .Select("1 as alpha")
+                    .SingleAsync<Bar>();
 
                 var results2 = await context
-                    .Select("2")
-                    .ExecuteAsync<int>();
+                    .Select("2 as alpha")
+                    .SingleAsync<Bar>();
 
-                var connection2 = context._activeDbConnectionWrapper.DbConnection;
-                var transaction2 = context._activeDbConnectionWrapper.DbTransaction;
-
-                Assert.Same(connection1, connection2);
-                Assert.Same(transaction1, transaction2);
-
-                Assert.Equal(1, results);
-                Assert.Equal(2, results2);
-                Assert.False(transaction.IsComplete);
+                Assert.Equal(1, results.Alpha);
+                Assert.Equal(2, results2.Alpha);
                 transaction.Commit();
-                Assert.True(transaction.IsComplete);
             }
-            Assert.Null(context._activeDbConnectionWrapper);
 
             var results3 = await context
-                    .Select("3")
-                    .ExecuteAsync<int>();
-            Assert.Equal(3, results3);
+                .Select("3 as alpha")
+                .SingleAsync<Bar>();
+            Assert.Equal(3, results3.Alpha);
 
             using (var transaction = await context.BeginTransactionAsync())
             {
-                Assert.NotNull(context._activeDbConnectionWrapper);
-
-                var results = await context
-                    .Select("4")
-                    .ExecuteAsync<int>();
+                var results4 = await context
+                    .Select("4 as alpha")
+                    .SingleAsync<Bar>();
 
                 //Then
-                Assert.Equal(4, results);
+                Assert.Equal(4, results4.Alpha);
 
                 // TRANSACTION NOT COMMITTED
             };
-            Assert.Null(context._activeDbConnectionWrapper);
 
-            var results4 = await context
-                    .Command("select 6")
-                    .ExecuteAsync<int>();
-            Assert.Equal(6, results4);
+            var results5 = await context
+                    .Select("5 as alpha")
+                    .SingleAsync<Bar>();
+            Assert.Equal(5, results5.Alpha);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task NestedTransactionThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = await context.BeginTransactionAsync();
+                var transaction2 = await context.BeginTransactionAsync();
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task SimultaneousTransactionThrows(Func<IDbConnection> dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var transaction = context.BeginTransactionAsync();
+                var transaction2 = context.BeginTransactionAsync();
+                var transaction3 = context.BeginTransactionAsync();
+                await Task.WhenAll(transaction, transaction2, transaction3);
+            });
         }
 
         public static IEnumerable<object[]> GetDbConnection()

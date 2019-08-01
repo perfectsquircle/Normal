@@ -3,7 +3,6 @@ using System.Data;
 using System.Threading.Tasks;
 using Npgsql;
 using Xunit;
-using static Toadstool.StatementBuilder;
 
 namespace Toadstool.UnitTests
 {
@@ -22,7 +21,7 @@ VALUES
 (@toadstool_1, @toadstool_2, @toadstool_3)";
 
             //When
-            var actual = InsertInto("customer")
+            var actual = new InsertBuilder("customer")
                 .Columns("first_name", "last_name", "age")
                 .Values("Jose", "Cuervo", 100)
                 .Build();
@@ -45,7 +44,7 @@ VALUES
 ,(@toadstool_7, @toadstool_8, @toadstool_9)";
 
             //When
-            var actual = InsertInto("customer")
+            var actual = new InsertBuilder("customer")
                 .Columns("first_name", "last_name", "age")
                 .Values("Jose", "Cuervo", 100)
                 .Values("Jose", "Cuervo", 200)

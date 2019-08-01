@@ -1,12 +1,10 @@
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public interface IStatementBuilder
+    public interface IStatementBuilder : IDbCommandExecutor
     {
         string Build();
-        IDictionary<string, object> Parameters { get; }
-        IStatementBuilder AddLine(string keyword, params string[] columnNames);
-        string RegisterParameter(object value);
     }
 }

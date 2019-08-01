@@ -65,7 +65,7 @@ namespace Toadstool.UnitTests
             var defaultMapper = new DefaultDataRecordMapper();
 
             //When
-            var mapper = defaultMapper.CompileMapper(record.Object);
+            var mapper = defaultMapper.CompileMapper<dynamic>(record.Object);
             var result = mapper.Invoke(record.Object);
 
             //Then
@@ -74,6 +74,36 @@ namespace Toadstool.UnitTests
             Assert.Equal("Your lucky day", result.beta);
             Assert.Equal("Punk", result.charlie);
             Assert.Equal(now, result.createDate);
+        }
+
+        [Fact]
+        public void ShouldMapPrimitiveType()
+        {
+            //Given
+            var repository = new MockRepository(MockBehavior.Strict) { DefaultValue = DefaultValue.Mock };
+            var now = DateTimeOffset.Now;
+            var record = repository.CreateIDataRecord(new object[] {
+                new {
+                    Name = "alpha", Value = 777,
+                },
+                new {
+                    Name = "beta", Value = "Your lucky day",
+                },
+                new {
+                    Name = "charlie", Value = "Punk",
+                },
+                new {
+                    Name = "createDate", Value = now,
+               }
+            });
+            var defaultMapper = new DefaultDataRecordMapper();
+
+            //When
+            var mapper = defaultMapper.CompileMapper<int>(record.Object);
+            var result = mapper.Invoke(record.Object);
+
+            //Then
+            Assert.Equal(777, result);
         }
     }
 }
