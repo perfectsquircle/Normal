@@ -308,4 +308,3 @@ __pycache__/
 # End of https://www.gitignore.io/api/visualstudio,visualstudiocode
 
 out/
-db/
