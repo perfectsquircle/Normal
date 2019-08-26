@@ -44,5 +44,6 @@ postgres: docker-compose-up
 sqlserver: docker-compose-up
 	docker-compose start sqlserver
 	$(wait-for) toadstool_sqlserver_db:1433
+	docker exec -it toadstool_sqlserver_db bash ./import-data.sh
 
 databases: sqlserver postgres
