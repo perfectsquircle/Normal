@@ -333,7 +333,7 @@ namespace Toadstool.UnitTests
         public static IEnumerable<object[]> GetDbConnection()
         {
             yield return new object[] { (Func<IDbConnection>)(() => new NpgsqlConnection("Host=localhost;Database=postgres;Username=postgres;Password=toadstool")) };
-            yield return new object[] { (Func<IDbConnection>)(() => new SqlConnection("Server=localhost;Uid=sa;Pwd=Toadstool123")) };
+            yield return new object[] { (Func<IDbConnection>)(() => new SqlConnection("Server=localhost;Uid=SA;Pwd=Toadstool123")) };
         }
     }
 }

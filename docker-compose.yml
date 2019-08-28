@@ -2,20 +2,24 @@ version: '3'
 services:
   postgres:
     container_name: toadstool_postgres_db
-    image: postgres:10
+    build:
+      context: databases/postgres
+      dockerfile: Dockerfile
     restart: always
     environment:
       POSTGRES_PASSWORD: toadstool
-    volumes: 
-      - ./db/postgres-init:/docker-entrypoint-initdb.d
     ports:  
       - 5432:5432
   sqlserver:
     container_name: toadstool_sqlserver_db
-    image: mcr.microsoft.com/mssql/server:latest
+    build:
+      context: databases/sqlserver
+      dockerfile: Dockerfile
     restart: always
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: Toadstool123
     ports:  
       - 1433:1433
+  wait-for:
+    image: gesellix/wait-for
