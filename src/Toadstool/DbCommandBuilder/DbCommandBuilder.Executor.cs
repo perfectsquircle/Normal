@@ -11,7 +11,7 @@ namespace Toadstool
     internal partial class DbCommandBuilder : IDbCommandExecutor
     {
         private IDbConnectionProvider _dbConnectionProvider;
-        private IDataRecordMapper _dataRecordMapper = new DefaultDataRecordMapper();
+        private IDataRecordMapperFactory _dataRecordMapperFactory = new DataRecordMapperFactory();
 
         public IDbCommandBuilder WithDbConnectionProvider(IDbConnectionProvider dbConnectionProvider)
         {
@@ -49,7 +49,7 @@ namespace Toadstool
             }
         }
 
-        private static IEnumerable<T> ToEnumerable<T>(IDataReader dataReader, Func<IDataRecord, T> mapper)
+        private static IEnumerable<T> ToEnumerable<T>(IDataReader dataReader, IDataRecordMapper mapper)
         {
             if (dataReader.FieldCount == 0)
             {
@@ -58,14 +58,14 @@ namespace Toadstool
 
             while (dataReader.Read())
             {
-                yield return mapper.Invoke(dataReader);
+                yield return mapper.MapDataRecord<T>(dataReader);
             }
             yield break;
         }
 
         private IEnumerable<T> ToEnumerable<T>(IDataReader dataReader)
         {
-            return ToEnumerable<T>(dataReader, _dataRecordMapper.CompileMapper<T>(dataReader));
+            return ToEnumerable<T>(dataReader, _dataRecordMapperFactory.CreateMapper(typeof(T)));
         }
 
         private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
