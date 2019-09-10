@@ -8,23 +8,29 @@ namespace Toadstool
 {
     internal class ClassDataRecordMapper : IDataRecordMapper
     {
-        private IDictionary<string, string> _map;
+        private IDictionary<string, string> _columnToPropertyMap;
         private TypeAccessor _typeAccessor;
 
         public T MapDataRecord<T>(IDataRecord dataRecord)
         {
-            var typeAccessor = GetTypeAccessor(typeof(T));
-            var columnToPropertyMap = GetColumnToPropertyMap(dataRecord, typeAccessor);
+            if (_typeAccessor == null)
+            {
+                _typeAccessor = TypeAccessor.Create(typeof(T));
+            }
+            if (_columnToPropertyMap == null)
+            {
+                _columnToPropertyMap = CreateColumnToPropertyMap(dataRecord, _typeAccessor);
+            }
 
-            var instance = typeAccessor.CreateNew();
-            foreach (var columnToProperty in columnToPropertyMap)
+            var instance = _typeAccessor.CreateNew();
+            foreach (var columnToProperty in _columnToPropertyMap)
             {
                 var fieldValue = dataRecord[columnToProperty.Key];
                 if (fieldValue == DBNull.Value)
                 {
                     continue;
                 }
-                typeAccessor[instance, columnToProperty.Value] = fieldValue;
+                _typeAccessor[instance, columnToProperty.Value] = fieldValue;
             }
             return (T)instance;
         }
@@ -37,42 +43,29 @@ namespace Toadstool
             yield return columnName.ToLowerInvariant().Replace("_", string.Empty);
         }
 
-        private TypeAccessor GetTypeAccessor(Type type)
+        private static IDictionary<string, string> CreateColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
         {
-            if (_typeAccessor == null)
-            {
-                _typeAccessor = TypeAccessor.Create(type);
-            }
-            return _typeAccessor;
-        }
+            var map = new Dictionary<string, string>();
+            var members = typeAccessor
+                .GetMembers()
+                .Where(m => m.CanWrite);
 
-        private IDictionary<string, string> GetColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
-        {
-            if (_map == null)
+            for (var i = 0; i < dataRecord.FieldCount; i++)
             {
-                var map = new Dictionary<string, string>();
-                var members = typeAccessor
-                    .GetMembers()
-                    .Where(m => m.CanWrite);
-
-                for (var i = 0; i < dataRecord.FieldCount; i++)
+                var columnName = dataRecord.GetName(i);
+                var columnNameVariants = GetVariants(columnName);
+                var member = members.FirstOrDefault(m =>
                 {
-                    var columnName = dataRecord.GetName(i);
-                    var columnNameVariants = GetVariants(columnName);
-                    var member = members.FirstOrDefault(m =>
-                    {
-                        var propertyVariants = GetVariants(m.Name);
-                        return propertyVariants.Intersect(columnNameVariants).Any();
-                    });
-                    if (member == default(Member))
-                    {
-                        continue;
-                    }
-                    map.Add(columnName, member.Name);
+                    var propertyVariants = GetVariants(m.Name);
+                    return propertyVariants.Intersect(columnNameVariants).Any();
+                });
+                if (member == default(Member))
+                {
+                    continue;
                 }
-                _map = map;
+                map.Add(columnName, member.Name);
             }
-            return _map;
+            return map;
         }
     }
 }
