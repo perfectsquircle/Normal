@@ -5,6 +5,6 @@ namespace Toadstool
 {
     internal interface IDataRecordMapper
     {
-        Func<IDataRecord, T> CompileMapper<T>(IDataRecord dataReader);
+        T MapDataRecord<T>(IDataRecord dataRecord);
     }
 }

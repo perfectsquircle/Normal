@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Toadstool.UnitTests
 {
-    public class DefaultDataRecordMapperTests
+    public class DataRecordMapperTests
     {
         [Fact]
         public void ShouldMapDataRecord()
@@ -28,11 +28,10 @@ namespace Toadstool.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var defaultMapper = new DefaultDataRecordMapper();
+            var mapper = new ClassDataRecordMapper();
 
             //When
-            var mapper = defaultMapper.CompileMapper<Bar>(record.Object);
-            var result = mapper.Invoke(record.Object);
+            var result = mapper.MapDataRecord<Bar>(record.Object);
 
             //Then
             Assert.NotNull(result);
@@ -62,11 +61,10 @@ namespace Toadstool.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var defaultMapper = new DefaultDataRecordMapper();
+            var mapper = new DynamicDataRecordMapper();
 
             //When
-            var mapper = defaultMapper.CompileMapper<dynamic>(record.Object);
-            var result = mapper.Invoke(record.Object);
+            var result = mapper.MapDataRecord<dynamic>(record.Object);
 
             //Then
             Assert.NotNull(result);
@@ -96,11 +94,10 @@ namespace Toadstool.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var defaultMapper = new DefaultDataRecordMapper();
+            var mapper = new PrimitiveDataRecordMapper();
 
             //When
-            var mapper = defaultMapper.CompileMapper<int>(record.Object);
-            var result = mapper.Invoke(record.Object);
+            var result = mapper.MapDataRecord<int>(record.Object);
 
             //Then
             Assert.Equal(777, result);
