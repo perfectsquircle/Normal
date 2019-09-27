@@ -1,17 +1,29 @@
 using System;
-using System.Data;
+using System.Linq;
 
 namespace Toadstool
 {
     internal class DataRecordMapperFactory : IDataRecordMapperFactory
     {
+        private static readonly Type[] _primitiveExtensions = new Type[]
+        {
+            typeof(decimal),
+            typeof(string),
+            typeof(DateTime),
+            typeof(DateTimeOffset),
+            typeof(byte[]),
+            typeof(char[]),
+        };
         public IDataRecordMapper CreateMapper(Type type)
         {
-            if (type.IsPrimitive)
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            var targetType = underlyingType ?? type;
+
+            if (targetType.IsPrimitive || targetType.IsEnum || _primitiveExtensions.Any(primitiveExtension => primitiveExtension.IsAssignableFrom(targetType)))
             {
                 return new PrimitiveDataRecordMapper();
             }
-            else if (type == typeof(object))
+            else if (targetType == typeof(object))
             {
                 return new DynamicDataRecordMapper();
             }
