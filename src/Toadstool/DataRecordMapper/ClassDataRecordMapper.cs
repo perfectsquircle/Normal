@@ -8,7 +8,7 @@ namespace Toadstool
 {
     internal class ClassDataRecordMapper : IDataRecordMapper
     {
-        private IDictionary<string, string> _columnToPropertyMap;
+        private IList<PropertyMapper> _propertyMappers;
         private TypeAccessor _typeAccessor;
 
         public T MapDataRecord<T>(IDataRecord dataRecord)
@@ -17,20 +17,16 @@ namespace Toadstool
             {
                 _typeAccessor = TypeAccessor.Create(typeof(T));
             }
-            if (_columnToPropertyMap == null)
+            if (_propertyMappers == null)
             {
-                _columnToPropertyMap = CreateColumnToPropertyMap(dataRecord, _typeAccessor);
+                _propertyMappers = CreatePropertyMappers(dataRecord);
             }
 
             var instance = _typeAccessor.CreateNew();
-            foreach (var columnToProperty in _columnToPropertyMap)
+            foreach (var mapper in _propertyMappers)
             {
-                var fieldValue = dataRecord[columnToProperty.Key];
-                if (fieldValue == DBNull.Value)
-                {
-                    continue;
-                }
-                _typeAccessor[instance, columnToProperty.Value] = fieldValue;
+                var fieldValue = mapper.MapProperty(dataRecord);
+                _typeAccessor[instance, mapper.PropertyName] = fieldValue;
             }
             return (T)instance;
         }
@@ -43,10 +39,10 @@ namespace Toadstool
             yield return columnName.ToLowerInvariant().Replace("_", string.Empty);
         }
 
-        private static IDictionary<string, string> CreateColumnToPropertyMap(IDataRecord dataRecord, TypeAccessor typeAccessor)
+        private IList<PropertyMapper> CreatePropertyMappers(IDataRecord dataRecord)
         {
-            var map = new Dictionary<string, string>();
-            var members = typeAccessor
+            var list = new List<PropertyMapper>();
+            var members = _typeAccessor
                 .GetMembers()
                 .Where(m => m.CanWrite);
 
@@ -63,9 +59,12 @@ namespace Toadstool
                 {
                     continue;
                 }
-                map.Add(columnName, member.Name);
+                list.Add(new PropertyMapper()
+                    .WithColumnIndex(i)
+                    .WithPropertyName(member.Name)
+                    .WithPropertyType(member.Type));
             }
-            return map;
+            return list;
         }
     }
 }

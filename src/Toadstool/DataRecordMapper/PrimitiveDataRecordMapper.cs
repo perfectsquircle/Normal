@@ -5,9 +5,16 @@ namespace Toadstool
 {
     internal class PrimitiveDataRecordMapper : IDataRecordMapper
     {
+        private PropertyMapper _propertyMapper;
         public T MapDataRecord<T>(IDataRecord dataRecord)
         {
-            return (T)dataRecord[0];
+            if (_propertyMapper == null)
+            {
+                _propertyMapper = new PropertyMapper()
+                    .WithColumnIndex(0)
+                    .WithPropertyType(typeof(T));
+            }
+            return (T)_propertyMapper.MapProperty(dataRecord);
         }
     }
 }

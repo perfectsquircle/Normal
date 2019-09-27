@@ -56,6 +56,8 @@ namespace Moq.DataExtensions
                 record.Setup(r => r[index]).Returns(value);
                 record.Setup(r => r[name]).Returns(value);
                 record.Setup(r => r.GetName(index)).Returns(name);
+                record.Setup(r => r.GetString(index)).Returns(() => (string)value);
+                record.Setup(r => r.GetInt32(index)).Returns(() => (int)value);
             }
 
             record.SetupGet(r => r.FieldCount).Returns(fields.Length);
