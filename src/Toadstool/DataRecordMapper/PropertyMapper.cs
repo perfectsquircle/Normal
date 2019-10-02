@@ -8,16 +8,20 @@ namespace Toadstool
     {
         private int _columnIndex;
         private Type _propertyType;
-        private Func<object> _columnReader;
+        private Func<IDataRecord, object> _columnReader;
         public string PropertyName { get; set; }
 
         public object MapProperty(IDataRecord dataRecord)
         {
             if (_columnReader == null)
             {
-                _columnReader = CreateColumnReader(dataRecord);
+                _columnReader = CreateColumnReader();
             }
-            return _columnReader?.Invoke();
+            if (dataRecord.IsDBNull(_columnIndex))
+            {
+                return null;
+            }
+            return _columnReader?.Invoke(dataRecord);
         }
 
         public PropertyMapper WithColumnIndex(int columnIndex)
@@ -38,50 +42,46 @@ namespace Toadstool
             return this;
         }
 
-        private Func<object> CreateColumnReader(IDataRecord dataRecord)
+        public Func<IDataRecord, object> CreateColumnReader()
         {
-            if (dataRecord.IsDBNull(_columnIndex))
-            {
-                return () => null;
-            }
             if (_propertyType.IsAssignableFrom(typeof(string)))
             {
-                return () => dataRecord.GetString(_columnIndex);
+                return (dataRecord) => dataRecord.GetString(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(bool)))
             {
-                return () => dataRecord.GetBoolean(_columnIndex);
+                return (dataRecord) => dataRecord.GetBoolean(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(byte)))
             {
-                return () => dataRecord.GetByte(_columnIndex);
+                return (dataRecord) => dataRecord.GetByte(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(short)))
             {
-                return () => dataRecord.GetInt16(_columnIndex);
+                return (dataRecord) => dataRecord.GetInt16(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(int)))
             {
-                return () => dataRecord.GetInt32(_columnIndex);
+                return (dataRecord) => dataRecord.GetInt32(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(long)))
             {
-                return () => dataRecord.GetInt64(_columnIndex);
+                return (dataRecord) => dataRecord.GetInt64(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(float)))
             {
-                return () => dataRecord.GetFloat(_columnIndex);
+                return (dataRecord) => dataRecord.GetFloat(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(double)))
             {
-                return () => dataRecord.GetDouble(_columnIndex);
+                return (dataRecord) => dataRecord.GetDouble(_columnIndex);
             }
             if (_propertyType.IsAssignableFrom(typeof(DateTime)))
             {
-                return () => dataRecord.GetDateTime(_columnIndex);
+                return (dataRecord) => dataRecord.GetDateTime(_columnIndex);
             }
 
-            return () => dataRecord[_columnIndex];
+            return (dataRecord) => dataRecord[_columnIndex];
         }
     }
 }

@@ -105,5 +105,30 @@ namespace Toadstool.UnitTests
             Assert.NotEmpty(results);
             Assert.All(results, si => { Assert.True(si.IsChillerStock); });
         }
+
+        public static IEnumerable<object[]> GetShouldHandleNullableIntTestCases()
+        {
+            yield return new object[] { _postgresConnection, "SELECT stock_item_id, stock_item_name, color_id FROM warehouse.stock_items WHERE color_id is null" };
+            yield return new object[] { _sqlServerConnection, "SELECT StockItemID, StockItemName, ColorId FROM Warehouse.StockItems WHERE ColorId is null" };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetShouldHandleNullableIntTestCases))]
+        public async Task ShouldHandleNullableInt(Func<IDbConnection> dbConnection, string query)
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(dbConnection);
+
+            //When
+            var results = await context
+                .Command(query)
+                .ToListAsync<StockItem>();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            Assert.All(results, si => { Assert.Null(si.ColorId); });
+        }
     }
 }
