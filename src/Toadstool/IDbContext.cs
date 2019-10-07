@@ -1,12 +1,11 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Data;
 
 namespace Toadstool
 {
     public interface IDbContext : IDisposable
     {
-        IDbCommandBuilder Command(string commandText);
-        Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken));
+        IDbCommandBuilder CreateCommand(string commandText);
+        IDbTransaction BeginTransaction();
     }
 }

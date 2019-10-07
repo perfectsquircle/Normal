@@ -29,7 +29,7 @@ namespace Toadstool.PerformanceTests
         public async Task<IList<PurchaseOrder>> GetPurchaseOrdersToadstool()
         {
             return await _context
-                .Command(_select)
+                .CreateCommand(_select)
                 .ToListAsync<PurchaseOrder>();
         }
 

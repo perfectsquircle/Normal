@@ -72,7 +72,7 @@ namespace Toadstool
         {
             using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
-            using (var reader = await command.ExecuteReaderAsync(connection.CommandBehavior, cancellationToken).ConfigureAwait(false))
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
                 return callback.Invoke(reader);
             }

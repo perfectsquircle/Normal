@@ -1,46 +1,26 @@
-using System;
 using System.Data;
 
 namespace Toadstool
 {
     internal class DbConnectionWrapper : IDbConnectionWrapper
     {
-        private readonly IDbConnection _dbConnection;
-        private readonly IDbTransaction _dbTransaction;
-
         public DbConnectionWrapper(IDbConnection dbConnection)
         {
-            _dbConnection = dbConnection;
+            DbConnection = dbConnection;
         }
 
-        public DbConnectionWrapper(IDbConnection dbConnection, IDbTransaction transaction)
-        {
-            _dbConnection = dbConnection;
-            _dbTransaction = transaction;
-        }
+        public IDbConnection DbConnection { get; private set; }
 
-        public CommandBehavior CommandBehavior => _dbTransaction == null ? CommandBehavior.CloseConnection : CommandBehavior.Default;
-
-        public IDbCommand CreateCommand()
+        public virtual IDbCommand CreateCommand()
         {
-            var command = _dbConnection.CreateCommand();
-            command.Connection = _dbConnection;
-            command.Transaction = _dbTransaction;
+            var command = DbConnection.CreateCommand();
+            command.Connection = DbConnection;
             return command;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
-            Dispose(false);
-        }
-
-        public void Dispose(bool force)
-        {
-            if (force || _dbTransaction == null)
-            {
-                _dbTransaction?.Dispose();
-                _dbConnection?.Dispose();
-            }
+            DbConnection?.Dispose();
         }
     }
 }

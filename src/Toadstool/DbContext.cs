@@ -1,45 +1,86 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Toadstool
 {
-    public class DbContext : IDbContext
+    public class DbContext : IDbContext, IDbConnectionProvider
     {
-        private IDbConnectionProvider _dbConnectionProvider;
+        private CreateConnection _dbConnectionCreator;
+        private readonly AsyncLocal<PublicDbTransactionWrapper> _currentTransaction = new AsyncLocal<PublicDbTransactionWrapper>();
+        internal PublicDbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
 
         public DbContext()
         {
         }
 
-        public DbContext(Func<IDbConnection> dbConnectionCreator)
+        public DbContext(CreateConnection dbConnectionCreator)
             : this()
         {
-            _dbConnectionProvider = new DbConnectionProvider(dbConnectionCreator);
+            _dbConnectionCreator = dbConnectionCreator;
         }
 
-        public IDbContext WithConnection(Func<IDbConnection> dbConnectionCreator)
+        public DbContext WithConnection(CreateConnection dbConnectionCreator)
         {
-            _dbConnectionProvider = new DbConnectionProvider(dbConnectionCreator);
+            _dbConnectionCreator = dbConnectionCreator;
             return this;
         }
 
-        public IDbCommandBuilder Command(string commandText)
+        public IDbCommandBuilder CreateCommand(string commandText)
         {
             return new DbCommandBuilder()
-                .WithDbConnectionProvider(_dbConnectionProvider)
+                .WithDbConnectionProvider(this)
                 .WithCommandText(commandText);
         }
 
-        public async Task<IDbTransactionWrapper> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        public IDbTransaction BeginTransaction()
         {
-            return await _dbConnectionProvider.BeginTransactionAsync(cancellationToken);
+            if (CurrentTransaction != null)
+            {
+                throw new InvalidOperationException("Transaction already in progress!");
+            }
+            var publicDbTransactionWrapper = new PublicDbTransactionWrapper(() => CurrentTransaction = null);
+            CurrentTransaction = publicDbTransactionWrapper;
+            return publicDbTransactionWrapper;
+        }
+
+        internal async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        {
+            var transaction = CurrentTransaction;
+            if (transaction != null)
+            {
+                if (transaction.Wrapper == null)
+                {
+                    var dbConnection = await CreateOpenConnectionAsync(cancellationToken);
+                    transaction.Wrapper = new DbTransactionWrapper(dbConnection, dbConnection.BeginTransaction());
+                }
+                return transaction.Wrapper;
+            }
+            else
+            {
+                return new DbConnectionWrapper(await CreateOpenConnectionAsync(cancellationToken));
+            }
+        }
+
+        private async Task<IDbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
+        {
+            if (_dbConnectionCreator == null)
+            {
+                throw new InvalidOperationException("No DB Connection Creator");
+            }
+            var connection = _dbConnectionCreator.Invoke();
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            return connection;
         }
 
         public void Dispose()
         {
-            _dbConnectionProvider?.Dispose();
+            CurrentTransaction?.Dispose();
+            CurrentTransaction = null;
         }
     }
+
+    public delegate DbConnection CreateConnection();
 }

@@ -12,8 +12,8 @@ namespace Toadstool.UnitTests
 {
     public class WideWorldImportersTests
     {
-        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=toadstool");
-        private static Func<IDbConnection> _sqlServerConnection = () => new SqlConnection("Server=localhost;Uid=sa;Pwd=Toadstool123;Database=WideWorldImporters");
+        private static CreateConnection _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=toadstool");
+        private static CreateConnection _sqlServerConnection = () => new SqlConnection("Server=localhost;Uid=sa;Pwd=Toadstool123;Database=WideWorldImporters");
 
         public static IEnumerable<object[]> GetSelectTestCases()
         {
@@ -23,7 +23,7 @@ namespace Toadstool.UnitTests
 
         [Theory]
         [MemberData(nameof(GetSelectTestCases))]
-        public async Task ShouldSelectFromStockItems(Func<IDbConnection> dbConnection, string query)
+        public async Task ShouldSelectFromStockItems(CreateConnection dbConnection, string query)
         {
             //Given
             var context = new DbContext()
@@ -31,7 +31,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Command(query)
+                .CreateCommand(query)
                 .ToListAsync<StockItem>();
 
             //Then
@@ -55,7 +55,7 @@ namespace Toadstool.UnitTests
 
         [Theory]
         [MemberData(nameof(GetSelectWithParametersTestCases))]
-        public async Task ShouldSelectFromStockItemsWithParameters(Func<IDbConnection> dbConnection, string query)
+        public async Task ShouldSelectFromStockItemsWithParameters(CreateConnection dbConnection, string query)
         {
             //Given
             var context = new DbContext()
@@ -63,7 +63,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Command(query)
+                .CreateCommand(query)
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
                 .WithParameter("taxRate", 15.0)
@@ -89,7 +89,7 @@ namespace Toadstool.UnitTests
 
         [Theory]
         [MemberData(nameof(GetSelectBooleanTestCases))]
-        public async Task ShouldSelectBoolean(Func<IDbConnection> dbConnection, string query)
+        public async Task ShouldSelectBoolean(CreateConnection dbConnection, string query)
         {
             //Given
             var context = new DbContext()
@@ -97,7 +97,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Command(query)
+                .CreateCommand(query)
                 .ToListAsync<StockItem>();
 
             //Then
@@ -114,7 +114,7 @@ namespace Toadstool.UnitTests
 
         [Theory]
         [MemberData(nameof(GetShouldHandleNullableIntTestCases))]
-        public async Task ShouldHandleNullableInt(Func<IDbConnection> dbConnection, string query)
+        public async Task ShouldHandleNullableInt(CreateConnection dbConnection, string query)
         {
             //Given
             var context = new DbContext()
@@ -122,7 +122,7 @@ namespace Toadstool.UnitTests
 
             //When
             var results = await context
-                .Command(query)
+                .CreateCommand(query)
                 .ToListAsync<StockItem>();
 
             //Then

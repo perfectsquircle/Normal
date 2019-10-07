@@ -5,7 +5,7 @@ namespace Toadstool
 {
     internal interface IDbConnectionWrapper : IDisposable
     {
-        CommandBehavior CommandBehavior { get; }
+        IDbConnection DbConnection { get; }
         IDbCommand CreateCommand();
     }
 }

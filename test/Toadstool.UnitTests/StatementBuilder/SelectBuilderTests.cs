@@ -11,7 +11,7 @@ namespace Toadstool.UnitTests
 {
     public class SelectBuilderTests
     {
-        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
+        private static CreateConnection _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
 
         [Fact]
         public void ShouldCreateSelectBuilder()

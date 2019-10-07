@@ -148,7 +148,6 @@ namespace Toadstool.UnitTests
         [InlineData(typeof(char[]), typeof(PrimitiveDataRecordMapper))]
 
         [InlineData(typeof(string), typeof(PrimitiveDataRecordMapper))]
-        [InlineData(typeof(string), typeof(PrimitiveDataRecordMapper))]
         [InlineData(typeof(DateTime), typeof(PrimitiveDataRecordMapper))]
         [InlineData(typeof(DateTime?), typeof(PrimitiveDataRecordMapper))]
         [InlineData(typeof(DateTimeOffset), typeof(PrimitiveDataRecordMapper))]

@@ -42,7 +42,7 @@ The entrypoint into the Toadstool API is the `DbContext` class. Typically, only 
 var context = new DbContext();
 ```
 
-The context must be able to create new instances of `IDbConnection`, so we pass it a "connection factory", which is just a function that returns a new connection with the driver of our choosing.
+The context must be able to create new instances of `DbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
 
 ```csharp
 // Use with SQL Server
@@ -109,13 +109,13 @@ class Customer {
 
 // Do a SELECT then map the results to a list.
 IList<Customer> customers = await context
-    .Command(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
+    .CreateCommand(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ToListAsync<Customer>();
 
 // Execute an INSERT
 int rowsAffected = await context
-    .Command(@"INSERT INTO customer(fist_name, last_name) VALUES (@firstName, @lastName)")
+    .CreateCommand(@"INSERT INTO customer(fist_name, last_name) VALUES (@firstName, @lastName)")
     .WithParameters(new {
         firstName = "Jose",
         lastName = "Cuervo"
@@ -124,25 +124,25 @@ int rowsAffected = await context
 
 // Execute an UPDATE
 int rowsAffected = await context
-    .Command(@"UPDATE customer SET first_name = @firstName where last_name = @lastName")
+    .CreateCommand(@"UPDATE customer SET first_name = @firstName where last_name = @lastName")
     .WithParameter("firstName", "Jerry")
     .WithParameter("lastName", "Cuervo")
     .Execute();
 
 // Execute a DELETE
 int rowsAffected = await context
-    .Command(@"DELETE FROM customer where last_name = @lastName")
+    .CreateCommand(@"DELETE FROM customer where last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .Execute();
 
 // Execute a scalar
 string firstName = await context
-    .Command(@"SELECT first_name FROM customer WHERE id = 42")
+    .CreateCommand(@"SELECT first_name FROM customer WHERE id = 42")
     .ExecuteAsync<string>();
 
 // Execute a stored procedure
 List<Customers> customers = await context
-    .Command(@"spGetCustomers")
+    .CreateCommand(@"spGetCustomers")
     .WithParameter("lastName", "Cuervo")
     .WithCommandType(CommandType.StoredProcedure)
     .ToListAsync<Customer>();
@@ -150,10 +150,10 @@ List<Customers> customers = await context
 
 ### Transactions
 
-To start a new database transaction, call `BeginTransactionAsync` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to normal connection pooling behavior.
+To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to normal connection pooling behavior.
 
 ```csharp
-using (var transaction = await context.BeginTransactionAsync())
+using (var transaction = context.BeginTransaction())
 {
     // Automatically joins the transaction
     var results1 = await context.Select("1").ExecuteAsync<int>(); 
@@ -186,7 +186,7 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
 }
 ```
 
-Traditionally (with ADO or Dapper) you would have to pass around instances to your `IDbConnection` and `IDbTransaction` which is messy, rewrite a boilerplate connection provider class every time, or resort to using TransactionScope, which some developers believe is Dark Magic.
+Traditionally (with ADO or Dapper) you would have to pass around instances of your `IDbConnection` and `IDbTransaction` as method parameters, which is messy, rewrite a boilerplate connection provider class every time, or resort to using TransactionScope, which some developers believe is Dark Magic.
 
 ### Dependency Injection
 
@@ -249,17 +249,6 @@ To bring down the servers and clean up the backup files,
 make clean-databases
 ```
 
-## Motivation
-
-I was curious about how Dapper was implemented, so I went to read the source code. I was horrified at the [method sprawl](https://github.com/StackExchange/Dapper/blob/master/Dapper/SqlMapper.Async.cs) and the classes thousands of lines long.
-
-To better understand the problem space, I set out to write a clone. Using the builder-pattern, I was quickly able to match the core Dapper API `.Query()` in a much tighter code base.
-
-I understand that Dapper has grown organically over the years to solve a thousand edge cases that I don't even know about. It's also faster than Toadstool ever will be. However this was a good learning experience.
-
-Additionally, I wanted to solve transaction management without the dark magic of `TransactionScope`. When you're implementing the repository pattern in raw ADO.NET or Dapper, there isn't any default way to share a transaction across multiple repository methods, or multiple repositories for that matter. 
-
----
 
 Built with &hearts; by Calvin.
 
