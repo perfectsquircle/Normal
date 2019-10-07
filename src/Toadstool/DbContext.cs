@@ -46,7 +46,7 @@ namespace Toadstool
             return publicDbTransactionWrapper;
         }
 
-        internal async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        public async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             var transaction = CurrentTransaction;
             if (transaction != null)
