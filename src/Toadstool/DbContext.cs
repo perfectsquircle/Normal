@@ -9,6 +9,7 @@ namespace Toadstool
     public class DbContext : IDbContext, IDbConnectionProvider
     {
         private CreateConnection _dbConnectionCreator;
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly AsyncLocal<PublicDbTransactionWrapper> _currentTransaction = new AsyncLocal<PublicDbTransactionWrapper>();
         internal PublicDbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
 
@@ -37,30 +38,46 @@ namespace Toadstool
 
         public IDbTransaction BeginTransaction()
         {
-            if (CurrentTransaction != null)
+            try
             {
-                throw new InvalidOperationException("Transaction already in progress!");
+                _semaphore.Wait();
+                if (CurrentTransaction != null)
+                {
+                    throw new InvalidOperationException("Transaction already in progress!");
+                }
+                var publicDbTransactionWrapper = new PublicDbTransactionWrapper(() => CurrentTransaction = null);
+                CurrentTransaction = publicDbTransactionWrapper;
+                return publicDbTransactionWrapper;
             }
-            var publicDbTransactionWrapper = new PublicDbTransactionWrapper(() => CurrentTransaction = null);
-            CurrentTransaction = publicDbTransactionWrapper;
-            return publicDbTransactionWrapper;
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            var transaction = CurrentTransaction;
-            if (transaction != null)
+            try
             {
-                if (transaction.Wrapper == null)
+                await _semaphore.WaitAsync();
+                var transaction = CurrentTransaction;
+                if (transaction != null)
                 {
-                    var dbConnection = await CreateOpenConnectionAsync(cancellationToken);
-                    transaction.Wrapper = new DbTransactionWrapper(dbConnection, dbConnection.BeginTransaction());
+                    if (transaction.Wrapper == null)
+                    {
+                        var dbConnection = await CreateOpenConnectionAsync(cancellationToken);
+                        transaction.Wrapper = new DbTransactionWrapper(dbConnection, dbConnection.BeginTransaction());
+                    }
+                    return transaction.Wrapper;
                 }
-                return transaction.Wrapper;
+                else
+                {
+                    return new DbConnectionWrapper(await CreateOpenConnectionAsync(cancellationToken));
+                }
             }
-            else
+            finally
             {
-                return new DbConnectionWrapper(await CreateOpenConnectionAsync(cancellationToken));
+                _semaphore.Release();
             }
         }
 
@@ -79,6 +96,7 @@ namespace Toadstool
         {
             CurrentTransaction?.Dispose();
             CurrentTransaction = null;
+            _semaphore?.Dispose();
         }
     }
 

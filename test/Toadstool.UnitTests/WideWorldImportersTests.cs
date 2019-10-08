@@ -130,5 +130,42 @@ namespace Toadstool.UnitTests
             Assert.NotEmpty(results);
             Assert.All(results, si => { Assert.Null(si.ColorId); });
         }
+
+        [Fact]
+        public async Task MultipleQueriesInTransaction()
+        {
+            //Given
+            var context = new DbContext()
+                .WithConnection(_postgresConnection);
+
+            //When
+            using (var transaction = context.BeginTransaction())
+            {
+                Assert.Same(transaction, context.CurrentTransaction);
+                const string cityName = "Calvinville";
+                var results0 = await context
+                    .DeleteFrom("application.cities")
+                    .Where("city_name").EqualTo(cityName)
+                    .ExecuteAsync();
+                Assert.Same(transaction, context.CurrentTransaction);
+                var results1 = await context
+                    .InsertInto("application.cities")
+                    .Columns("city_name", "state_province_id", "last_edited_by")
+                    .Values(cityName, 1, 1)
+                    .ExecuteAsync();
+                Assert.Same(transaction, context.CurrentTransaction);
+                var results2 = await context
+                    .Select("city_name")
+                    .From("application.cities")
+                    .Where("city_name").EqualTo(cityName)
+                    .SingleAsync<string>();
+
+                Assert.Equal(1, results0);
+                Assert.Equal(1, results1);
+                Assert.Equal(cityName, results2);
+                transaction.Commit();
+            }
+            Assert.Null(context.CurrentTransaction);
+        }
     }
 }
