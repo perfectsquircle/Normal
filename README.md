@@ -42,7 +42,7 @@ The entrypoint into the Toadstool API is the `DbContext` class. Typically, only 
 var context = new DbContext();
 ```
 
-The context must be able to create new instances of `DbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
+The context must be able to create new instances of `IDbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
 
 ```csharp
 // Use with SQL Server

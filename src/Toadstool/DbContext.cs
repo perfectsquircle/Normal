@@ -8,7 +8,7 @@ namespace Toadstool
 {
     public class DbContext : IDbContext, IDbConnectionProvider
     {
-        private CreateConnection _dbConnectionCreator;
+        private CreateConnection _createConnection;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly AsyncLocal<PublicDbTransactionWrapper> _currentTransaction = new AsyncLocal<PublicDbTransactionWrapper>();
         internal PublicDbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
@@ -17,15 +17,15 @@ namespace Toadstool
         {
         }
 
-        public DbContext(CreateConnection dbConnectionCreator)
+        public DbContext(CreateConnection createConnection)
             : this()
         {
-            _dbConnectionCreator = dbConnectionCreator;
+            _createConnection = createConnection;
         }
 
-        public DbContext WithConnection(CreateConnection dbConnectionCreator)
+        public DbContext WithCreateConnection(CreateConnection createConnection)
         {
-            _dbConnectionCreator = dbConnectionCreator;
+            _createConnection = createConnection;
             return this;
         }
 
@@ -36,7 +36,7 @@ namespace Toadstool
                 .WithCommandText(commandText);
         }
 
-        public IDbTransaction BeginTransaction()
+        public IDbTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             try
             {
@@ -45,9 +45,10 @@ namespace Toadstool
                 {
                     throw new InvalidOperationException("Transaction already in progress!");
                 }
-                var publicDbTransactionWrapper = new PublicDbTransactionWrapper(() => CurrentTransaction = null);
-                CurrentTransaction = publicDbTransactionWrapper;
-                return publicDbTransactionWrapper;
+                CurrentTransaction = new PublicDbTransactionWrapper()
+                    .WithIsolationLevel(isolationLevel)
+                    .WithOnDispose(() => CurrentTransaction = null);
+                return CurrentTransaction;
             }
             finally
             {
@@ -63,10 +64,10 @@ namespace Toadstool
                 var transaction = CurrentTransaction;
                 if (transaction != null)
                 {
-                    if (transaction.Wrapper == null)
+                    if (!transaction.Enlisted)
                     {
                         var dbConnection = await CreateOpenConnectionAsync(cancellationToken);
-                        transaction.Wrapper = new DbTransactionWrapper(dbConnection, dbConnection.BeginTransaction());
+                        transaction.Enlist(dbConnection);
                     }
                     return transaction.Wrapper;
                 }
@@ -83,12 +84,20 @@ namespace Toadstool
 
         private async Task<IDbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            if (_dbConnectionCreator == null)
+            if (_createConnection == null)
             {
                 throw new InvalidOperationException("No DB Connection Creator");
             }
-            var connection = _dbConnectionCreator.Invoke();
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            var connection = _createConnection.Invoke();
+            if (connection == null)
+            {
+                throw new InvalidOperationException("Connection is null");
+            }
+            if (!(connection is DbConnection))
+            {
+                throw new NotSupportedException("Connection must be DbConnection");
+            }
+            await (connection as DbConnection).OpenAsync(cancellationToken).ConfigureAwait(false);
             return connection;
         }
 
@@ -100,5 +109,5 @@ namespace Toadstool
         }
     }
 
-    public delegate DbConnection CreateConnection();
+    public delegate IDbConnection CreateConnection();
 }

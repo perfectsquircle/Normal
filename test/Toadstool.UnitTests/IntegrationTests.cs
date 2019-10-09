@@ -18,7 +18,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             IList<Bar> results = await context
@@ -40,7 +40,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             IList<Bar> results = await context
@@ -58,7 +58,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var bar = await context
@@ -78,7 +78,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
@@ -95,7 +95,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var bar = await context
@@ -115,7 +115,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var bar = await context
@@ -132,7 +132,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var bar = await context
@@ -152,7 +152,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
@@ -169,7 +169,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var bar = await context
@@ -189,7 +189,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var bar = await context
@@ -206,7 +206,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var results = await context
@@ -228,7 +228,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var results = context
@@ -255,7 +255,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             using (var transaction = context.BeginTransaction())
@@ -308,7 +308,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             Assert.Throws<InvalidOperationException>(() =>

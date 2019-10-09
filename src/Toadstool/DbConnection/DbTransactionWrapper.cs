@@ -40,30 +40,43 @@ namespace Toadstool
 
     internal class PublicDbTransactionWrapper : IDbTransaction
     {
-        private OnDisposed _onDisposed;
-        private IDbTransaction DbTransaction => Wrapper?.DbTransaction;
-
-        public PublicDbTransactionWrapper(OnDisposed onDisposed)
-        {
-            _onDisposed = onDisposed;
-        }
-
-        internal DbTransactionWrapper Wrapper { get; set; }
-        public IDbConnection Connection => Wrapper?.DbConnection;
-        public IsolationLevel IsolationLevel => DbTransaction.IsolationLevel;
+        private OnDispose _onDispose;
+        private DbTransactionWrapper _wrapper;
+        private IDbTransaction DbTransaction => _wrapper?.DbTransaction;
+        public IDbConnection Connection => _wrapper?.DbConnection;
+        public IsolationLevel IsolationLevel { get; private set; }
 
         public void Commit() => DbTransaction?.Commit();
 
         public void Rollback() => DbTransaction?.Rollback();
 
-
         public void Dispose()
         {
             // This is called by the end user when their transaction is complete.
-            _onDisposed.Invoke();
-            Wrapper?.Dispose(true);
+            _onDispose.Invoke();
+            _wrapper?.Dispose(true);
+        }
+
+        internal bool Enlisted => _wrapper != null;
+        internal IDbConnectionWrapper Wrapper => _wrapper;
+
+        internal PublicDbTransactionWrapper WithIsolationLevel(IsolationLevel isolationLevel)
+        {
+            IsolationLevel = isolationLevel;
+            return this;
+        }
+
+        internal PublicDbTransactionWrapper WithOnDispose(OnDispose onDispose)
+        {
+            _onDispose = onDispose;
+            return this;
+        }
+
+        internal void Enlist(IDbConnection dbConnection)
+        {
+            _wrapper = new DbTransactionWrapper(dbConnection, dbConnection.BeginTransaction(IsolationLevel));
         }
     }
 
-    public delegate void OnDisposed();
+    public delegate void OnDispose();
 }

@@ -27,7 +27,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var results = await context
@@ -59,7 +59,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var results = await context
@@ -93,7 +93,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var results = await context
@@ -118,7 +118,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(dbConnection);
+                .WithCreateConnection(dbConnection);
 
             //When
             var results = await context
@@ -136,7 +136,7 @@ namespace Toadstool.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithConnection(_postgresConnection);
+                .WithCreateConnection(_postgresConnection);
 
             //When
             using (var transaction = context.BeginTransaction())
@@ -160,7 +160,6 @@ namespace Toadstool.UnitTests
                     .Where("city_name").EqualTo(cityName)
                     .SingleAsync<string>();
 
-                Assert.Equal(1, results0);
                 Assert.Equal(1, results1);
                 Assert.Equal(cityName, results2);
                 transaction.Commit();

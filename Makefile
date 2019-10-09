@@ -9,6 +9,9 @@ local:
 test:
 	dotnet test test/Toadstool.UnitTests
 
+benchmarks:
+	dotnet run --project test/Toadstool.PerformanceTests -c Release
+
 clean:
 	rm -vrf out
 	find . -name bin | xargs rm -vrf
