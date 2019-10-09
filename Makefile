@@ -1,16 +1,16 @@
 pack:
-	dotnet pack src/Toadstool -o ../../out --include-symbols --include-source -c Release
+	dotnet pack src/Normal -o ../../out --include-symbols --include-source -c Release
 
 local:
-	dotnet pack src/Toadstool/ -o ../../out --version-suffix=beta-`date +%s`
+	dotnet pack src/Normal/ -o ../../out --version-suffix=beta-`date +%s`
 	nuget push out/*.nupkg -Source Local
 
 .PHONY: test
 test:
-	dotnet test test/Toadstool.UnitTests
+	dotnet test test/Normal.UnitTests
 
 benchmarks:
-	dotnet run --project test/Toadstool.PerformanceTests -c Release
+	dotnet run --project test/Normal.PerformanceTests -c Release
 
 clean:
 	rm -vrf out
@@ -20,7 +20,7 @@ clean:
 restore:
 	dotnet restore . -v q
 
-DOCKER_TAG?=toadstool
+DOCKER_TAG?=normal
 DOCKER_NAME?=${DOCKER_TAG}-$(shell date +%s)
 
 docker:
@@ -42,11 +42,11 @@ docker-compose-up:
 
 postgres: docker-compose-up
 	docker-compose start postgres
-	$(wait-for) toadstool_postgres_db:5432 
+	$(wait-for) normal_postgres_db:5432 
 
 sqlserver: docker-compose-up
 	docker-compose start sqlserver
-	$(wait-for) toadstool_sqlserver_db:1433
-	docker exec -it toadstool_sqlserver_db bash ./import-data.sh
+	$(wait-for) normal_sqlserver_db:1433
+	docker exec -it normal_sqlserver_db bash ./import-data.sh
 
 databases: sqlserver postgres

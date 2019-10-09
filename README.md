@@ -1,8 +1,8 @@
-# 🍄 Toadstool
+# Normal
 
-> The Dapper alternative that nobody asked for.
+> A Normal ORM
 
-[![NuGet version](https://img.shields.io/nuget/vpre/Toadstool.svg)](https://www.nuget.org/packages/Toadstool)
+[![NuGet version](https://img.shields.io/nuget/vpre/Normal.svg)](https://www.nuget.org/packages/Normal)
 
 ## Features
 
@@ -23,20 +23,20 @@ var stockItems = await context
 ## Installation
 
 ```bash
-dotnet add package Toadstool
+dotnet add package Normal
 ```
 
 --OR--
 
 ```bat
-PM> Install-Package Toadstool
+PM> Install-Package Normal
 ```
 
 ## Usage
 
 ### DbContext
 
-The entrypoint into the Toadstool API is the `DbContext` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.)
+The entrypoint into the Normal API is the `DbContext` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.)
 
 ```csharp
 var context = new DbContext();
@@ -150,22 +150,7 @@ List<Customers> customers = await context
 
 ### Transactions
 
-To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to normal connection pooling behavior.
-
-```csharp
-using (var transaction = context.BeginTransaction())
-{
-    // Automatically joins the transaction
-    var results1 = await context.Select("1").ExecuteAsync<int>(); 
-    // Automatically joins the transaction
-    var results2 = await context.Select("2").ExecuteAsync<int>();
-
-    transaction.Commit();
-} 
-
-// Transaction is disposed, context returns to normal connection pool.
-var results3 = await context.Select("3").ExecuteAsync<int>(); // Normal "anonymous" call (not in transaction)
-```
+To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to connection pooling behavior.å
 
 This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance....
 

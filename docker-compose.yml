@@ -1,24 +1,24 @@
 version: '3'
 services:
   postgres:
-    container_name: toadstool_postgres_db
+    container_name: normal_postgres_db
     build:
       context: databases/postgres
       dockerfile: Dockerfile
     restart: always
     environment:
-      POSTGRES_PASSWORD: toadstool
+      POSTGRES_PASSWORD: normal
     ports:  
       - 5432:5432
   sqlserver:
-    container_name: toadstool_sqlserver_db
+    container_name: normal_sqlserver_db
     build:
       context: databases/sqlserver
       dockerfile: Dockerfile
     restart: always
     environment:
       ACCEPT_EULA: Y
-      SA_PASSWORD: Toadstool123
+      SA_PASSWORD: Normal123
     ports:  
       - 1433:1433
   wait-for:
