@@ -10,8 +10,8 @@ namespace Toadstool
     {
         private CreateConnection _createConnection;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private readonly AsyncLocal<PublicDbTransactionWrapper> _currentTransaction = new AsyncLocal<PublicDbTransactionWrapper>();
-        internal PublicDbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
+        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+        internal DbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
 
         public DbContext()
         {
@@ -45,7 +45,7 @@ namespace Toadstool
                 {
                     throw new InvalidOperationException("Transaction already in progress!");
                 }
-                CurrentTransaction = new PublicDbTransactionWrapper()
+                CurrentTransaction = new DbTransactionWrapper()
                     .WithIsolationLevel(isolationLevel)
                     .WithOnDispose(() => CurrentTransaction = null);
                 return CurrentTransaction;
@@ -69,7 +69,7 @@ namespace Toadstool
                         var dbConnection = await CreateOpenConnectionAsync(cancellationToken);
                         transaction.Enlist(dbConnection);
                     }
-                    return transaction.Wrapper;
+                    return transaction.ConnectionWrapper;
                 }
                 else
                 {
