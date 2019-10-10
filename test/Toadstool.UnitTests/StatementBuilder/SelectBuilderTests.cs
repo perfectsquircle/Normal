@@ -11,7 +11,7 @@ namespace Toadstool.UnitTests
 {
     public class SelectBuilderTests
     {
-        private static Func<IDbConnection> _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
+        private static CreateConnection _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=toadstool;Password=toadstool");
 
         [Fact]
         public void ShouldCreateSelectBuilder()
@@ -60,7 +60,7 @@ LIMIT 100";
         public async Task ShouldBeQueryable2()
         {
             //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
+            var context = new DbContext().WithCreateConnection(_postgresConnection);
 
             //When
             var results = await context
@@ -87,7 +87,7 @@ LIMIT 100";
         public async Task ShouldBeQueryableDynamic()
         {
             //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
+            var context = new DbContext().WithCreateConnection(_postgresConnection);
 
             //When
             var results = await context
@@ -114,7 +114,7 @@ LIMIT 100";
         public async Task FirstOrDefaultAsync()
         {
             //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
+            var context = new DbContext().WithCreateConnection(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -135,7 +135,7 @@ LIMIT 100";
         public async Task FirstAsync()
         {
             //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
+            var context = new DbContext().WithCreateConnection(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -156,7 +156,7 @@ LIMIT 100";
         public async Task SingleAsync()
         {
             //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
+            var context = new DbContext().WithCreateConnection(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -175,7 +175,7 @@ LIMIT 100";
         public async Task SingleOrDefualtAsync()
         {
             //Given
-            var context = new DbContext().WithConnection(_postgresConnection);
+            var context = new DbContext().WithCreateConnection(_postgresConnection);
 
             //When
             var stockItem = await context

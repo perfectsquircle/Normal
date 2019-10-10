@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -13,7 +14,7 @@ namespace Toadstool.PerformanceTests
     [RankColumn]
     public class ToadstoolBenchmark
     {
-        Func<NpgsqlConnection> _connectionCreator;
+        CreateConnection _connectionCreator;
         IDbContext _context;
         string _select;
 
@@ -29,7 +30,7 @@ namespace Toadstool.PerformanceTests
         public async Task<IList<PurchaseOrder>> GetPurchaseOrdersToadstool()
         {
             return await _context
-                .Command(_select)
+                .CreateCommand(_select)
                 .ToListAsync<PurchaseOrder>();
         }
 
@@ -38,7 +39,7 @@ namespace Toadstool.PerformanceTests
         {
             using (var connection = _connectionCreator())
             {
-                await connection.OpenAsync();
+                await (connection as DbConnection).OpenAsync();
                 var command = connection.CreateCommand();
                 command.CommandText = _select;
 

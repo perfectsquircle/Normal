@@ -3,9 +3,10 @@ using System.Data;
 
 namespace Toadstool
 {
-    internal interface IDbConnectionWrapper : IDisposable
+    public interface IDbConnectionWrapper : IDisposable
     {
-        CommandBehavior CommandBehavior { get; }
+        IDbConnection DbConnection { get; }
+        IDbTransaction DbTransaction { get; }
         IDbCommand CreateCommand();
     }
 }

@@ -23,13 +23,13 @@ namespace Toadstool
         public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
             await WithReader(reader => ToEnumerable<T>(reader).ToList(), cancellationToken);
         public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable<T>(reader).First(), cancellationToken);
+            await WithReader(reader => ToEnumerable<T>(reader).First(), cancellationToken, CommandBehavior.SingleRow);
         public async Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable<T>(reader).FirstOrDefault(), cancellationToken);
+            await WithReader(reader => ToEnumerable<T>(reader).FirstOrDefault(), cancellationToken, CommandBehavior.SingleRow);
         public async Task<T> SingleAsync<T>(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable<T>(reader).Single(), cancellationToken);
+            await WithReader(reader => ToEnumerable<T>(reader).Single(), cancellationToken, CommandBehavior.SingleRow);
         public async Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
-            await WithReader(reader => ToEnumerable<T>(reader).SingleOrDefault(), cancellationToken);
+            await WithReader(reader => ToEnumerable<T>(reader).SingleOrDefault(), cancellationToken, CommandBehavior.SingleRow);
 
         public async Task<int> ExecuteAsync(CancellationToken cancellationToken = default)
         {
@@ -68,11 +68,11 @@ namespace Toadstool
             return ToEnumerable<T>(dataReader, _dataRecordMapperFactory.CreateMapper(typeof(T)));
         }
 
-        private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
+        private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken, CommandBehavior commandBehavior = default)
         {
             using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
-            using (var reader = await command.ExecuteReaderAsync(connection.CommandBehavior, cancellationToken).ConfigureAwait(false))
+            using (var reader = await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false))
             {
                 return callback.Invoke(reader);
             }

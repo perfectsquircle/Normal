@@ -65,7 +65,7 @@ namespace Toadstool
                 throw new InvalidOperationException("No context to execute against.");
             }
             return _context
-                .Command(Build())
+                .CreateCommand(Build())
                 .WithParameters(_parameters);
         }
     }
