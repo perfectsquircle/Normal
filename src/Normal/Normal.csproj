@@ -4,8 +4,8 @@
     <!--  NuGet Metadata -->
     <Title>Normal</Title>
     <PackageId>Normal</PackageId>
-    <VersionPrefix>0.7.0</VersionPrefix>
-    <Description>The Dapper alternative that nobody asked for.</Description>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Description>A Normal ORM</Description>
     <Authors>Calvin Furano</Authors>
     <Copyright>2019 Calvin Furano</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
