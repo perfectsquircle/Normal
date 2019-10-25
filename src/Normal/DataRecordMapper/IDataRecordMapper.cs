@@ -5,6 +5,6 @@ namespace Normal
 {
     internal interface IDataRecordMapper
     {
-        T MapDataRecord<T>(IDataRecord dataRecord);
+        object MapDataRecord(IDataRecord dataRecord);
     }
 }

@@ -60,7 +60,10 @@ LIMIT 100";
         public async Task ShouldBeQueryable2()
         {
             //Given
-            var context = new DbContext().WithCreateConnection(_postgresConnection);
+            var context = new DbContextBuilder()
+                .WithCreateConnection(_postgresConnection)
+                .WithLogging(Helpers.GetLogger())
+                .Build();
 
             //When
             var results = await context

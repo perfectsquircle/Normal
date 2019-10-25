@@ -8,7 +8,7 @@ namespace Normal
     internal class DynamicDataRecordMapper : IDataRecordMapper
     {
         private IList<string> _columnNames;
-        public T MapDataRecord<T>(IDataRecord dataRecord)
+        public object MapDataRecord(IDataRecord dataRecord)
         {
             if (_columnNames == null)
             {
@@ -20,7 +20,7 @@ namespace Normal
             {
                 instance[columnName] = dataRecord[columnName];
             }
-            return (T)instance;
+            return instance;
         }
 
         private static IList<string> GetColumnNames(IDataRecord dataRecord)

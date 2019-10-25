@@ -19,9 +19,9 @@ namespace Normal.UnitTests
             //When
             using (var transaction = dbContext.BeginTransaction())
             {
-                var task1 = dbContext.Select("1").ExecuteAsync();
-                var task2 = dbContext.Select("1").ExecuteAsync();
-                var task3 = dbContext.Select("1").ExecuteAsync();
+                var task1 = dbContext.Select("1").ExecuteNonQueryAsync();
+                var task2 = dbContext.Select("1").ExecuteNonQueryAsync();
+                var task3 = dbContext.Select("1").ExecuteNonQueryAsync();
 
                 await Task.WhenAll(task1, task2, task3);
             }

@@ -67,13 +67,13 @@ VALUES
                 .InsertInto("warehouse.colors")
                 .Columns("color_name", "last_edited_by")
                 .Values("Gurple", 1)
-                .ExecuteAsync();
+                .ExecuteNonQueryAsync();
 
             var gurple = await context
                 .Select("color_name")
                 .From("warehouse.colors")
                 .Where("color_name").EqualTo("Gurple")
-                .ExecuteAsync<string>();
+                .ExecuteScalarAsync<string>();
 
             //Then
             Assert.Equal(1, rowsInserted);

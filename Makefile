@@ -1,5 +1,6 @@
 pack:
 	dotnet pack src/Normal -o ../../out --include-symbols --include-source -c Release
+	dotnet pack src/Normal.Abstractions -o ../../out --include-symbols --include-source -c Release
 
 local:
 	dotnet pack src/Normal/ -o ../../out --version-suffix=beta-`date +%s`
@@ -18,7 +19,7 @@ clean:
 	find . -name obj | xargs rm -vrf
 
 restore:
-	dotnet restore . -v q
+	dotnet restore . 
 
 DOCKER_TAG?=normal
 DOCKER_NAME?=${DOCKER_TAG}-$(shell date +%s)
@@ -27,10 +28,9 @@ docker:
 	docker build -q -t ${DOCKER_TAG} .
 
 docker-pack: docker
-	docker run --name ${DOCKER_NAME} ${DOCKER_TAG} make \
-	&& docker cp ${DOCKER_NAME}:/app/out out \
-	|| docker rm ${DOCKER_NAME}
-	docker rm ${DOCKER_NAME}
+	docker run --name ${DOCKER_NAME} ${DOCKER_TAG} make
+	-docker cp ${DOCKER_NAME}:/app/out out
+	-docker rm ${DOCKER_NAME}
 
 docker-compose-down: 
 	docker-compose down -v

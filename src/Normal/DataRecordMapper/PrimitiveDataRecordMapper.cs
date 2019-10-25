@@ -6,15 +6,22 @@ namespace Normal
     internal class PrimitiveDataRecordMapper : IDataRecordMapper
     {
         private PropertyMapper _propertyMapper;
-        public T MapDataRecord<T>(IDataRecord dataRecord)
+        private Type _targetType;
+
+        public PrimitiveDataRecordMapper(Type targetType)
+        {
+            _targetType = targetType;
+        }
+
+        public object MapDataRecord(IDataRecord dataRecord)
         {
             if (_propertyMapper == null)
             {
                 _propertyMapper = new PropertyMapper()
                     .WithColumnIndex(0)
-                    .WithPropertyType(typeof(T));
+                    .WithPropertyType(_targetType);
             }
-            return (T)_propertyMapper.MapProperty(dataRecord);
+            return _propertyMapper.MapProperty(dataRecord);
         }
     }
 }

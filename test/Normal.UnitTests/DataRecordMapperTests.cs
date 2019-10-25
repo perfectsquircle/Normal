@@ -28,10 +28,10 @@ namespace Normal.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var mapper = new ClassDataRecordMapper();
+            var mapper = new ClassDataRecordMapper(typeof(Bar));
 
             //When
-            var result = mapper.MapDataRecord<Bar>(record.Object);
+            var result = (Bar)mapper.MapDataRecord(record.Object);
 
             //Then
             Assert.NotNull(result);
@@ -64,7 +64,7 @@ namespace Normal.UnitTests
             var mapper = new DynamicDataRecordMapper();
 
             //When
-            var result = mapper.MapDataRecord<dynamic>(record.Object);
+            var result = (dynamic)mapper.MapDataRecord(record.Object);
 
             //Then
             Assert.NotNull(result);
@@ -94,10 +94,10 @@ namespace Normal.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var mapper = new PrimitiveDataRecordMapper();
+            var mapper = new PrimitiveDataRecordMapper(typeof(int));
 
             //When
-            var result = mapper.MapDataRecord<int>(record.Object);
+            var result = (int)mapper.MapDataRecord(record.Object);
 
             //Then
             Assert.Equal(777, result);
@@ -120,10 +120,10 @@ namespace Normal.UnitTests
                     Name = "createDate", Value = now,
                }
             });
-            var mapper = new PrimitiveDataRecordMapper();
+            var mapper = new PrimitiveDataRecordMapper(typeof(string));
 
             //When
-            var result = mapper.MapDataRecord<string>(record.Object);
+            var result = (string)mapper.MapDataRecord(record.Object);
 
             //Then
             Assert.Equal("Your lucky day", result);
