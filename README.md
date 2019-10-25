@@ -21,6 +21,20 @@ var stockItems = await context
     .ToListAsync<StockItem>();
 ```
 
+- [Normal](#normal)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [DbContext](#dbcontext)
+    - [Statement Builder](#statement-builder)
+    - [Custom Statements](#custom-statements)
+    - [Middleware](#middleware)
+    - [Custom Middleware](#custom-middleware)
+    - [Transactions](#transactions)
+    - [Dependency Injection](#dependency-injection)
+  - [Building](#building)
+  - [Testing](#testing)
+
 ## Installation
 
 ```bash
