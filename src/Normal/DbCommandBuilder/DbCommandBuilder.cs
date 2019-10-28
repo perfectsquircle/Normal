@@ -9,6 +9,7 @@ namespace Normal
         private string _commandText;
         private int? _commandTimeout;
         private CommandType? _commandType;
+        private IDataRecordMapper _mapper;
         private readonly IDictionary<string, object> _parameters;
 
         public DbCommandBuilder()
@@ -74,6 +75,26 @@ namespace Normal
                 }
                 _parameters[parameter.Key] = parameter.Value;
             }
+            return this;
+        }
+
+        public IDbCommandBuilder WithDataRecordMapper(IDataRecordMapper mapper)
+        {
+            if (mapper == null)
+            {
+                throw new ArgumentNullException(nameof(mapper));
+            }
+            _mapper = mapper;
+            return this;
+        }
+
+        public IDbCommandBuilder WithDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+        {
+            if (mapDataRecord == null)
+            {
+                throw new ArgumentNullException(nameof(mapDataRecord));
+            }
+            _mapper = new AdHocDataRecordMapper(mapDataRecord);
             return this;
         }
 

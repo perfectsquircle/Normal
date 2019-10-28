@@ -11,19 +11,11 @@ namespace Normal
 {
     internal partial class DbCommandBuilder : IDbCommandExecutor
     {
-        private IDbConnectionProvider _dbConnectionProvider;
-        private readonly IDataRecordMapperFactory _dataRecordMapperFactory = new DataRecordMapperFactory();
-        private IHandler _handler;
+        private DbContext _dbContext;
 
-        public DbCommandBuilder WithDbConnectionProvider(IDbConnectionProvider dbConnectionProvider)
+        public DbCommandBuilder WithDbContext(DbContext dbContext)
         {
-            _dbConnectionProvider = dbConnectionProvider;
-            return this;
-        }
-
-        internal DbCommandBuilder WithHandler(IHandler handler)
-        {
-            _handler = handler;
+            _dbContext = dbContext;
             return this;
         }
 
@@ -40,27 +32,27 @@ namespace Normal
 
         public async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default)
         {
-            using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
             {
-                return await _handler.ExecuteNonQueryAsync(command, cancellationToken);
+                return await _dbContext.Handler.ExecuteNonQueryAsync(command, cancellationToken);
             }
         }
 
         public async Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default)
         {
-            using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
             {
-                return (T)(await _handler.ExecuteScalarAsync(command, cancellationToken));
+                return (T)(await _dbContext.Handler.ExecuteScalarAsync(command, cancellationToken));
             }
         }
 
         private async Task<TReturn> WithReader<TReturn>(Func<IDataReader, TReturn> callback, CancellationToken cancellationToken)
         {
-            using (var connection = await _dbConnectionProvider.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
             using (var command = BuildDbCommand(connection))
-            using (var reader = await _handler.ExecuteReaderAsync(command, cancellationToken))
+            using (var reader = await _dbContext.Handler.ExecuteReaderAsync(command, cancellationToken))
             {
                 return callback.Invoke(reader);
             }
@@ -83,7 +75,8 @@ namespace Normal
 
         private IEnumerable ToEnumerable(IDataReader dataReader, Type targetType)
         {
-            return ToEnumerable(dataReader, _dataRecordMapperFactory.CreateMapper(targetType));
+            var mapper = _mapper ?? _dbContext.DataRecordMapperFactory.CreateMapper(targetType);
+            return ToEnumerable(dataReader, mapper);
         }
 
         private static IEnumerable ToEnumerable(IDataReader dataReader, IDataRecordMapper mapper)
