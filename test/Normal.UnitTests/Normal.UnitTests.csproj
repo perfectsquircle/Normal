@@ -7,8 +7,10 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Normal/Normal.csproj" />
     <ProjectReference Include="../../src/Normal.Logging/Normal.Logging.csproj" />
+    <ProjectReference Include="../../src/Normal.Caching/Normal.Caching.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />

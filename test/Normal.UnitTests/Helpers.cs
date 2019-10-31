@@ -1,3 +1,5 @@
+using System;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
@@ -14,6 +16,11 @@ namespace Normal.UnitTests
 
             var factory = new LoggerFactory().AddSerilog(serilogger);
             return factory.CreateLogger(nameof(WideWorldImportersTests));
+        }
+
+        internal static Microsoft.Extensions.Caching.Memory.IMemoryCache GetMemoryCache()
+        {
+            return new MemoryCache(new MemoryCacheOptions());
         }
     }
 }

@@ -21,7 +21,10 @@ namespace Normal.UnitTests
 
         public WideWorldImportersTests()
         {
-            _dbContext = new DbContextBuilder().WithLogging(Helpers.GetLogger()).Build() as DbContext;
+            _dbContext = new DbContextBuilder()
+                .WithLogging(Helpers.GetLogger())
+                .WithCaching(Helpers.GetMemoryCache())
+                .Build() as DbContext;
         }
 
         public static IEnumerable<object[]> GetSelectTestCases()
@@ -170,6 +173,31 @@ namespace Normal.UnitTests
                 transaction.Commit();
             }
             Assert.Null(context.CurrentTransaction);
+        }
+
+        [Fact]
+        public async Task ShouldCacheResults()
+        {
+            //Given
+            var context = _dbContext
+                .WithCreateConnection(_postgresConnection);
+            Func<Task<double>> getResults = async () =>
+            {
+                return await context
+                    .CreateCommand("select random()")
+                    .WithParameter("supplierId", 2)
+                    .CacheFor(TimeSpan.FromMinutes(1))
+                    .FirstAsync<double>();
+            };
+
+            //When
+            var results1 = await getResults();
+            var results2 = await getResults();
+            var results3 = await getResults();
+
+            //Then
+            Assert.Equal(results1, results2);
+            Assert.Equal(results2, results3);
         }
     }
 }

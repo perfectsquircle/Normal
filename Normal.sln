@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Normal.Abstractions", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Normal.Logging", "src\Normal.Logging\Normal.Logging.csproj", "{00AACD2A-48FA-4F8D-8DFB-26EA411CF727}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Normal.Caching", "src\Normal.Caching\Normal.Caching.csproj", "{BF481DDB-8597-49AD-ADA2-E51D421E74E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{00AACD2A-48FA-4F8D-8DFB-26EA411CF727}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00AACD2A-48FA-4F8D-8DFB-26EA411CF727}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00AACD2A-48FA-4F8D-8DFB-26EA411CF727}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF481DDB-8597-49AD-ADA2-E51D421E74E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF481DDB-8597-49AD-ADA2-E51D421E74E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF481DDB-8597-49AD-ADA2-E51D421E74E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF481DDB-8597-49AD-ADA2-E51D421E74E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +65,6 @@ Global
 		{63F9EA98-08A6-4885-8BFC-E138CEB9CACC} = {B7032C72-3248-9A6F-D3F3-676AC8D05167}
 		{58CBC01E-CA80-4620-9E47-DCD2C358E425} = {2E063904-DDE9-BD62-49D9-B9CDE5F8A509}
 		{00AACD2A-48FA-4F8D-8DFB-26EA411CF727} = {2E063904-DDE9-BD62-49D9-B9CDE5F8A509}
+		{BF481DDB-8597-49AD-ADA2-E51D421E74E5} = {2E063904-DDE9-BD62-49D9-B9CDE5F8A509}
 	EndGlobalSection
 EndGlobal
