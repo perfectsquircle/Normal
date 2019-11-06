@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +39,6 @@ namespace Normal
         public async Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default)
         {
             return await _handler.ExecuteScalarAsync<T>(this, cancellationToken);
-
         }
     }
 }

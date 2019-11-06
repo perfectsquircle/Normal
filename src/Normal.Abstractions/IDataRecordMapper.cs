@@ -3,7 +3,7 @@ using System.Data;
 
 namespace Normal
 {
-    internal interface IDataRecordMapper
+    public interface IDataRecordMapper
     {
         object MapDataRecord(IDataRecord dataRecord);
     }

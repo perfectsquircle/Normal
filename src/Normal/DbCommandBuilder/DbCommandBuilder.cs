@@ -11,6 +11,7 @@ namespace Normal
         public int? CommandTimeout { get; private set; }
         public CommandType? CommandType { get; private set; }
         public IDictionary<string, object> Parameters { get; }
+        private IDataRecordMapper _mapper;
 
         public DbCommandBuilder()
         {
@@ -75,6 +76,26 @@ namespace Normal
                 }
                 Parameters[parameter.Key] = parameter.Value;
             }
+            return this;
+        }
+
+        public IDbCommandBuilder WithDataRecordMapper(IDataRecordMapper mapper)
+        {
+            if (mapper == null)
+            {
+                throw new ArgumentNullException(nameof(mapper));
+            }
+            _mapper = mapper;
+            return this;
+        }
+
+        public IDbCommandBuilder WithDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+        {
+            if (mapDataRecord == null)
+            {
+                throw new ArgumentNullException(nameof(mapDataRecord));
+            }
+            _mapper = new AdHocDataRecordMapper(mapDataRecord);
             return this;
         }
 

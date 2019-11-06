@@ -6,11 +6,12 @@ namespace Normal
 {
     public class DbContextBuilder : IDbContextBuilder
     {
-        private CreateConnection _createConnection;
+        private DbContext _dbContext;
         private IList<DelegatingHandler> _delegatingHandlers;
 
         public DbContextBuilder()
         {
+            _dbContext = new DbContext();
             _delegatingHandlers = new List<DelegatingHandler>();
         }
 
@@ -20,7 +21,7 @@ namespace Normal
             {
                 throw new ArgumentNullException(nameof(createConnection));
             }
-            _createConnection = createConnection;
+            _dbContext.CreateConnection = createConnection;
             return this;
         }
 
@@ -35,14 +36,36 @@ namespace Normal
             return this;
         }
 
+        public IDbContextBuilder WithDataRecordMapper(Type type, IDataRecordMapper mapper)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            _dbContext.DataRecordMapperFactory.WithCustomMapper(type, mapper);
+            return this;
+        }
+
+        public IDbContextBuilder WithDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+            if (mapDataRecord == null)
+            {
+                throw new ArgumentNullException(nameof(mapDataRecord));
+            }
+            _dbContext.DataRecordMapperFactory.WithCustomMapper(type, new AdHocDataRecordMapper(mapDataRecord));
+            return this;
+        }
+
         public IDbContext Build()
         {
-            var context = new DbContext();
-            var handler = BuildHandler(context);
-
-            return context
-                .WithHandler(handler)
-                .WithCreateConnection(_createConnection);
+            var handler = BuildHandler(_dbContext);
+            _dbContext.Handler = handler;
+            return _dbContext;
         }
 
         private IHandler BuildHandler(DbContext context)
