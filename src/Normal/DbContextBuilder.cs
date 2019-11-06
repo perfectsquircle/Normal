@@ -37,16 +37,17 @@ namespace Normal
 
         public IDbContext Build()
         {
-            var handler = BuildHandler();
+            var context = new DbContext();
+            var handler = BuildHandler(context);
 
-            return new DbContext()
-                .WithCreateConnection(_createConnection)
-                .WithHandler(handler);
+            return context
+                .WithHandler(handler)
+                .WithCreateConnection(_createConnection);
         }
 
-        private IHandler BuildHandler()
+        private IHandler BuildHandler(DbContext context)
         {
-            IHandler head = new BaseHandler();
+            IHandler head = new BaseHandler(context);
 
             // Connect all the delegating handlers in a chain
             foreach (var handler in _delegatingHandlers.Reverse())

@@ -1,26 +1,27 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 
 namespace Normal
 {
     internal class DbConnectionWrapper : IDbConnectionWrapper
     {
-        public IDbConnection DbConnection { get; private set; }
-        public IDbTransaction DbTransaction { get; private set; }
+        public DbConnection DbConnection { get; private set; }
+        public DbTransaction DbTransaction { get; private set; }
 
-        public DbConnectionWrapper(IDbConnection dbConnection)
+        public DbConnectionWrapper(DbConnection dbConnection)
         {
             DbConnection = dbConnection;
         }
 
-        public DbConnectionWrapper(IDbConnection dbConnection, IDbTransaction transaction)
+        public DbConnectionWrapper(DbConnection dbConnection, DbTransaction transaction)
         {
             DbConnection = dbConnection;
             DbTransaction = transaction;
         }
 
-        public IDbCommand CreateCommand()
+        public DbCommand CreateCommand()
         {
             var command = DbConnection.CreateCommand();
             command.Connection = DbConnection;

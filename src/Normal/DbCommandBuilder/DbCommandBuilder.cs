@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 
 namespace Normal
 {
     internal partial class DbCommandBuilder : IDbCommandBuilder
     {
-        private string _commandText;
-        private int? _commandTimeout;
-        private CommandType? _commandType;
-        private readonly IDictionary<string, object> _parameters;
+        public string CommandText { get; private set; }
+        public int? CommandTimeout { get; private set; }
+        public CommandType? CommandType { get; private set; }
+        public IDictionary<string, object> Parameters { get; }
 
         public DbCommandBuilder()
         {
-            _parameters = new Dictionary<string, object>();
+            Parameters = new Dictionary<string, object>();
         }
 
         public IDbCommandBuilder WithCommandText(string commandText)
@@ -23,19 +24,19 @@ namespace Normal
                 throw new ArgumentNullException(nameof(commandText));
             }
 
-            _commandText = commandText;
+            CommandText = commandText;
             return this;
         }
 
         public IDbCommandBuilder WithCommandTimeout(int commandTimeout)
         {
-            _commandTimeout = commandTimeout;
+            CommandTimeout = commandTimeout;
             return this;
         }
 
         public IDbCommandBuilder WithCommandType(CommandType commandType)
         {
-            _commandType = commandType;
+            CommandType = commandType;
             return this;
         }
 
@@ -45,7 +46,7 @@ namespace Normal
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            _parameters[key] = value;
+            Parameters[key] = value;
             return this;
         }
 
@@ -72,28 +73,28 @@ namespace Normal
                 {
                     continue;
                 }
-                _parameters[parameter.Key] = parameter.Value;
+                Parameters[parameter.Key] = parameter.Value;
             }
             return this;
         }
 
-        public IDbCommand Build(IDbConnectionWrapper connection)
+        public DbCommand Build(IDbConnectionWrapper connection)
         {
             var command = connection.CreateCommand();
-            if (_commandText != null)
+            if (CommandText != null)
             {
-                command.CommandText = _commandText;
+                command.CommandText = CommandText;
             }
-            if (_commandTimeout != null)
+            if (CommandTimeout != null)
             {
-                command.CommandTimeout = _commandTimeout.Value;
+                command.CommandTimeout = CommandTimeout.Value;
             }
-            if (_commandType != null)
+            if (CommandType != null)
             {
-                command.CommandType = _commandType.Value;
+                command.CommandType = CommandType.Value;
             }
 
-            foreach (var parameter in _parameters)
+            foreach (var parameter in Parameters)
             {
                 var dbParameter = command.CreateParameter();
                 dbParameter.ParameterName = parameter.Key;

@@ -19,7 +19,7 @@ namespace Normal
         {
             _semaphore = new SemaphoreSlim(1, 1);
             _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
-            _handler = new BaseHandler();
+            _handler = new BaseHandler(this);
         }
 
         public DbContext(CreateConnection createConnection)
@@ -37,7 +37,6 @@ namespace Normal
         public IDbCommandBuilder CreateCommand(string commandText)
         {
             return new DbCommandBuilder()
-                .WithDbConnectionProvider(this)
                 .WithHandler(_handler)
                 .WithCommandText(commandText);
         }
@@ -88,7 +87,7 @@ namespace Normal
             }
         }
 
-        private async Task<IDbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
+        private async Task<DbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
         {
             if (_createConnection == null)
             {
@@ -99,12 +98,13 @@ namespace Normal
             {
                 throw new InvalidOperationException("Connection is null");
             }
-            if (!(connection is DbConnection))
+            var dbConnection = connection as DbConnection;
+            if (dbConnection == null)
             {
                 throw new NotSupportedException("Connection must be DbConnection");
             }
-            await (connection as DbConnection).OpenAsync(cancellationToken).ConfigureAwait(false);
-            return connection;
+            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+            return dbConnection;
         }
 
         public void Dispose()

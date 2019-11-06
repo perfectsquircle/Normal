@@ -1,4 +1,5 @@
 using System.Data;
+using System.Data.Common;
 
 namespace Normal
 {
@@ -36,7 +37,7 @@ namespace Normal
             return this;
         }
 
-        internal void Enlist(IDbConnection dbConnection)
+        internal void Enlist(DbConnection dbConnection)
         {
             _connection = new DbConnectionWrapper(dbConnection, dbConnection.BeginTransaction(IsolationLevel));
         }

@@ -1,7 +1,5 @@
 using System;
-using System.Data;
-using System.Data.Common;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,63 +19,55 @@ namespace Normal
             this.memoryCache = memoryCache;
         }
 
-        public override Task<int> ExecuteNonQueryAsync(DbCommand command, CancellationToken cancellationToken)
+        public override Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            return InnerHandler.ExecuteNonQueryAsync(command, cancellationToken);
+            return InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
         }
 
-        public override async Task<DbDataReader> ExecuteReaderAsync(DbCommand command, CancellationToken cancellationToken)
+        public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            if (!command.Parameters.Contains(NormalTtl))
+            return await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
+        }
+
+        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        {
+            if (!commandBuilder.Parameters.ContainsKey(NormalTtl))
             {
-                return await InnerHandler.ExecuteReaderAsync(command, cancellationToken);
+                return await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
             }
 
-            var cacheKey = CalculateCacheKey(command);
-            var ttl = GetTtl(command);
+            var cacheKey = CalculateCacheKey(commandBuilder);
+            var ttl = GetTtl(commandBuilder);
 
-            var dataTable = await memoryCache.GetOrCreateAsync<DataTable>(cacheKey, async (cacheEntry) =>
+            var results = await memoryCache.GetOrCreateAsync<IEnumerable<T>>(cacheKey, async (cacheEntry) =>
             {
                 cacheEntry.SlidingExpiration = ttl;
-                using (var reader = await InnerHandler.ExecuteReaderAsync(command, cancellationToken))
-                {
-                    DataTable t = new DataTable();
-                    t.Load(reader);
-                    return t;
-                }
+                var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
+                return results.ToList();
             });
-            return dataTable.CreateDataReader();
+            return results;
         }
 
-        private static TimeSpan? GetTtl(DbCommand command)
+        private static TimeSpan? GetTtl(IDbCommandBuilder command)
         {
-            var ttlParam = command.Parameters[NormalTtl];
+            var ttlParam = command.Parameters.First(p => p.Key == NormalTtl);
             var ttl = ttlParam.Value as TimeSpan?;
             command.Parameters.Remove(ttlParam);
             return ttl;
         }
 
-        private static string CalculateCacheKey(DbCommand command)
+        private static string CalculateCacheKey(IDbCommandBuilder command)
         {
-            string hash;
             using (var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
             {
-                // For each block:
                 md5.AppendData(Encoding.UTF8.GetBytes(command.CommandText));
-                foreach (var param in command.Parameters.Cast<DbParameter>())
+                foreach (var param in command.Parameters)
                 {
-                    md5.AppendData(Encoding.UTF8.GetBytes(param.ParameterName));
+                    md5.AppendData(Encoding.UTF8.GetBytes(param.Key));
                     md5.AppendData(Encoding.UTF8.GetBytes(Convert.ToString(param.Value)));
                 }
-                hash = Convert.ToBase64String(md5.GetHashAndReset());
+                return Convert.ToBase64String(md5.GetHashAndReset());
             }
-
-            return hash;
-        }
-
-        public override async Task<object> ExecuteScalarAsync(DbCommand command, CancellationToken cancellationToken)
-        {
-            return await InnerHandler.ExecuteScalarAsync(command, cancellationToken);
         }
     }
 }

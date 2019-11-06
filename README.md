@@ -162,6 +162,7 @@ Middleware can be added to `DbContext` that will execute on every database reque
 
 Existing middleware:
 * [Normal.Logging](./src/Normal.Logging/README.md)
+* [Normal.Caching](./src/Normal.Caching/README.md)
 
 Middleware is incorporated using the `DbContextBuilder` class. 
 
@@ -195,26 +196,26 @@ Normal is extensible, and you can write your own middleware!
 ```csharp
 public class AwesomeHandler : DelegatingHandler
 {
-    public override async Task<int> ExecuteNonQueryAsync(DbCommand command, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before non-query
-        var rowsAffected = await InnerHandler.ExecuteNonQueryAsync(command, cancellationToken);
+        var rowsAffected = await InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
         // Do stuff after non-query
         return rowsAffected;
     }
 
-    public override async Task<DbDataReader> ExecuteReaderAsync(DbCommand command, CancellationToken cancellationToken)
+    public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before query
-        var reader = await InnerHandler.ExecuteReaderAsync(command, cancellationToken);
+        var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
         // Do stuff after query
-        return reader;
+        return results;
     }
 
-    public override async Task<object> ExecuteScalarAsync(DbCommand command, CancellationToken cancellationToken)
+    public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before scalar
-        var result = await InnerHandler.ExecuteScalarAsync(command, cancellationToken);
+        var result = await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
         // Do stuff after scalar
         return result;
     }

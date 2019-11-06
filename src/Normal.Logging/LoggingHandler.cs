@@ -1,6 +1,5 @@
-using System.Data.Common;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,56 +15,56 @@ namespace Normal
             _logger = logger;
         }
 
-        public override async Task<int> ExecuteNonQueryAsync(DbCommand command, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             var rowsAffected = 0;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
             {
-                rowsAffected = await InnerHandler.ExecuteNonQueryAsync(command, cancellationToken);
+                rowsAffected = await InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
                 return rowsAffected;
             }
             finally
             {
-                var parameters = command.Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
+                var parameters = commandBuilder.Parameters;
                 _logger.LogInformation("non-query: {commandText}\n\tparameters: {parameters}\n\telapsed: {ElapsedMilliseconds}ms\n\trows affected: {rows affected}",
-                    command.CommandText, parameters, stopwatch.ElapsedMilliseconds, rowsAffected);
+                    commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds, rowsAffected);
             }
         }
 
-        public override async Task<DbDataReader> ExecuteReaderAsync(DbCommand command, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
             {
-                var reader = await InnerHandler.ExecuteReaderAsync(command, cancellationToken);
-                return reader;
+                var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
+                return results;
             }
             finally
             {
-                var parameters = command.Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
+                var parameters = commandBuilder.Parameters;
                 _logger.LogInformation("query: {commandText}\n\tparameters: {parameters}\n\telapsed: {ElapsedMilliseconds}ms",
-                    command.CommandText, parameters, stopwatch.ElapsedMilliseconds);
+                    commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds);
             }
         }
 
-        public override async Task<object> ExecuteScalarAsync(DbCommand command, CancellationToken cancellationToken)
+        public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            object result = default(object);
+            T result = default(T);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try
             {
-                result = await InnerHandler.ExecuteScalarAsync(command, cancellationToken);
+                result = await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
                 return result;
             }
             finally
             {
-                var parameters = command.Parameters.Cast<DbParameter>().ToDictionary(p => p.ParameterName, p => p.Value);
+                var parameters = commandBuilder.Parameters;
                 _logger.LogInformation("scalar: {commandText}\n\tparameters: {parameters}\n\telapsed: {ElapsedMilliseconds}ms\n\rresult: {result}",
-                    command.CommandText, parameters, stopwatch.ElapsedMilliseconds, result);
+                    commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds, result);
             }
         }
     }

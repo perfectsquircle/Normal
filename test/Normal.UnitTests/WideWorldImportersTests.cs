@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using Normal.UnitTests.Fixtures;
 using Xunit;
-using Serilog;
-using Serilog.Core;
-using Microsoft.Extensions.Logging;
 
 namespace Normal.UnitTests
 {
