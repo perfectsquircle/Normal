@@ -6,39 +6,37 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    public class DbContext : IDbContext, IDbConnectionProvider
+    public class DbContext : IDbContext
     {
-        private CreateConnection _createConnection;
-        private readonly SemaphoreSlim _semaphore;
-        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction;
-        private IHandler _handler;
-
-        internal DbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
-
-        public DbContext()
+        internal CreateConnection CreateConnection { get; set; }
+        internal IHandler Handler { get; set; }
+        internal DataRecordMapperFactory DataRecordMapperFactory { get; }
+        internal DbTransactionWrapper CurrentTransaction
         {
-            _semaphore = new SemaphoreSlim(1, 1);
-            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
-            _handler = new BaseHandler();
+            get { return _currentTransaction.Value; }
+            private set { _currentTransaction.Value = value; }
         }
+        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction;
+        private readonly SemaphoreSlim _semaphore;
 
         public DbContext(CreateConnection createConnection)
             : this()
         {
-            _createConnection = createConnection;
+            CreateConnection = createConnection;
         }
 
-        public DbContext WithCreateConnection(CreateConnection createConnection)
+        internal DbContext()
         {
-            _createConnection = createConnection;
-            return this;
+            _semaphore = new SemaphoreSlim(1, 1);
+            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+            Handler = new BaseHandler();
+            DataRecordMapperFactory = new DataRecordMapperFactory();
         }
 
         public IDbCommandBuilder CreateCommand(string commandText)
         {
             return new DbCommandBuilder()
-                .WithDbConnectionProvider(this)
-                .WithHandler(_handler)
+                .WithDbContext(this)
                 .WithCommandText(commandText);
         }
 
@@ -88,13 +86,26 @@ namespace Normal
             }
         }
 
+        public void Dispose()
+        {
+            CurrentTransaction?.Dispose();
+            CurrentTransaction = null;
+            _semaphore?.Dispose();
+        }
+
+        internal DbContext WithCreateConnection(CreateConnection createConnection)
+        {
+            CreateConnection = createConnection;
+            return this;
+        }
+
         private async Task<IDbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            if (_createConnection == null)
+            if (CreateConnection == null)
             {
                 throw new InvalidOperationException("No DB Connection Creator");
             }
-            var connection = _createConnection.Invoke();
+            var connection = CreateConnection.Invoke();
             if (connection == null)
             {
                 throw new InvalidOperationException("Connection is null");
@@ -105,23 +116,6 @@ namespace Normal
             }
             await (connection as DbConnection).OpenAsync(cancellationToken).ConfigureAwait(false);
             return connection;
-        }
-
-        public void Dispose()
-        {
-            CurrentTransaction?.Dispose();
-            CurrentTransaction = null;
-            _semaphore?.Dispose();
-        }
-
-        internal DbContext WithHandler(IHandler handler)
-        {
-            if (handler == null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-            _handler = handler;
-            return this;
         }
     }
 }
