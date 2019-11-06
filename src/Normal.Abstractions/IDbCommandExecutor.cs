@@ -11,7 +11,7 @@ namespace Normal
         Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default);
         Task<T> SingleAsync<T>(CancellationToken cancellationToken = default);
         Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default);
-        Task<int> ExecuteAsync(CancellationToken cancellationToken = default);
-        Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default);
+        Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default);
+        Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default);
     }
 }

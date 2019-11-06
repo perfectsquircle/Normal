@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--  NuGet Metadata -->
+    <Title>Normal.Abstractions</Title>
+    <PackageId>Normal.Abstractions</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Description>Abstractions for a Normal ORM</Description>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+  </PropertyGroup>
+
+</Project>

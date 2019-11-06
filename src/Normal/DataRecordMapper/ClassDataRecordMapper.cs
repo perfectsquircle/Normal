@@ -10,12 +10,18 @@ namespace Normal
     {
         private IList<PropertyMapper> _propertyMappers;
         private TypeAccessor _typeAccessor;
+        private Type _targetType;
 
-        public T MapDataRecord<T>(IDataRecord dataRecord)
+        public ClassDataRecordMapper(Type targetType)
+        {
+            _targetType = targetType;
+        }
+
+        public object MapDataRecord(IDataRecord dataRecord)
         {
             if (_typeAccessor == null)
             {
-                _typeAccessor = TypeAccessor.Create(typeof(T));
+                _typeAccessor = TypeAccessor.Create(_targetType);
             }
             if (_propertyMappers == null)
             {
@@ -28,7 +34,7 @@ namespace Normal
                 var fieldValue = mapper.MapProperty(dataRecord);
                 _typeAccessor[instance, mapper.PropertyName] = fieldValue;
             }
-            return (T)instance;
+            return instance;
         }
 
         private static IEnumerable<string> GetVariants(string columnName)

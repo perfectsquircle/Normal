@@ -211,11 +211,11 @@ namespace Normal.UnitTests
             //When
             var results = await context
                 .CreateCommand("select 1")
-                .ExecuteAsync<int>();
+                .ExecuteScalarAsync<int>();
 
             var results2 = await context
                 .CreateCommand("select 'hello, there'")
-                .ExecuteAsync<string>();
+                .ExecuteScalarAsync<string>();
 
             //Then
             Assert.Equal(1, results);
@@ -233,15 +233,15 @@ namespace Normal.UnitTests
             //When
             var results = context
                 .CreateCommand("select 1")
-                .ExecuteAsync<int>();
+                .ExecuteScalarAsync<int>();
 
             var results2 = context
                 .CreateCommand("select 2")
-                .ExecuteAsync<int>();
+                .ExecuteScalarAsync<int>();
 
             var results3 = context
                 .CreateCommand("select 3")
-                .ExecuteAsync<int>();
+                .ExecuteScalarAsync<int>();
 
             //Then
             Assert.Equal(1, await results);
@@ -255,7 +255,7 @@ namespace Normal.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithCreateConnection(dbConnection);
+                .WithCreateConnection(dbConnection) as DbContext;
 
             //When
             using (var transaction = context.BeginTransaction())

@@ -27,10 +27,10 @@ namespace Normal
             ToCommand().SingleAsync<T>(cancellationToken);
         public Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
-        public Task<int> ExecuteAsync(CancellationToken cancellationToken = default) =>
-             ToCommand().ExecuteAsync(cancellationToken);
-        public Task<T> ExecuteAsync<T>(CancellationToken cancellationToken = default) =>
-            ToCommand().ExecuteAsync<T>(cancellationToken);
+        public Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) =>
+             ToCommand().ExecuteNonQueryAsync(cancellationToken);
+        public Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().ExecuteScalarAsync<T>(cancellationToken);
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {

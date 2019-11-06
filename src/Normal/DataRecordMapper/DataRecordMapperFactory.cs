@@ -21,7 +21,7 @@ namespace Normal
 
             if (targetType.IsPrimitive || targetType.IsEnum || _primitiveExtensions.Any(primitiveExtension => primitiveExtension.IsAssignableFrom(targetType)))
             {
-                return new PrimitiveDataRecordMapper();
+                return new PrimitiveDataRecordMapper(type);
             }
             else if (targetType == typeof(object))
             {
@@ -29,7 +29,7 @@ namespace Normal
             }
             else
             {
-                return new ClassDataRecordMapper();
+                return new ClassDataRecordMapper(type);
             }
         }
     }

@@ -6,21 +6,7 @@
     <PackageId>Normal</PackageId>
     <VersionPrefix>0.1.0</VersionPrefix>
     <Description>A Normal ORM</Description>
-    <Authors>Calvin Furano</Authors>
-    <Copyright>2019 Calvin Furano</Copyright>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageTags>orm;sql;micro-orm</PackageTags>
-    <PackageProjectUrl>https://github.com/perfectsquircle/normal</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/perfectsquircle/normal</RepositoryUrl>
-
-    <!-- Project Configuration -->
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>Normal</AssemblyName>
-    <RootNamespace>Normal</RootNamespace>
-    <LangVersion>latest</LangVersion>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>CS1591</NoWarn>
@@ -34,5 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FastMember" Version="1.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Normal.Abstractions\Normal.Abstractions.csproj" />
   </ItemGroup>
 </Project>

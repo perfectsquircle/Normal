@@ -9,12 +9,17 @@ namespace Normal
     public class DbContext : IDbContext, IDbConnectionProvider
     {
         private CreateConnection _createConnection;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+        private readonly SemaphoreSlim _semaphore;
+        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction;
+        private IHandler _handler;
+
         internal DbTransactionWrapper CurrentTransaction { get { return _currentTransaction.Value; } set { _currentTransaction.Value = value; } }
 
         public DbContext()
         {
+            _semaphore = new SemaphoreSlim(1, 1);
+            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+            _handler = new BaseHandler();
         }
 
         public DbContext(CreateConnection createConnection)
@@ -33,6 +38,7 @@ namespace Normal
         {
             return new DbCommandBuilder()
                 .WithDbConnectionProvider(this)
+                .WithHandler(_handler)
                 .WithCommandText(commandText);
         }
 
@@ -107,7 +113,15 @@ namespace Normal
             CurrentTransaction = null;
             _semaphore?.Dispose();
         }
-    }
 
-    public delegate IDbConnection CreateConnection();
+        internal DbContext WithHandler(IHandler handler)
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+            _handler = handler;
+            return this;
+        }
+    }
 }

@@ -8,6 +8,7 @@
 
 * Wraps ADO.NET with an async-first and fluent API.
 * Maps DataReader results to a strongly typed list of objects.
+* Add middleware to database access, for cross-cutting features like logging, caching, etc.
 * CRUD operations don't require boilerplate of creating a new connection, opening, and disposing it.
 * Transaction state can be carried between different repositories.
 
@@ -19,6 +20,20 @@ var stockItems = await context
     .OrderBy("stock_item_name")
     .ToListAsync<StockItem>();
 ```
+
+- [Normal](#normal)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [DbContext](#dbcontext)
+    - [Statement Builder](#statement-builder)
+    - [Custom Statements](#custom-statements)
+    - [Middleware](#middleware)
+    - [Custom Middleware](#custom-middleware)
+    - [Transactions](#transactions)
+    - [Dependency Injection](#dependency-injection)
+  - [Building](#building)
+  - [Testing](#testing)
 
 ## Installation
 
@@ -139,18 +154,106 @@ int rowsAffected = await context
 string firstName = await context
     .CreateCommand(@"SELECT first_name FROM customer WHERE id = 42")
     .ExecuteAsync<string>();
+```
 
-// Execute a stored procedure
-List<Customers> customers = await context
-    .CreateCommand(@"spGetCustomers")
-    .WithParameter("lastName", "Cuervo")
-    .WithCommandType(CommandType.StoredProcedure)
-    .ToListAsync<Customer>();
+### Middleware
+
+Middleware can be added to `DbContext` that will execute on every database request. 
+
+Existing middleware:
+* [Normal.Logging](./src/Normal.Logging/README.md)
+
+Middleware is incorporated using the `DbContextBuilder` class. 
+
+```csharp
+var context = new DbContextBuilder()
+    .WithCreateConnection(() => new NpgsqlConnection("..."))
+    .WithLogging(logger) // Add logging middleware.
+    .Build();
+
+// Now every query will be logged at info level
+
+var results = await context
+    .Select("stock_item_id", "stock_item_name")
+    .From("warehouse.stock_items")
+    .Where("supplier_id").EqualTo(2)
+    .And("tax_rate").EqualTo(15.0)
+    .OrderBy("stock_item_id")
+    .ToListAsync<StockItem>();
+
+/**
+[9:10:11 INF] query: SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @normal_1 AND tax_rate = @normal_2 ORDER BY stock_item_id
+        parameters: {"normal_1": 2, "normal_2": 15}
+        elapsed: 5ms
+**/
+```
+
+### Custom Middleware
+
+Normal is extensible, and you can write your own middleware!
+
+```csharp
+public class AwesomeHandler : DelegatingHandler
+{
+    public override async Task<int> ExecuteNonQueryAsync(DbCommand command, CancellationToken cancellationToken)
+    {
+        // Do stuff before non-query
+        var rowsAffected = await InnerHandler.ExecuteNonQueryAsync(command, cancellationToken);
+        // Do stuff after non-query
+        return rowsAffected;
+    }
+
+    public override async Task<DbDataReader> ExecuteReaderAsync(DbCommand command, CancellationToken cancellationToken)
+    {
+        // Do stuff before query
+        var reader = await InnerHandler.ExecuteReaderAsync(command, cancellationToken);
+        // Do stuff after query
+        return reader;
+    }
+
+    public override async Task<object> ExecuteScalarAsync(DbCommand command, CancellationToken cancellationToken)
+    {
+        // Do stuff before scalar
+        var result = await InnerHandler.ExecuteScalarAsync(command, cancellationToken);
+        // Do stuff after scalar
+        return result;
+    }
+}
+```
+
+You can add this to `DbContext` by using `DbContextBuilder`.
+
+```csharp
+var context = new DbContextBuilder()
+    .WithDelegatingHandler(new AwesomeHandler()) // Add custom middleware.
+    .Build();
+```
+
+Middleware is executed in the order that it was added. For example, if you added three DelegatingHandlers...
+
+```csharp
+var context = new DbContextBuilder()
+    .WithDelegatingHandler(new A())
+    .WithDelegatingHandler(new B())
+    .WithDelegatingHandler(new C())
+    .Build();
+```
+
+Then for every database query, the middlewares are executed in order in a nested fashion.
+
+```
+A
+  B
+    C
+      BaseHandler
+    C
+  B
+A
 ```
 
 ### Transactions
 
-To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to connection pooling behavior.å
+To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to connection pooling behavior.
 
 This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance....
 
@@ -171,11 +274,11 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
 }
 ```
 
-Traditionally (with ADO or Dapper) you would have to pass around instances of your `IDbConnection` and `IDbTransaction` as method parameters, which is messy, rewrite a boilerplate connection provider class every time, or resort to using TransactionScope, which some developers believe is Dark Magic.
+Traditionally (with ADO or Dapper) you would have to pass around instances of your `IDbConnection` and `IDbTransaction` as method parameters, which is messy, rewrite a boilerplate connection provider class every time, or resort to using TransactionScope.
 
 ### Dependency Injection
 
-If you're using a IoC container, like the one in AspNetCore, it's best to have `DbContext` be registered as "Scoped".
+If you're using a IoC container, like the one in AspNetCore, it's best to have `DbContext` be registered as "Scoped" or "Singleton".
 
 ```csharp
 services.AddScoped<IDbContext>(
@@ -198,7 +301,7 @@ To build the NuGet package.
 make pack
 ```
 
-This project targets both .NET Standard 2.0 and .NET Framework 4.5.1. Because of this, you must have .NET Framework or Mono installed (in addition to .NET Core).
+This project targets both .NET Standard 2.0 and .NET Framework 4.6.1. Because of this, you must have .NET Framework or Mono installed (in addition to .NET Core).
 
 On macOS and Linux build environments, to build from .NET Core you must set the `FrameworkPathOverride` environment variable.
 
