@@ -318,6 +318,28 @@ namespace Normal.UnitTests
             });
         }
 
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task CreateCommandFromResource(CreateConnection dbConnection)
+        {
+            //Given
+            var context = new DbContext()
+                .WithCreateConnection(dbConnection);
+
+            //When
+            IList<dynamic> results = await context
+                .CreateCommandFromResource("Foo.sql")
+                .ToListAsync<dynamic>();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            var bar = results.Single();
+            Assert.Equal(1, bar.x);
+            Assert.Equal(2, bar.y);
+            Assert.Equal(3, bar.z);
+        }
+
         public static IEnumerable<object[]> GetDbConnection()
         {
             yield return new object[] { (CreateConnection)(() => new NpgsqlConnection("Host=localhost;Database=postgres;Username=postgres;Password=normal")) };

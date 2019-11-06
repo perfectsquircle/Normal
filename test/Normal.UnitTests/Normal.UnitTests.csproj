@@ -5,6 +5,9 @@
     <RootNamespace>Normal.UnitTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Queries\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../src/Normal/Normal.csproj" />
     <ProjectReference Include="../../src/Normal.Logging/Normal.Logging.csproj" />
     <ProjectReference Include="../../src/Normal.Caching/Normal.Caching.csproj" />
