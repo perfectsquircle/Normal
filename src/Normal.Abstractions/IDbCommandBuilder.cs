@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -11,6 +10,7 @@ namespace Normal
         IDictionary<string, object> Parameters { get; }
         int? CommandTimeout { get; }
         CommandType? CommandType { get; }
+        IDataRecordMapper Mapper { get; }
         IDbCommandBuilder WithCommandText(string commandText);
         IDbCommandBuilder WithCommandTimeout(int commandTimeout);
         IDbCommandBuilder WithCommandType(CommandType commandType);

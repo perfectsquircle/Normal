@@ -60,10 +60,11 @@ LIMIT 100";
         public async Task ShouldBeQueryable2()
         {
             //Given
-            var context = new DbContextBuilder()
-                .WithCreateConnection(_postgresConnection)
-                .WithLogging(Helpers.GetLogger())
-                .Build();
+            var context = DbContext.Build(builder =>
+            {
+                builder.UseConnection(_postgresConnection);
+                builder.UseLogging(Helpers.GetLogger());
+            });
 
             //When
             var results = await context
@@ -90,7 +91,7 @@ LIMIT 100";
         public async Task ShouldBeQueryableDynamic()
         {
             //Given
-            var context = new DbContext().WithCreateConnection(_postgresConnection);
+            var context = new DbContext().UseConnection(_postgresConnection);
 
             //When
             var results = await context
@@ -117,7 +118,7 @@ LIMIT 100";
         public async Task FirstOrDefaultAsync()
         {
             //Given
-            var context = new DbContext().WithCreateConnection(_postgresConnection);
+            var context = new DbContext().UseConnection(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -138,7 +139,7 @@ LIMIT 100";
         public async Task FirstAsync()
         {
             //Given
-            var context = new DbContext().WithCreateConnection(_postgresConnection);
+            var context = new DbContext().UseConnection(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -159,7 +160,7 @@ LIMIT 100";
         public async Task SingleAsync()
         {
             //Given
-            var context = new DbContext().WithCreateConnection(_postgresConnection);
+            var context = new DbContext().UseConnection(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -178,7 +179,7 @@ LIMIT 100";
         public async Task SingleOrDefualtAsync()
         {
             //Given
-            var context = new DbContext().WithCreateConnection(_postgresConnection);
+            var context = new DbContext().UseConnection(_postgresConnection);
 
             //When
             var stockItem = await context

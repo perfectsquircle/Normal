@@ -17,10 +17,11 @@ namespace Normal.UnitTests
 
         public WideWorldImportersTests()
         {
-            _dbContext = new DbContextBuilder()
-                .WithLogging(Helpers.GetLogger())
-                .WithCaching(Helpers.GetMemoryCache())
-                .Build() as DbContext;
+            _dbContext = DbContext.Build(builder =>
+            {
+                builder.UseLogging(Helpers.GetLogger());
+                builder.UseCaching(Helpers.GetMemoryCache());
+            });
         }
 
         public static IEnumerable<object[]> GetSelectTestCases()
@@ -34,7 +35,7 @@ namespace Normal.UnitTests
         public async Task ShouldSelectFromStockItems(CreateConnection dbConnection, string query)
         {
             //Given
-            var context = _dbContext.WithCreateConnection(dbConnection);
+            var context = _dbContext.UseConnection(dbConnection);
 
             //When
             var results = await context
@@ -65,7 +66,7 @@ namespace Normal.UnitTests
         public async Task ShouldSelectFromStockItemsWithParameters(CreateConnection dbConnection, string query)
         {
             //Given
-            var context = _dbContext.WithCreateConnection(dbConnection);
+            var context = _dbContext.UseConnection(dbConnection);
 
             //When
             var results = await context
@@ -98,7 +99,7 @@ namespace Normal.UnitTests
         public async Task ShouldSelectBoolean(CreateConnection dbConnection, string query)
         {
             //Given
-            var context = _dbContext.WithCreateConnection(dbConnection);
+            var context = _dbContext.UseConnection(dbConnection);
 
             //When
             var results = await context
@@ -122,7 +123,7 @@ namespace Normal.UnitTests
         public async Task ShouldHandleNullableInt(CreateConnection dbConnection, string query)
         {
             //Given
-            var context = _dbContext.WithCreateConnection(dbConnection);
+            var context = _dbContext.UseConnection(dbConnection);
 
             //When
             var results = await context
@@ -140,7 +141,7 @@ namespace Normal.UnitTests
         {
             //Given
             var context = new DbContext()
-                .WithCreateConnection(_postgresConnection) as DbContext;
+                .UseConnection(_postgresConnection) as DbContext;
 
             //When
             using (var transaction = context.BeginTransaction())
@@ -176,7 +177,7 @@ namespace Normal.UnitTests
         {
             //Given
             var context = _dbContext
-                .WithCreateConnection(_postgresConnection);
+                .UseConnection(_postgresConnection);
             Func<Task<double>> getResults = async () =>
             {
                 return await context

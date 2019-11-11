@@ -5,11 +5,11 @@ namespace Normal
 {
     internal class DbTransactionWrapper : IDbTransaction
     {
-        private OnDispose _onDispose;
         private DbConnectionWrapper _connection;
         private IDbTransaction DbTransaction => _connection?.DbTransaction;
         public IDbConnection Connection => _connection?.DbConnection;
         public IsolationLevel IsolationLevel { get; private set; }
+        public event OnDispose OnDispose;
 
         public void Commit() => DbTransaction?.Commit();
 
@@ -18,7 +18,7 @@ namespace Normal
         public void Dispose()
         {
             // This is called by the end user when their transaction is complete.
-            _onDispose.Invoke();
+            OnDispose();
             _connection?.Dispose(true);
         }
 
@@ -33,7 +33,7 @@ namespace Normal
 
         internal DbTransactionWrapper WithOnDispose(OnDispose onDispose)
         {
-            _onDispose = onDispose;
+            OnDispose += onDispose;
             return this;
         }
 

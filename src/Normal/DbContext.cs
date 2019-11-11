@@ -33,6 +33,17 @@ namespace Normal
             DataRecordMapperFactory = new DataRecordMapperFactory();
         }
 
+        public static DbContext Build(Action<IDbContextBuilder> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+            var dbContextBuilder = new DbContextBuilder();
+            configure(dbContextBuilder);
+            return dbContextBuilder.Build();
+        }
+
         public IDbCommandBuilder CreateCommand(string commandText)
         {
             return new DbCommandBuilder()
@@ -93,7 +104,7 @@ namespace Normal
             _semaphore?.Dispose();
         }
 
-        internal DbContext WithCreateConnection(CreateConnection createConnection)
+        internal DbContext UseConnection(CreateConnection createConnection)
         {
             CreateConnection = createConnection;
             return this;

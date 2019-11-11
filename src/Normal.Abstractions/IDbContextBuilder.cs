@@ -5,11 +5,10 @@ namespace Normal
 {
     public interface IDbContextBuilder
     {
-        IDbContextBuilder WithCreateConnection(CreateConnection createConnection);
-        IDbContextBuilder WithDelegatingHandler(DelegatingHandler delegatingHandler);
-        IDbContextBuilder WithDataRecordMapper(Type type, IDataRecordMapper mapper);
-        IDbContextBuilder WithDataRecordMapper(Type type, MapDataRecord mapDataRecord);
-        IDbContext Build();
+        IDbContextBuilder UseConnection(CreateConnection createConnection);
+        IDbContextBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler);
+        IDbContextBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper);
+        IDbContextBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord);
     }
 
     public delegate IDbConnection CreateConnection();

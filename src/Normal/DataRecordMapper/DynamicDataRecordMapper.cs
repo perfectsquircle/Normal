@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
@@ -8,6 +7,7 @@ namespace Normal
     internal class DynamicDataRecordMapper : IDataRecordMapper
     {
         private IList<string> _columnNames;
+
         public object MapDataRecord(IDataRecord dataRecord)
         {
             if (_columnNames == null)

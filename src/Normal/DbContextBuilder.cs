@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Normal
 {
-    public class DbContextBuilder : IDbContextBuilder
+    internal class DbContextBuilder : IDbContextBuilder
     {
         private DbContext _dbContext;
         private IList<DelegatingHandler> _delegatingHandlers;
@@ -15,7 +15,7 @@ namespace Normal
             _delegatingHandlers = new List<DelegatingHandler>();
         }
 
-        public IDbContextBuilder WithCreateConnection(CreateConnection createConnection)
+        public IDbContextBuilder UseConnection(CreateConnection createConnection)
         {
             if (createConnection == null)
             {
@@ -25,7 +25,7 @@ namespace Normal
             return this;
         }
 
-        public IDbContextBuilder WithDelegatingHandler(DelegatingHandler delegatingHandler)
+        public IDbContextBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler)
         {
             if (delegatingHandler == null)
             {
@@ -36,7 +36,7 @@ namespace Normal
             return this;
         }
 
-        public IDbContextBuilder WithDataRecordMapper(Type type, IDataRecordMapper mapper)
+        public IDbContextBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper)
         {
             if (type == null)
             {
@@ -47,7 +47,7 @@ namespace Normal
             return this;
         }
 
-        public IDbContextBuilder WithDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+        public IDbContextBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord)
         {
             if (type == null)
             {
@@ -61,7 +61,7 @@ namespace Normal
             return this;
         }
 
-        public IDbContext Build()
+        public DbContext Build()
         {
             var handler = BuildHandler(_dbContext);
             _dbContext.Handler = handler;

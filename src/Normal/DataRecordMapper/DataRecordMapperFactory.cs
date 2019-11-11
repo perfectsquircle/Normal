@@ -32,7 +32,7 @@ namespace Normal
             {
                 return _customMappers[targetType];
             }
-            if (targetType.IsPrimitive || targetType.IsEnum || _primitiveExtensions.Any(primitiveExtension => primitiveExtension.IsAssignableFrom(targetType)))
+            else if (targetType.IsPrimitive || targetType.IsEnum || _primitiveExtensions.Any(primitiveExtension => primitiveExtension.IsAssignableFrom(targetType)))
             {
                 return new PrimitiveDataRecordMapper(type);
             }

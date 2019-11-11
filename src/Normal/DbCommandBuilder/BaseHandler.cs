@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Normal
 {
     internal class BaseHandler : IHandler
     {
         private DbContext _dbContext;
-        private readonly IDataRecordMapperFactory _dataRecordMapperFactory = new DataRecordMapperFactory();
 
         public BaseHandler(DbContext dbContext)
         {
@@ -17,10 +17,24 @@ namespace Normal
 
         public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken);
-            var command = commandBuilder.Build(connection);
-            var reader = await command.ExecuteReaderAsync(cancellationToken);
-            return ToEnumerable<T>(connection, command, reader);
+            IDbConnectionWrapper connection = null;
+            DbCommand command = null;
+            DbDataReader reader = null;
+            try
+            {
+                var customMapper = commandBuilder.Mapper;
+                connection = await _dbContext.GetOpenConnectionAsync(cancellationToken);
+                command = commandBuilder.Build(connection);
+                reader = await command.ExecuteReaderAsync(cancellationToken);
+                return ToEnumerable<T>(connection, command, reader, customMapper);
+            }
+            catch
+            {
+                reader?.Dispose();
+                command?.Dispose();
+                connection?.Dispose();
+                throw;
+            }
         }
 
         public async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
@@ -41,7 +55,7 @@ namespace Normal
             }
         }
 
-        private IEnumerable<T> ToEnumerable<T>(IDbConnectionWrapper connection, DbCommand command, DbDataReader dataReader)
+        private IEnumerable<T> ToEnumerable<T>(IDbConnectionWrapper connection, DbCommand command, DbDataReader dataReader, IDataRecordMapper customMapper = null)
         {
             using (connection)
             using (command)
@@ -52,10 +66,10 @@ namespace Normal
                     yield break;
                 }
 
-                IDataRecordMapper mapper = null;
+                var mapper = customMapper;
                 while (dataReader.Read())
                 {
-                    mapper = mapper ?? _dataRecordMapperFactory.CreateMapper(typeof(T));
+                    mapper = mapper ?? _dbContext.DataRecordMapperFactory.CreateMapper(typeof(T));
                     yield return (T)mapper.MapDataRecord(dataReader);
                 }
                 yield break;
