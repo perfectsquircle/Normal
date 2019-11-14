@@ -6,34 +6,32 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    public class DbContext : IDbContext
+    public partial class DbContext : IDbContext
     {
-        internal CreateConnection CreateConnection { get; set; }
-        internal IHandler Handler { get; set; }
-        internal DataRecordMapperFactory DataRecordMapperFactory { get; }
+        private CreateConnection _createConnection;
+        private IHandler _handler;
+        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction;
+        private readonly SemaphoreSlim _semaphore;
         internal DbTransactionWrapper CurrentTransaction
         {
             get { return _currentTransaction.Value; }
             private set { _currentTransaction.Value = value; }
         }
-        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction;
-        private readonly SemaphoreSlim _semaphore;
 
         public DbContext(CreateConnection createConnection)
             : this()
         {
-            CreateConnection = createConnection;
+            _createConnection = createConnection;
         }
 
-        internal DbContext()
+        private DbContext()
         {
-            _semaphore = new SemaphoreSlim(1, 1);
+            _handler = new BaseHandler(this);
             _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
-            Handler = new BaseHandler(this);
-            DataRecordMapperFactory = new DataRecordMapperFactory();
+            _semaphore = new SemaphoreSlim(1, 1);
         }
 
-        public static DbContext Build(Action<IDbContextBuilder> configure)
+        public static DbContext Create(Action<IDbContextBuilder> configure)
         {
             if (configure == null)
             {
@@ -47,7 +45,7 @@ namespace Normal
         public IDbCommandBuilder CreateCommand(string commandText)
         {
             return new DbCommandBuilder()
-                .WithHandler(Handler)
+                .WithHandler(_handler)
                 .WithCommandText(commandText);
         }
 
@@ -104,19 +102,13 @@ namespace Normal
             _semaphore?.Dispose();
         }
 
-        internal DbContext UseConnection(CreateConnection createConnection)
-        {
-            CreateConnection = createConnection;
-            return this;
-        }
-
         private async Task<DbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken)
         {
-            if (CreateConnection == null)
+            if (_createConnection == null)
             {
                 throw new InvalidOperationException("No DB Connection Creator");
             }
-            var connection = CreateConnection.Invoke();
+            var connection = _createConnection.Invoke();
             if (connection == null)
             {
                 throw new InvalidOperationException("Connection is null");

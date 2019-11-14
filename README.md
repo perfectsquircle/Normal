@@ -158,19 +158,21 @@ string firstName = await context
 
 ### Middleware
 
-Middleware can be added to `DbContext` that will execute on every database request. 
+Middleware can be installed on a `DbContext` that will execute on every database request. 
 
 Existing middleware:
 * [Normal.Logging](./src/Normal.Logging/README.md)
 * [Normal.Caching](./src/Normal.Caching/README.md)
 
-Middleware is incorporated using the `DbContextBuilder` class. 
+Middleware is added using the `DbContext.Create` method. 
 
 ```csharp
-var context = new DbContextBuilder()
-    .WithCreateConnection(() => new NpgsqlConnection("..."))
-    .WithLogging(logger) // Add logging middleware.
-    .Build();
+var context = DbContext.Create(c =>
+{
+    c.UseConnection(connection); 
+    c.UseLogging(logger); // Add logging middleware
+    c.UseCaching(memoryCache); // Add caching middleware.
+});
 
 // Now every query will be logged at info level
 
@@ -222,22 +224,25 @@ public class AwesomeHandler : DelegatingHandler
 }
 ```
 
-You can add this to `DbContext` by using `DbContextBuilder`.
+You can install this on `DbContext` by using `DbContext.Create`.
 
 ```csharp
-var context = new DbContextBuilder()
-    .WithDelegatingHandler(new AwesomeHandler()) // Add custom middleware.
-    .Build();
+var context = DbContext.Create(c =>
+{
+    c.UseConnection(connection);
+    c.UseDelegatingHandler(new AwesomeHandler()); // Add custom middleware.
+});
 ```
 
 Middleware is executed in the order that it was added. For example, if you added three DelegatingHandlers...
 
 ```csharp
-var context = new DbContextBuilder()
-    .WithDelegatingHandler(new A())
-    .WithDelegatingHandler(new B())
-    .WithDelegatingHandler(new C())
-    .Build();
+var context = DbContext.Create(c =>
+{
+    c.UseDelegatingHandler(new A())
+    c.UseDelegatingHandler(new B())
+    c.UseDelegatingHandler(new C())
+});
 ```
 
 Then for every database query, the middlewares are executed in order in a nested fashion.

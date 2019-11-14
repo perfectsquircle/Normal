@@ -9,41 +9,59 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Normal
 {
-    public class CachingHandler : DelegatingHandler
+    internal class MemoryCachingHandler : DelegatingHandler
     {
         public const string NormalTtl = "normal_ttl";
-        private IMemoryCache memoryCache;
+        private readonly IMemoryCache _memoryCache;
 
-        public CachingHandler(IMemoryCache memoryCache)
+        public MemoryCachingHandler(IMemoryCache memoryCache)
         {
-            this.memoryCache = memoryCache;
+            _memoryCache = memoryCache;
         }
 
-        public override Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            return InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
+            return await CacheOrNot(commandBuilder, async (buffer) =>
+            {
+                return await InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
+            });
         }
 
         public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            return await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
+            return await CacheOrNot(commandBuilder, async (buffer) =>
+            {
+                return await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
+            });
         }
 
         public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
+            return await CacheOrNot(commandBuilder, async (buffer) =>
+            {
+                var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
+                if (buffer)
+                {
+                    results = results.ToList();
+                }
+                return results;
+            });
+        }
+
+        private async Task<T> CacheOrNot<T>(IDbCommandBuilder commandBuilder, Func<bool, Task<T>> inner)
+        {
             if (!commandBuilder.Parameters.ContainsKey(NormalTtl))
             {
-                return await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
+                return await inner(false);
             }
 
             var cacheKey = CalculateCacheKey(commandBuilder);
             var ttl = GetTtl(commandBuilder);
 
-            var results = await memoryCache.GetOrCreateAsync<IEnumerable<T>>(cacheKey, async (cacheEntry) =>
+            var results = await _memoryCache.GetOrCreateAsync<T>(cacheKey, async (cacheEntry) =>
             {
                 cacheEntry.SlidingExpiration = ttl;
-                var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
-                return results.ToList();
+                return await inner(true);
             });
             return results;
         }

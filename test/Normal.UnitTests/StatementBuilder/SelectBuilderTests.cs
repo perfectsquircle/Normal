@@ -1,6 +1,4 @@
-using System;
 using System.Linq;
-using System.Data;
 using System.Threading.Tasks;
 using Npgsql;
 using Normal.UnitTests.Fixtures;
@@ -60,7 +58,7 @@ LIMIT 100";
         public async Task ShouldBeQueryable2()
         {
             //Given
-            var context = DbContext.Build(builder =>
+            var context = DbContext.Create(builder =>
             {
                 builder.UseConnection(_postgresConnection);
                 builder.UseLogging(Helpers.GetLogger());
@@ -91,7 +89,7 @@ LIMIT 100";
         public async Task ShouldBeQueryableDynamic()
         {
             //Given
-            var context = new DbContext().UseConnection(_postgresConnection);
+            var context = new DbContext(_postgresConnection);
 
             //When
             var results = await context
@@ -118,7 +116,7 @@ LIMIT 100";
         public async Task FirstOrDefaultAsync()
         {
             //Given
-            var context = new DbContext().UseConnection(_postgresConnection);
+            var context = new DbContext(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -139,7 +137,7 @@ LIMIT 100";
         public async Task FirstAsync()
         {
             //Given
-            var context = new DbContext().UseConnection(_postgresConnection);
+            var context = new DbContext(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -160,7 +158,7 @@ LIMIT 100";
         public async Task SingleAsync()
         {
             //Given
-            var context = new DbContext().UseConnection(_postgresConnection);
+            var context = new DbContext(_postgresConnection);
 
             //When
             var stockItem = await context
@@ -179,7 +177,7 @@ LIMIT 100";
         public async Task SingleOrDefualtAsync()
         {
             //Given
-            var context = new DbContext().UseConnection(_postgresConnection);
+            var context = new DbContext(_postgresConnection);
 
             //When
             var stockItem = await context

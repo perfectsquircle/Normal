@@ -46,7 +46,7 @@ namespace Normal
             }
         }
 
-        public DataRecordMapperFactory WithCustomMapper(Type type, IDataRecordMapper mapper)
+        public IDataRecordMapperFactory UseCustomMapper(Type type, IDataRecordMapper mapper)
         {
             _customMappers.Add(type, mapper);
             return this;

@@ -2,17 +2,23 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace Normal
 {
     internal class BaseHandler : IHandler
     {
-        private DbContext _dbContext;
+        private readonly IDbContext _dbContext;
+        private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
         public BaseHandler(DbContext dbContext)
+            : this(dbContext, new DataRecordMapperFactory())
+        {
+        }
+
+        public BaseHandler(DbContext dbContext, IDataRecordMapperFactory dataRecordMapperFactory)
         {
             this._dbContext = dbContext;
+            this._dataRecordMapperFactory = dataRecordMapperFactory;
         }
 
         public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
@@ -69,7 +75,7 @@ namespace Normal
                 var mapper = customMapper;
                 while (dataReader.Read())
                 {
-                    mapper = mapper ?? _dbContext.DataRecordMapperFactory.CreateMapper(typeof(T));
+                    mapper = mapper ?? _dataRecordMapperFactory.CreateMapper(typeof(T));
                     yield return (T)mapper.MapDataRecord(dataReader);
                 }
                 yield break;

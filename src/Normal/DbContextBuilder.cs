@@ -4,82 +4,87 @@ using System.Linq;
 
 namespace Normal
 {
-    internal class DbContextBuilder : IDbContextBuilder
+    public partial class DbContext
     {
-        private DbContext _dbContext;
-        private IList<DelegatingHandler> _delegatingHandlers;
-
-        public DbContextBuilder()
+        private class DbContextBuilder : IDbContextBuilder
         {
-            _dbContext = new DbContext();
-            _delegatingHandlers = new List<DelegatingHandler>();
-        }
+            private readonly DbContext _dbContext;
+            private readonly IList<DelegatingHandler> _delegatingHandlers;
+            private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
-        public IDbContextBuilder UseConnection(CreateConnection createConnection)
-        {
-            if (createConnection == null)
+            public DbContextBuilder()
             {
-                throw new ArgumentNullException(nameof(createConnection));
-            }
-            _dbContext.CreateConnection = createConnection;
-            return this;
-        }
-
-        public IDbContextBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler)
-        {
-            if (delegatingHandler == null)
-            {
-                throw new ArgumentNullException(nameof(delegatingHandler));
+                _dbContext = new DbContext();
+                _delegatingHandlers = new List<DelegatingHandler>();
+                _dataRecordMapperFactory = new DataRecordMapperFactory();
             }
 
-            _delegatingHandlers.Add(delegatingHandler);
-            return this;
-        }
-
-        public IDbContextBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper)
-        {
-            if (type == null)
+            public IDbContextBuilder UseConnection(CreateConnection createConnection)
             {
-                throw new ArgumentNullException(nameof(type));
+                if (createConnection == null)
+                {
+                    throw new ArgumentNullException(nameof(createConnection));
+                }
+                _dbContext._createConnection = createConnection;
+                return this;
             }
 
-            _dbContext.DataRecordMapperFactory.WithCustomMapper(type, mapper);
-            return this;
-        }
-
-        public IDbContextBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord)
-        {
-            if (type == null)
+            public IDbContextBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler)
             {
-                throw new ArgumentNullException(nameof(type));
-            }
-            if (mapDataRecord == null)
-            {
-                throw new ArgumentNullException(nameof(mapDataRecord));
-            }
-            _dbContext.DataRecordMapperFactory.WithCustomMapper(type, new AdHocDataRecordMapper(mapDataRecord));
-            return this;
-        }
+                if (delegatingHandler == null)
+                {
+                    throw new ArgumentNullException(nameof(delegatingHandler));
+                }
 
-        public DbContext Build()
-        {
-            var handler = BuildHandler(_dbContext);
-            _dbContext.Handler = handler;
-            return _dbContext;
-        }
-
-        private IHandler BuildHandler(DbContext context)
-        {
-            IHandler head = new BaseHandler(context);
-
-            // Connect all the delegating handlers in a chain
-            foreach (var handler in _delegatingHandlers.Reverse())
-            {
-                handler.InnerHandler = head;
-                head = handler;
+                _delegatingHandlers.Add(delegatingHandler);
+                return this;
             }
 
-            return head;
+            public IDbContextBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper)
+            {
+                if (type == null)
+                {
+                    throw new ArgumentNullException(nameof(type));
+                }
+
+                _dataRecordMapperFactory.UseCustomMapper(type, mapper);
+                return this;
+            }
+
+            public IDbContextBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+            {
+                if (type == null)
+                {
+                    throw new ArgumentNullException(nameof(type));
+                }
+                if (mapDataRecord == null)
+                {
+                    throw new ArgumentNullException(nameof(mapDataRecord));
+                }
+                _dataRecordMapperFactory.UseCustomMapper(type, new AdHocDataRecordMapper(mapDataRecord));
+                return this;
+            }
+
+            public DbContext Build()
+            {
+                var handler = BuildHandler(_dbContext);
+                _dbContext._handler = handler;
+                return _dbContext;
+            }
+
+            private IHandler BuildHandler(DbContext context)
+            {
+                IHandler head = new BaseHandler(context, _dataRecordMapperFactory);
+
+                // Connect all the delegating handlers in a chain
+                foreach (var handler in _delegatingHandlers.Reverse())
+                {
+                    handler.InnerHandler = head;
+                    head = handler;
+                }
+
+                return head;
+            }
         }
     }
 }

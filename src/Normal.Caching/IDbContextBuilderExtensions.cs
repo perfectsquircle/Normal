@@ -4,10 +4,9 @@ namespace Normal
 {
     public static class IDbContextBuilderExtensions
     {
-        public static IDbContextBuilder UseCaching(this IDbContextBuilder dbContext, IMemoryCache memoryCache)
+        public static IDbContextBuilder UseCaching(this IDbContextBuilder builder, IMemoryCache memoryCache)
         {
-            return dbContext
-                .UseDelegatingHandler(new CachingHandler(memoryCache));
+            return builder.UseDelegatingHandler(new MemoryCachingHandler(memoryCache));
         }
     }
 }

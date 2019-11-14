@@ -11,31 +11,38 @@ namespace Normal.UnitTests
 {
     public class WideWorldImportersTests
     {
-        private static CreateConnection _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal");
-        private static CreateConnection _sqlServerConnection = () => new SqlConnection("Server=localhost;Uid=sa;Pwd=Normal123;Database=WideWorldImporters");
-        private DbContext _dbContext;
+        private DbContext _postgresContext;
+        private DbContext _sqlServerContext;
 
         public WideWorldImportersTests()
         {
-            _dbContext = DbContext.Build(builder =>
+            _postgresContext = DbContext.Create(c =>
             {
-                builder.UseLogging(Helpers.GetLogger());
-                builder.UseCaching(Helpers.GetMemoryCache());
+                c.UseConnection(() => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal"));
+                c.UseLogging(Helpers.GetLogger());
+                c.UseCaching(Helpers.GetMemoryCache());
+            });
+
+            _sqlServerContext = DbContext.Create(c =>
+            {
+                c.UseConnection(() => new SqlConnection("Server=localhost;Uid=sa;Pwd=Normal123;Database=WideWorldImporters"));
+                c.UseLogging(Helpers.GetLogger());
+                c.UseCaching(Helpers.GetMemoryCache());
             });
         }
 
         public static IEnumerable<object[]> GetSelectTestCases()
         {
-            yield return new object[] { _postgresConnection, "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items ORDER BY stock_item_id LIMIT 10" };
-            yield return new object[] { _sqlServerConnection, "SELECT TOP 10 StockItemID, StockItemName FROM Warehouse.StockItems ORDER BY StockItemID" };
+            yield return new object[] { true, "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items ORDER BY stock_item_id LIMIT 10" };
+            yield return new object[] { false, "SELECT TOP 10 StockItemID, StockItemName FROM Warehouse.StockItems ORDER BY StockItemID" };
         }
 
         [Theory]
         [MemberData(nameof(GetSelectTestCases))]
-        public async Task ShouldSelectFromStockItems(CreateConnection dbConnection, string query)
+        public async Task ShouldSelectFromStockItems(bool isPostgres, string query)
         {
             //Given
-            var context = _dbContext.UseConnection(dbConnection);
+            var context = isPostgres ? _postgresContext : _sqlServerContext;
 
             //When
             var results = await context
@@ -57,16 +64,16 @@ namespace Normal.UnitTests
 
         public static IEnumerable<object[]> GetSelectWithParametersTestCases()
         {
-            yield return new object[] { _postgresConnection, "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @supplierId AND tax_rate = @taxRate ORDER BY stock_item_id" };
-            // yield return new object[] { _sqlServerConnection, "SELECT StockItemID, StockItemName FROM Warehouse.StockItems WHERE SupplierId = @supplierId AND TaxRate = @taxRate  ORDER BY StockItemID" };
+            yield return new object[] { true, "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @supplierId AND tax_rate = @taxRate ORDER BY stock_item_id" };
+            yield return new object[] { false, "SELECT StockItemID, StockItemName FROM Warehouse.StockItems WHERE SupplierId = @supplierId AND TaxRate = @taxRate  ORDER BY StockItemID" };
         }
 
         [Theory]
         [MemberData(nameof(GetSelectWithParametersTestCases))]
-        public async Task ShouldSelectFromStockItemsWithParameters(CreateConnection dbConnection, string query)
+        public async Task ShouldSelectFromStockItemsWithParameters(bool isPostgres, string query)
         {
             //Given
-            var context = _dbContext.UseConnection(dbConnection);
+            var context = isPostgres ? _postgresContext : _sqlServerContext;
 
             //When
             var results = await context
@@ -90,16 +97,16 @@ namespace Normal.UnitTests
 
         public static IEnumerable<object[]> GetSelectBooleanTestCases()
         {
-            yield return new object[] { _postgresConnection, "SELECT stock_item_id, stock_item_name, is_chiller_stock FROM warehouse.stock_items WHERE is_chiller_stock = true" };
-            yield return new object[] { _sqlServerConnection, "SELECT StockItemID, StockItemName, IsChillerStock FROM Warehouse.StockItems WHERE IsChillerStock = 1" };
+            yield return new object[] { true, "SELECT stock_item_id, stock_item_name, is_chiller_stock FROM warehouse.stock_items WHERE is_chiller_stock = true" };
+            yield return new object[] { false, "SELECT StockItemID, StockItemName, IsChillerStock FROM Warehouse.StockItems WHERE IsChillerStock = 1" };
         }
 
         [Theory]
         [MemberData(nameof(GetSelectBooleanTestCases))]
-        public async Task ShouldSelectBoolean(CreateConnection dbConnection, string query)
+        public async Task ShouldSelectBoolean(bool isPostgres, string query)
         {
             //Given
-            var context = _dbContext.UseConnection(dbConnection);
+            var context = isPostgres ? _postgresContext : _sqlServerContext;
 
             //When
             var results = await context
@@ -114,16 +121,16 @@ namespace Normal.UnitTests
 
         public static IEnumerable<object[]> GetShouldHandleNullableIntTestCases()
         {
-            yield return new object[] { _postgresConnection, "SELECT stock_item_id, stock_item_name, color_id FROM warehouse.stock_items WHERE color_id is null" };
-            yield return new object[] { _sqlServerConnection, "SELECT StockItemID, StockItemName, ColorId FROM Warehouse.StockItems WHERE ColorId is null" };
+            yield return new object[] { true, "SELECT stock_item_id, stock_item_name, color_id FROM warehouse.stock_items WHERE color_id is null" };
+            yield return new object[] { false, "SELECT StockItemID, StockItemName, ColorId FROM Warehouse.StockItems WHERE ColorId is null" };
         }
 
         [Theory]
         [MemberData(nameof(GetShouldHandleNullableIntTestCases))]
-        public async Task ShouldHandleNullableInt(CreateConnection dbConnection, string query)
+        public async Task ShouldHandleNullableInt(bool isPostgres, string query)
         {
             //Given
-            var context = _dbContext.UseConnection(dbConnection);
+            var context = isPostgres ? _postgresContext : _sqlServerContext;
 
             //When
             var results = await context
@@ -140,8 +147,7 @@ namespace Normal.UnitTests
         public async Task MultipleQueriesInTransaction()
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(_postgresConnection) as DbContext;
+            var context = _postgresContext;
 
             //When
             using (var transaction = context.BeginTransaction())
@@ -176,8 +182,8 @@ namespace Normal.UnitTests
         public async Task ShouldCacheResults()
         {
             //Given
-            var context = _dbContext
-                .UseConnection(_postgresConnection);
+            var context = _postgresContext;
+
             Func<Task<double>> getResults = async () =>
             {
                 return await context

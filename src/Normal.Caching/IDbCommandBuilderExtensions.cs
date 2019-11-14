@@ -6,7 +6,7 @@ namespace Normal
     {
         public static IDbCommandBuilder CacheFor(this IDbCommandBuilder builder, TimeSpan cacheTtl)
         {
-            return builder.WithParameter(CachingHandler.NormalTtl, cacheTtl);
+            return builder.WithParameter(MemoryCachingHandler.NormalTtl, cacheTtl);
         }
     }
 }

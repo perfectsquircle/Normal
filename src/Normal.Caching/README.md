@@ -13,19 +13,17 @@ dotnet add package Normal.Caching
 ### Usage
 
 ```csharp
-var context = new DbContextBuilder()
-    .WithCreateConnection(() => new NpgsqlConnection("..."))
-    .WithCaching(memoryCache) // Add caching middleware.
-    .Build();
+var context = DbContext.Create(c =>
+{
+    c.UseConnection(connection); 
+    c.UseCaching(memoryCache); // Add caching middleware.
+});
 
-// Now ...
+// Now you can cache queries for a given timespan.
 
 var results = await context
     .Select("stock_item_id", "stock_item_name")
     .From("warehouse.stock_items")
-    .Where("supplier_id").EqualTo(2)
-    .And("tax_rate").EqualTo(15.0)
-    .OrderBy("stock_item_id")
     .CacheFor(TimeSpan.FromMinutes(5))
     .ToListAsync<StockItem>();
 

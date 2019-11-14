@@ -17,8 +17,7 @@ namespace Normal.UnitTests
         public async Task ToListAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             IList<Bar> results = await context
@@ -39,8 +38,7 @@ namespace Normal.UnitTests
         public async Task ToListAsyncIsEmpty(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             IList<Bar> results = await context
@@ -57,8 +55,7 @@ namespace Normal.UnitTests
         public async Task FirstAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var bar = await context
@@ -77,8 +74,7 @@ namespace Normal.UnitTests
         public async Task FirstAsyncThrows(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
@@ -94,8 +90,7 @@ namespace Normal.UnitTests
         public async Task FirstOrDefaultAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var bar = await context
@@ -114,8 +109,7 @@ namespace Normal.UnitTests
         public async Task FirstOrDefaultAsyncIsNull(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var bar = await context
@@ -131,8 +125,7 @@ namespace Normal.UnitTests
         public async Task SingleAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var bar = await context
@@ -151,8 +144,7 @@ namespace Normal.UnitTests
         public async Task SingleAsyncThrows(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
@@ -168,8 +160,7 @@ namespace Normal.UnitTests
         public async Task SingleOrDefaultAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var bar = await context
@@ -188,8 +179,7 @@ namespace Normal.UnitTests
         public async Task SingleOrDefaultAsyncIsNull(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var bar = await context
@@ -205,8 +195,7 @@ namespace Normal.UnitTests
         public async Task MultipleQueries(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var results = await context
@@ -227,8 +216,7 @@ namespace Normal.UnitTests
         public async Task SimultaneousQueries(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             var results = context
@@ -254,8 +242,7 @@ namespace Normal.UnitTests
         public async Task MultipleQueriesInTransaction(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection) as DbContext;
+            var context = new DbContext(dbConnection);
 
             //When
             using (var transaction = context.BeginTransaction())
@@ -307,8 +294,7 @@ namespace Normal.UnitTests
         public void NestedTransactionThrows(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             Assert.Throws<InvalidOperationException>(() =>
@@ -323,8 +309,7 @@ namespace Normal.UnitTests
         public async Task CreateCommandFromResource(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext()
-                .UseConnection(dbConnection);
+            var context = new DbContext(dbConnection);
 
             //When
             IList<dynamic> results = await context
