@@ -139,7 +139,6 @@ var context = DbContext.Create(c =>
 {
     c.UseConnection(connection); 
     c.UseLogging(logger); // Add logging middleware
-    c.UseCaching(memoryCache); // Add caching middleware.
 });
 
 // Now every query will be logged at info level
