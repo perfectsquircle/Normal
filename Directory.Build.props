@@ -13,9 +13,8 @@
     <RootNamespace>Normal</RootNamespace>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
-    <DefaultLanguage>en-US</DefaultLanguage>
+    <IncludeSource>true</IncludeSource>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 </Project>
