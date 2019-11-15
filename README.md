@@ -1,33 +1,18 @@
 # Normal
 
-> A Normal ORM
-
 [![NuGet version](https://img.shields.io/nuget/vpre/Normal.svg)](https://www.nuget.org/packages/Normal)
 
-## Features
+## Introduction
 
-* Wraps ADO.NET with an async-first and fluent API.
-* Maps DataReader results to a strongly typed list of objects.
-* Add middleware to database access, for cross-cutting features like logging, caching, etc.
-* CRUD operations don't require boilerplate of creating a new connection, opening, and disposing it.
-* Transaction state can be carried between different repositories.
-
-```csharp
-var stockItems = await context
-    .Select("stock_item_id", "stock_item_name")
-    .From("warehouse.stock_items")
-    .Where("supplier_id").EqualTo(2)
-    .OrderBy("stock_item_name")
-    .ToListAsync<StockItem>();
-```
+Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping) for .NET available as a NuGet package. 
 
 - [Normal](#normal)
-  - [Features](#features)
+  - [Introduction](#introduction)
   - [Installation](#installation)
   - [Usage](#usage)
     - [DbContext](#dbcontext)
     - [Statement Builder](#statement-builder)
-    - [Custom Statements](#custom-statements)
+    - [Custom Commands](#custom-commands)
     - [Middleware](#middleware)
     - [Custom Middleware](#custom-middleware)
     - [Transactions](#transactions)
@@ -36,6 +21,11 @@ var stockItems = await context
   - [Testing](#testing)
 
 ## Installation
+
+| Platform                    | Minimum Version |
+| :-------------------------- | :-------------- |
+| .NET Standard               | 2.0             |
+| .NET Framework              | 4.6.1           |
 
 ```bash
 dotnet add package Normal
@@ -51,11 +41,7 @@ PM> Install-Package Normal
 
 ### DbContext
 
-The entrypoint into the Normal API is the `DbContext` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.)
-
-```csharp
-var context = new DbContext();
-```
+The entrypoint into the Normal API is the `DbContext` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.) A DbContext is intended to be injected into and shared amongst other classes.
 
 The context must be able to create new instances of `IDbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
 
@@ -67,6 +53,8 @@ var context = new DbContext(() => new NpgsqlConnection("Host=..."));
 ```
 
 ### Statement Builder
+
+For very simple queries, you can use the inline statement builder for `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.
 
 ```csharp
 class Customer {
@@ -112,48 +100,28 @@ int rowsAffected = await context
     .Execute();
 ```
 
-### Custom Statements
+### Custom Commands
 
-The statement builder shown above is optional. Statements can also be passed in as plain strings.
+For more complicated queries, commands can be created from a string, an embedded resource, or a file.
 
 ```csharp
-class Customer {
-    public string FirstName { get; set; }
-    public string LastName { get; set;}
-}
-
-// Do a SELECT then map the results to a list.
-IList<Customer> customers = await context
+// Create a command from a string, add a parameter, and map results to a list.
+var customers = await context
     .CreateCommand(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ToListAsync<Customer>();
 
-// Execute an INSERT
-int rowsAffected = await context
-    .CreateCommand(@"INSERT INTO customer(fist_name, last_name) VALUES (@firstName, @lastName)")
-    .WithParameters(new {
-        firstName = "Jose",
-        lastName = "Cuervo"
-    })
-    .Execute();
+// Normal will load the resource from the calling assembly. 
+context.CreateCommandFromResource("My.Assembly.GetCustomers.sql");
 
-// Execute an UPDATE
-int rowsAffected = await context
-    .CreateCommand(@"UPDATE customer SET first_name = @firstName where last_name = @lastName")
-    .WithParameter("firstName", "Jerry")
-    .WithParameter("lastName", "Cuervo")
-    .Execute();
+// The assembly name may be omitted. Normal will load the first resource that ends with the given string.
+context.CreateCommandFromResource("GetCustomers.sql");
 
-// Execute a DELETE
-int rowsAffected = await context
-    .CreateCommand(@"DELETE FROM customer where last_name = @lastName")
-    .WithParameter("lastName", "Cuervo")
-    .Execute();
-
-// Execute a scalar
-string firstName = await context
-    .CreateCommand(@"SELECT first_name FROM customer WHERE id = 42")
-    .ExecuteAsync<string>();
+// Optionally, you may pass an assembly to load the embedded resource from
+context.CreateCommandFromResource("GetCustomers.sql", myAssembly);
+    
+// Also, you can load a command from any file.
+context.CreateCommandFromFile("/path/to/sql/GetCustomers.sql");
 ```
 
 ### Middleware
@@ -261,9 +229,11 @@ A
 
 To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to connection pooling behavior.
 
-This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance....
+This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance...
 
 ```csharp
+private readonly IDbContext _context;
+
 public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetails orderDetails)
 {
     using (var transaction = await _context.BeginTransactionAsync())
@@ -279,8 +249,6 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
     }
 }
 ```
-
-Traditionally (with ADO or Dapper) you would have to pass around instances of your `IDbConnection` and `IDbTransaction` as method parameters, which is messy, rewrite a boilerplate connection provider class every time, or resort to using TransactionScope.
 
 ### Dependency Injection
 
