@@ -132,10 +132,10 @@ Existing middleware:
 * [Normal.Logging](./src/Normal.Logging/README.md)
 * [Normal.Caching](./src/Normal.Caching/README.md)
 
-Middleware is added using the `DbContext.Create` method. 
+Middleware is added using the `DbContext` builder constructor. 
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
     c.UseConnection(connection); 
     c.UseLogging(logger); // Add logging middleware
@@ -191,10 +191,10 @@ public class AwesomeHandler : DelegatingHandler
 }
 ```
 
-You can install this on `DbContext` by using `DbContext.Create`.
+You can install this on `DbContext` by using `new DbContext`.
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
     c.UseConnection(connection);
     c.UseDelegatingHandler(new AwesomeHandler()); // Add custom middleware.
@@ -204,7 +204,7 @@ var context = DbContext.Create(c =>
 Middleware is executed in the order that it was added. For example, if you added three DelegatingHandlers...
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
     c.UseDelegatingHandler(new A())
     c.UseDelegatingHandler(new B())

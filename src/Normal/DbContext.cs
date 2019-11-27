@@ -18,20 +18,12 @@ namespace Normal
             private set { _currentTransaction.Value = value; }
         }
 
-        public DbContext(CreateConnection createConnection)
-            : this()
+        public DbContext(CreateConnection createConnection) : this()
         {
             _createConnection = createConnection;
         }
 
-        private DbContext()
-        {
-            _handler = new BaseHandler(this);
-            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
-            _semaphore = new SemaphoreSlim(1, 1);
-        }
-
-        public static DbContext Create(Action<IDbContextBuilder> configure)
+        public DbContext(Action<IDbContextBuilder> configure) : this()
         {
             if (configure == null)
             {
@@ -39,7 +31,15 @@ namespace Normal
             }
             var dbContextBuilder = new DbContextBuilder();
             configure(dbContextBuilder);
-            return dbContextBuilder.Build();
+            _createConnection = dbContextBuilder.CreateConnection;
+            _handler = dbContextBuilder.BuildHandler(this);
+        }
+
+        private DbContext()
+        {
+            _handler = new BaseHandler(this);
+            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+            _semaphore = new SemaphoreSlim(1, 1);
         }
 
         public IDbCommandBuilder CreateCommand(string commandText)
