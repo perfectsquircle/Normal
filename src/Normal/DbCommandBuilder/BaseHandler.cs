@@ -7,7 +7,7 @@ namespace Normal
 {
     internal class BaseHandler : IHandler
     {
-        private readonly IDbContext _dbContext;
+        private readonly DbContext _dbContext;
         private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
         public BaseHandler(DbContext dbContext)
@@ -28,11 +28,10 @@ namespace Normal
             DbDataReader reader = null;
             try
             {
-                var customMapper = commandBuilder.Mapper;
                 connection = await _dbContext.GetOpenConnectionAsync(cancellationToken);
-                command = commandBuilder.Build(connection);
+                command = (commandBuilder as DbCommandBuilder).Build(connection);
                 reader = await command.ExecuteReaderAsync(cancellationToken);
-                return ToEnumerable<T>(connection, command, reader, customMapper);
+                return ToEnumerable<T>(connection, command, reader, commandBuilder.Mapper);
             }
             catch
             {
@@ -46,7 +45,7 @@ namespace Normal
         public async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = commandBuilder.Build(connection))
+            using (var command = (commandBuilder as DbCommandBuilder).Build(connection))
             {
                 return await command.ExecuteNonQueryAsync(cancellationToken);
             }
@@ -55,7 +54,7 @@ namespace Normal
         public async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
-            using (var command = commandBuilder.Build(connection))
+            using (var command = (commandBuilder as DbCommandBuilder).Build(connection))
             {
                 return (T)(await command.ExecuteScalarAsync(cancellationToken));
             }

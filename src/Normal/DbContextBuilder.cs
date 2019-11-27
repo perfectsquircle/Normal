@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace Normal
 {
@@ -33,13 +32,7 @@ namespace Normal
             public IDbContextBuilder UseConnection<T>(params object[] arguments)
                 where T : IDbConnection
             {
-                var argumentTypes = arguments.Select(a => a.GetType()).ToArray();
-                var constructor = typeof(T).GetConstructor(argumentTypes); ;
-                if (constructor == null)
-                {
-                    var argumentTypeStrings = string.Join(",", argumentTypes.Select(t => t.ToString()));
-                    throw new NotSupportedException($"No constructor found: {typeof(T)}({argumentTypeStrings})");
-                }
+                var constructor = ReflectionHelper.GetConstructor(typeof(T), arguments);
                 CreateConnection = () => (T)constructor.Invoke(arguments);
                 return this;
             }

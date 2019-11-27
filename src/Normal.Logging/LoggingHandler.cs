@@ -28,7 +28,7 @@ namespace Normal
             finally
             {
                 var parameters = commandBuilder.Parameters;
-                _logger.LogInformation("non-query: {commandText}\n\tparameters: {parameters}\n\telapsed: {ElapsedMilliseconds}ms\n\trows affected: {rows affected}",
+                _logger.LogInformation("non-query: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms rows affected: {rowsAffected}",
                     commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds, rowsAffected);
             }
         }
@@ -45,7 +45,7 @@ namespace Normal
             finally
             {
                 var parameters = commandBuilder.Parameters;
-                _logger.LogInformation("query: {commandText}\n\tparameters: {parameters}\n\telapsed: {ElapsedMilliseconds}ms",
+                _logger.LogInformation("query: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms",
                     commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds);
             }
         }
@@ -63,7 +63,7 @@ namespace Normal
             finally
             {
                 var parameters = commandBuilder.Parameters;
-                _logger.LogInformation("scalar: {commandText}\n\tparameters: {parameters}\n\telapsed: {ElapsedMilliseconds}ms\n\rresult: {result}",
+                _logger.LogInformation("scalar: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms result: {result}",
                     commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds, result);
             }
         }

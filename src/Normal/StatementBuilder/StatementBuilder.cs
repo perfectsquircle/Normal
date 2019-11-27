@@ -14,7 +14,7 @@ namespace Normal
 
         public string Build()
         {
-            return string.Join("\n", _lines);
+            return string.Join(Environment.NewLine, _lines);
         }
 
         public Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>

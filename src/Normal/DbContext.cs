@@ -1,6 +1,8 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,6 +37,12 @@ namespace Normal
             _handler = dbContextBuilder.BuildHandler(this);
         }
 
+        public DbContext(Type connectionType, params object[] arguments) : this()
+        {
+            var constructor = ReflectionHelper.GetConstructor(connectionType, arguments);
+            _createConnection = () => (IDbConnection)constructor.Invoke(arguments);
+        }
+
         private DbContext()
         {
             _handler = new BaseHandler(this);
@@ -60,7 +68,7 @@ namespace Normal
                 }
                 CurrentTransaction = new DbTransactionWrapper()
                     .WithIsolationLevel(isolationLevel)
-                    .WithOnDispose(() => CurrentTransaction = null);
+                    .OnDispose(() => CurrentTransaction = null);
                 return CurrentTransaction;
             }
             finally
@@ -69,7 +77,7 @@ namespace Normal
             }
         }
 
-        public async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        internal async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             try
             {
