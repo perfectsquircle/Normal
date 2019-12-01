@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using FastMember;
 
 namespace Normal
@@ -13,6 +15,19 @@ namespace Normal
                 .GetMembers()
                 .Where(m => m.CanRead)
                 .ToDictionary(m => m.Name, m => typeAccessor[target, m.Name]);
+        }
+
+        public static ConstructorInfo GetConstructor(Type connectionType, object[] arguments)
+        {
+            var argumentTypes = arguments.Select(a => a.GetType()).ToArray();
+            var constructor = connectionType.GetConstructor(argumentTypes); ;
+            if (constructor == null)
+            {
+                var argumentTypeStrings = string.Join(",", argumentTypes.Select(t => t.ToString()));
+                throw new NotSupportedException($"No constructor found: {connectionType}({argumentTypeStrings})");
+            }
+
+            return constructor;
         }
     }
 }

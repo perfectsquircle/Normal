@@ -1,6 +1,8 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,20 +20,12 @@ namespace Normal
             private set { _currentTransaction.Value = value; }
         }
 
-        public DbContext(CreateConnection createConnection)
-            : this()
+        public DbContext(CreateConnection createConnection) : this()
         {
             _createConnection = createConnection;
         }
 
-        private DbContext()
-        {
-            _handler = new BaseHandler(this);
-            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
-            _semaphore = new SemaphoreSlim(1, 1);
-        }
-
-        public static DbContext Create(Action<IDbContextBuilder> configure)
+        public DbContext(Action<IDbContextBuilder> configure) : this()
         {
             if (configure == null)
             {
@@ -39,7 +33,21 @@ namespace Normal
             }
             var dbContextBuilder = new DbContextBuilder();
             configure(dbContextBuilder);
-            return dbContextBuilder.Build();
+            _createConnection = dbContextBuilder.CreateConnection;
+            _handler = dbContextBuilder.BuildHandler(this);
+        }
+
+        public DbContext(Type connectionType, params object[] arguments) : this()
+        {
+            var constructor = ReflectionHelper.GetConstructor(connectionType, arguments);
+            _createConnection = () => (IDbConnection)constructor.Invoke(arguments);
+        }
+
+        private DbContext()
+        {
+            _handler = new BaseHandler(this);
+            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+            _semaphore = new SemaphoreSlim(1, 1);
         }
 
         public IDbCommandBuilder CreateCommand(string commandText)
@@ -60,7 +68,7 @@ namespace Normal
                 }
                 CurrentTransaction = new DbTransactionWrapper()
                     .WithIsolationLevel(isolationLevel)
-                    .WithOnDispose(() => CurrentTransaction = null);
+                    .OnDispose(() => CurrentTransaction = null);
                 return CurrentTransaction;
             }
             finally
@@ -69,7 +77,7 @@ namespace Normal
             }
         }
 
-        public async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        internal async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             try
             {

@@ -13,7 +13,7 @@ dotnet add package Normal.Caching
 ### Usage
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
     c.UseConnection(connection); 
     c.UseCaching(memoryCache); // Add caching middleware.

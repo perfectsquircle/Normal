@@ -22,10 +22,10 @@ Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-rela
 
 ## Installation
 
-| Platform                    | Minimum Version |
-| :-------------------------- | :-------------- |
-| .NET Standard               | 2.0             |
-| .NET Framework              | 4.6.1           |
+| Platform       | Minimum Version |
+| :------------- | :-------------- |
+| .NET Standard  | 2.0             |
+| .NET Framework | 4.6.1           |
 
 ```bash
 dotnet add package Normal
@@ -132,12 +132,12 @@ Existing middleware:
 * [Normal.Logging](./src/Normal.Logging/README.md)
 * [Normal.Caching](./src/Normal.Caching/README.md)
 
-Middleware is added using the `DbContext.Create` method. 
+Middleware is added using the `DbContext` builder constructor. 
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
-    c.UseConnection(connection); 
+    c.UseConnection<NpgsqlConnection>(connectionString); 
     c.UseLogging(logger); // Add logging middleware
 });
 
@@ -152,9 +152,7 @@ var results = await context
     .ToListAsync<StockItem>();
 
 /**
-[9:10:11 INF] query: SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @normal_1 AND tax_rate = @normal_2 ORDER BY stock_item_id
-        parameters: {"normal_1": 2, "normal_2": 15}
-        elapsed: 5ms
+[9:10:11 INF] query: SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @normal_1 AND tax_rate = @normal_2 ORDER BY stock_item_id parameters: {"normal_1": 2, "normal_2": 15} elapsed: 5ms
 **/
 ```
 
@@ -191,10 +189,10 @@ public class AwesomeHandler : DelegatingHandler
 }
 ```
 
-You can install this on `DbContext` by using `DbContext.Create`.
+You can install this on `DbContext` by using `new DbContext`.
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
     c.UseConnection(connection);
     c.UseDelegatingHandler(new AwesomeHandler()); // Add custom middleware.
@@ -204,7 +202,7 @@ var context = DbContext.Create(c =>
 Middleware is executed in the order that it was added. For example, if you added three DelegatingHandlers...
 
 ```csharp
-var context = DbContext.Create(c =>
+var context = new DbContext(c =>
 {
     c.UseDelegatingHandler(new A())
     c.UseDelegatingHandler(new B())
@@ -251,15 +249,41 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
 
 ### Dependency Injection
 
-If you're using a IoC container, like the one in AspNetCore, it's best to have `DbContext` be registered as "Scoped" or "Singleton".
+If you're using a IoC container, like the one in AspNetCore, call the `AddNormal` method to inject a scoped `IDbContext`.
 
 ```csharp
-services.AddScoped<IDbContext>(
-    (sp) => new DbContext(() => new SqlConnection("Server=..."))
-);
+services.AddNormal((sp, c) =>
+{
+    c.UseConnection<NpgsqlConnection>(connectionString);
+    c.UseLogging(sp.GetService<ILogger<DbContext>>());
+});
 ```
 
-This way, everything in the same request scope can share transactions.
+Then in your classes, you can use constructor injection to get a reference to IDbContext.
+
+```csharp
+using System.Threading.Tasks;
+using Normal;
+
+class CustomerDataAccess 
+{
+    private readonly IDbContext _context;
+
+    public CustomerDataAccess(IDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Customer> GetCustomer(int id)
+    {
+        return await _context
+            .Select("first_name", "last_name", "age")
+            .From("customer")
+            .Where("customer_id").EqualTo(id)
+            .FirstOrDefaultAsync<Customer>();
+    }
+}
+```
 
 ## Building
 

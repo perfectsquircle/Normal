@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Normal
@@ -8,13 +9,12 @@ namespace Normal
     {
         private class DbContextBuilder : IDbContextBuilder
         {
-            private readonly DbContext _dbContext;
+            public CreateConnection CreateConnection { get; private set; }
             private readonly IList<DelegatingHandler> _delegatingHandlers;
             private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
             public DbContextBuilder()
             {
-                _dbContext = new DbContext();
                 _delegatingHandlers = new List<DelegatingHandler>();
                 _dataRecordMapperFactory = new DataRecordMapperFactory();
             }
@@ -25,7 +25,15 @@ namespace Normal
                 {
                     throw new ArgumentNullException(nameof(createConnection));
                 }
-                _dbContext._createConnection = createConnection;
+                CreateConnection = createConnection;
+                return this;
+            }
+
+            public IDbContextBuilder UseConnection<T>(params object[] arguments)
+                where T : IDbConnection
+            {
+                var constructor = ReflectionHelper.GetConstructor(typeof(T), arguments);
+                CreateConnection = () => (T)constructor.Invoke(arguments);
                 return this;
             }
 
@@ -65,14 +73,7 @@ namespace Normal
                 return this;
             }
 
-            public DbContext Build()
-            {
-                var handler = BuildHandler(_dbContext);
-                _dbContext._handler = handler;
-                return _dbContext;
-            }
-
-            private IHandler BuildHandler(DbContext context)
+            public IHandler BuildHandler(DbContext context)
             {
                 IHandler head = new BaseHandler(context, _dataRecordMapperFactory);
 

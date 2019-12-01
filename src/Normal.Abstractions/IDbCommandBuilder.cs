@@ -17,6 +17,5 @@ namespace Normal
         IDbCommandBuilder WithParameter(string key, object value);
         IDbCommandBuilder WithParameters(object parameters);
         IDbCommandBuilder WithParameters(IDictionary<string, object> parameters);
-        DbCommand Build(IDbConnectionWrapper connection);
     }
 }

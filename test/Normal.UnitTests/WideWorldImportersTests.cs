@@ -16,16 +16,16 @@ namespace Normal.UnitTests
 
         public WideWorldImportersTests()
         {
-            _postgresContext = DbContext.Create(c =>
+            _postgresContext = new DbContext(c =>
             {
-                c.UseConnection(() => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal"));
+                c.UseConnection<NpgsqlConnection>("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal");
                 c.UseLogging(Helpers.GetLogger());
                 c.UseCaching(Helpers.GetMemoryCache());
             });
 
-            _sqlServerContext = DbContext.Create(c =>
+            _sqlServerContext = new DbContext(c =>
             {
-                c.UseConnection(() => new SqlConnection("Server=localhost;Uid=sa;Pwd=Normal123;Database=WideWorldImporters"));
+                c.UseConnection<SqlConnection>("Server=localhost;Uid=sa;Pwd=Normal123;Database=WideWorldImporters");
                 c.UseLogging(Helpers.GetLogger());
                 c.UseCaching(Helpers.GetMemoryCache());
             });
