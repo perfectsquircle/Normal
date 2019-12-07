@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using FastMember;
 
 namespace Normal
 {
@@ -14,10 +17,60 @@ namespace Normal
                 .WithContext(context) as SelectBuilder;
         }
 
+        public static ISelectBuilder Select<T>(this IDbContext context)
+        {
+            var targetType = typeof(T);
+            var typeAccessor = TypeAccessor.Create(targetType);
+            var tableNameAttribute = targetType.GetCustomAttribute(typeof(TableNameAttribute)) as TableNameAttribute;
+            var tableName = tableNameAttribute?.TableName ?? targetType.Name;
+            var columnNames = typeAccessor
+                .GetMembers()
+                .Select(m =>
+                {
+                    var columnNameAttribute = m.GetAttribute(typeof(ColumnNameAttribute), false) as ColumnNameAttribute;
+                    if (columnNameAttribute != null)
+                    {
+                        return columnNameAttribute.ColumnName;
+                    }
+                    return m.Name;
+                });
+            return new SelectBuilder(columnNames.ToArray())
+                .From(tableName);
+        }
+
+        public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context)
+        {
+            return await Select<T>(context).ToListAsync<T>();
+        }
+
+        public static async Task<T> SelectAsync<T>(this IDbContext context, object id)
+        {
+
+            var targetType = typeof(T);
+            var typeAccessor = TypeAccessor.Create(targetType);
+            var primaryKeyMember = typeAccessor
+                .GetMembers()
+                .FirstOrDefault(m =>
+                {
+                    return m.GetAttribute(typeof(PrimaryKeyAttribute), false) != null;
+                });
+
+            var primaryKey = primaryKeyMember.Name;
+
+            return await Select<T>(context)
+                .Where(primaryKey).EqualTo(id)
+                .FirstOrDefaultAsync<T>();
+        }
+
         public static IInsertBuilder InsertInto(this IDbContext context, string tableName)
         {
             return new InsertBuilder(tableName)
                 .WithContext(context) as InsertBuilder;
+        }
+
+        public static Task<int> InsertAsync<T>(this IDbContext context, T model)
+        {
+            throw new NotImplementedException();
         }
 
         public static IUpdateBuilder Update(this IDbContext context, string tableName)
@@ -26,10 +79,20 @@ namespace Normal
                 .WithContext(context) as UpdateBuilder;
         }
 
+        public static Task<int> UpdateAsync<T>(this IDbContext context, T model)
+        {
+            throw new NotImplementedException();
+        }
+
         public static IDeleteBuilder DeleteFrom(this IDbContext context, string tableName)
         {
             return new DeleteBuilder(tableName)
                 .WithContext(context) as DeleteBuilder;
+        }
+
+        public static Task<int> DeleteAsync<T>(this IDbContext context, T model)
+        {
+            throw new NotImplementedException();
         }
 
         public static IDbCommandBuilder CreateCommandFromFile(this IDbContext context, string fileName, Encoding encoding = default)
