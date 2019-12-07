@@ -4,7 +4,7 @@
     <!--  NuGet Metadata -->
     <Title>Normal</Title>
     <PackageId>Normal</PackageId>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Description>A Normal ORM</Description>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
   </PropertyGroup>

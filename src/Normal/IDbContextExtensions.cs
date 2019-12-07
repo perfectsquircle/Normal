@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FastMember;
 
@@ -13,86 +14,73 @@ namespace Normal
     {
         public static ISelectBuilder Select(this IDbContext context, params string[] selectList)
         {
-            return new SelectBuilder(selectList)
-                .WithContext(context) as SelectBuilder;
+            return new SelectBuilder(context).WithColumns(selectList);
         }
 
         public static ISelectBuilder Select<T>(this IDbContext context)
         {
-            var targetType = typeof(T);
-            var typeAccessor = TypeAccessor.Create(targetType);
-            var tableNameAttribute = targetType.GetCustomAttribute(typeof(TableNameAttribute)) as TableNameAttribute;
-            var tableName = tableNameAttribute?.TableName ?? targetType.Name;
-            var columnNames = typeAccessor
-                .GetMembers()
-                .Select(m =>
-                {
-                    var columnNameAttribute = m.GetAttribute(typeof(ColumnNameAttribute), false) as ColumnNameAttribute;
-                    if (columnNameAttribute != null)
-                    {
-                        return columnNameAttribute.ColumnName;
-                    }
-                    return m.Name;
-                });
-            return new SelectBuilder(columnNames.ToArray())
-                .From(tableName);
+            var columnNames = ReflectionHelper.GetColumnNames(typeof(T));
+            var tableName = ReflectionHelper.GetTableName(typeof(T));
+            return context.Select(columnNames.ToArray()).From(tableName);
         }
 
-        public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context)
+        public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context, CancellationToken cancellationToken = default)
         {
-            return await Select<T>(context).ToListAsync<T>();
+            return await context.Select<T>().ToListAsync<T>(cancellationToken);
         }
 
-        public static async Task<T> SelectAsync<T>(this IDbContext context, object id)
+        public static async Task<T> SelectAsync<T>(this IDbContext context, object id, CancellationToken cancellationToken = default)
         {
-
-            var targetType = typeof(T);
-            var typeAccessor = TypeAccessor.Create(targetType);
-            var primaryKeyMember = typeAccessor
-                .GetMembers()
-                .FirstOrDefault(m =>
-                {
-                    return m.GetAttribute(typeof(PrimaryKeyAttribute), false) != null;
-                });
-
-            var primaryKey = primaryKeyMember.Name;
-
-            return await Select<T>(context)
-                .Where(primaryKey).EqualTo(id)
-                .FirstOrDefaultAsync<T>();
+            var primaryKeyColumnName = ReflectionHelper.GetPrimaryKeyColumnName(typeof(T));
+            return await context.Select<T>()
+                .Where(primaryKeyColumnName).EqualTo(id)
+                .FirstOrDefaultAsync<T>(cancellationToken);
         }
 
         public static IInsertBuilder InsertInto(this IDbContext context, string tableName)
         {
-            return new InsertBuilder(tableName)
-                .WithContext(context) as InsertBuilder;
+            return new InsertBuilder(context).WithTableName(tableName);
         }
 
-        public static Task<int> InsertAsync<T>(this IDbContext context, T model)
+        public static Task<int> InsertAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var tableName = ReflectionHelper.GetTableName(typeof(T));
+            var dictionary = ReflectionHelper.ToDictionary(model);
+            return context.InsertInto(tableName)
+                .Columns(dictionary.Keys.ToArray())
+                .Values(dictionary.Values.ToArray())
+                .ExecuteNonQueryAsync(cancellationToken);
         }
 
         public static IUpdateBuilder Update(this IDbContext context, string tableName)
         {
-            return new UpdateBuilder(tableName)
-                .WithContext(context) as UpdateBuilder;
+            return new UpdateBuilder(context).WithTableName(tableName);
         }
 
-        public static Task<int> UpdateAsync<T>(this IDbContext context, T model)
+        public static Task<int> UpdateAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var tableName = ReflectionHelper.GetTableName(typeof(T));
+            var dictionary = ReflectionHelper.ToDictionary(model);
+            var (primaryKey, primaryKeyValue) = ReflectionHelper.GetPrimaryKey(model);
+            dictionary.Remove(primaryKey);
+            return context.Update(tableName)
+                .Set(dictionary)
+                .Where(primaryKey).EqualTo(primaryKeyValue)
+                .ExecuteNonQueryAsync(cancellationToken);
         }
 
         public static IDeleteBuilder DeleteFrom(this IDbContext context, string tableName)
         {
-            return new DeleteBuilder(tableName)
-                .WithContext(context) as DeleteBuilder;
+            return new DeleteBuilder(context).WithTableName(tableName);
         }
 
-        public static Task<int> DeleteAsync<T>(this IDbContext context, T model)
+        public static Task<int> DeleteAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var tableName = ReflectionHelper.GetTableName(typeof(T));
+            var (primaryKey, primaryKeyValue) = ReflectionHelper.GetPrimaryKey(model);
+            return context.DeleteFrom(tableName)
+                .Where(primaryKey).EqualTo(primaryKeyValue)
+                .ExecuteNonQueryAsync(cancellationToken);
         }
 
         public static IDbCommandBuilder CreateCommandFromFile(this IDbContext context, string fileName, Encoding encoding = default)

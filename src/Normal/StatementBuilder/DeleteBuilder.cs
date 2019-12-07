@@ -2,9 +2,15 @@ namespace Normal
 {
     internal class DeleteBuilder : StatementBuilder, IDeleteBuilder
     {
-        public DeleteBuilder(string tableName)
+        public DeleteBuilder(IDbContext context)
+        {
+            _context = context;
+        }
+
+        public IDeleteBuilder WithTableName(string tableName)
         {
             AddLine("DELETE FROM", tableName);
+            return this;
         }
 
         public IConditionBuilder<IDeleteBuilder> Where(string columnName)
