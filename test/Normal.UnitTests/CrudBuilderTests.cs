@@ -67,7 +67,7 @@ namespace Normal.UnitTests
             Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
         }
 
-        [Fact]
+        [Fact(Skip = "Non-nullable fields")]
         public async Task ShouldInsertIntoStockItems()
         {
             //Given

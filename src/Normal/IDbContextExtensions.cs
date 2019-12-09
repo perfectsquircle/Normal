@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FastMember;
 
 namespace Normal
 {
@@ -19,9 +18,8 @@ namespace Normal
 
         public static ISelectBuilder Select<T>(this IDbContext context)
         {
-            var columnNames = ReflectionHelper.GetColumnNames(typeof(T));
-            var tableName = ReflectionHelper.GetTableName(typeof(T));
-            return context.Select(columnNames.ToArray()).From(tableName);
+            var table = new Table(typeof(T));
+            return context.Select(table.Columns.ToArray()).From(table.Name);
         }
 
         public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context, CancellationToken cancellationToken = default)
@@ -31,9 +29,9 @@ namespace Normal
 
         public static async Task<T> SelectAsync<T>(this IDbContext context, object id, CancellationToken cancellationToken = default)
         {
-            var primaryKeyColumnName = ReflectionHelper.GetPrimaryKeyColumnName(typeof(T));
+            var table = new Table(typeof(T));
             return await context.Select<T>()
-                .Where(primaryKeyColumnName).EqualTo(id)
+                .Where(table.PrimaryKey).EqualTo(id)
                 .FirstOrDefaultAsync<T>(cancellationToken);
         }
 
@@ -44,11 +42,11 @@ namespace Normal
 
         public static Task<int> InsertAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
-            var tableName = ReflectionHelper.GetTableName(typeof(T));
-            var dictionary = ReflectionHelper.ToDictionary(model);
-            return context.InsertInto(tableName)
-                .Columns(dictionary.Keys.ToArray())
-                .Values(dictionary.Values.ToArray())
+            var table = new Table(typeof(T));
+            var columns = table.GetColumns(model);
+            return context.InsertInto(table.Name)
+                .Columns(columns.Keys.ToArray())
+                .Values(columns.Values.ToArray())
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -59,12 +57,12 @@ namespace Normal
 
         public static Task<int> UpdateAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
-            var tableName = ReflectionHelper.GetTableName(typeof(T));
-            var dictionary = ReflectionHelper.ToDictionary(model);
-            var (primaryKey, primaryKeyValue) = ReflectionHelper.GetPrimaryKey(model);
-            dictionary.Remove(primaryKey);
-            return context.Update(tableName)
-                .Set(dictionary)
+            var table = new Table(typeof(T));
+            var columns = table.GetColumns(model);
+            var (primaryKey, primaryKeyValue) = table.GetPrimaryKey(model);
+            columns.Remove(primaryKey);
+            return context.Update(table.Name)
+                .Set(columns)
                 .Where(primaryKey).EqualTo(primaryKeyValue)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
@@ -76,9 +74,9 @@ namespace Normal
 
         public static Task<int> DeleteAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
-            var tableName = ReflectionHelper.GetTableName(typeof(T));
-            var (primaryKey, primaryKeyValue) = ReflectionHelper.GetPrimaryKey(model);
-            return context.DeleteFrom(tableName)
+            var table = new Table(typeof(T));
+            var (primaryKey, primaryKeyValue) = table.GetPrimaryKey(model);
+            return context.DeleteFrom(table.Name)
                 .Where(primaryKey).EqualTo(primaryKeyValue)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
