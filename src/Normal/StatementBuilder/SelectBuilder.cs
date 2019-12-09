@@ -7,6 +7,11 @@ namespace Normal
             _context = context;
         }
 
+        public SelectBuilder(params string[] selectList)
+        {
+            WithColumns(selectList);
+        }
+
         public ISelectBuilder WithColumns(params string[] selectList)
         {
             return AddLine("SELECT", selectList);

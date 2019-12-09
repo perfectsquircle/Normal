@@ -11,6 +11,11 @@ namespace Normal
             _context = context;
         }
 
+        public InsertBuilder(string tableName)
+        {
+            WithTableName(tableName);
+        }
+
         public IInsertBuilder WithTableName(string tableName)
         {
             AddLine($"INSERT INTO {tableName}");

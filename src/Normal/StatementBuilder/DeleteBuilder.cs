@@ -7,6 +7,11 @@ namespace Normal
             _context = context;
         }
 
+        public DeleteBuilder(string tableName)
+        {
+            WithTableName(tableName);
+        }
+
         public IDeleteBuilder WithTableName(string tableName)
         {
             AddLine("DELETE FROM", tableName);

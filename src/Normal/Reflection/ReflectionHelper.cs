@@ -32,8 +32,8 @@ namespace Normal
 
         public static string GetTableName(Type targetType)
         {
-            var tableNameAttribute = targetType.GetCustomAttribute(typeof(TableNameAttribute)) as TableNameAttribute;
-            var tableName = tableNameAttribute?.TableName ?? targetType.Name;
+            var tableNameAttribute = targetType.GetCustomAttribute(typeof(TableAttribute)) as TableAttribute;
+            var tableName = tableNameAttribute?.Name ?? targetType.Name;
             return tableName;
         }
 
@@ -47,8 +47,8 @@ namespace Normal
 
         public static string GetColumnName(Member m)
         {
-            var columnNameAttribute = m.GetAttribute(typeof(ColumnNameAttribute), false) as ColumnNameAttribute;
-            return columnNameAttribute?.ColumnName ?? m.Name;
+            var columnNameAttribute = m.GetAttribute(typeof(ColumnAttribute), false) as ColumnAttribute;
+            return columnNameAttribute?.Name ?? m.Name;
         }
 
         public static string GetPrimaryKeyColumnName(Type targetType)

@@ -12,6 +12,11 @@ namespace Normal
             _context = context;
         }
 
+        public UpdateBuilder(string tableName)
+        {
+            WithTableName(tableName);
+        }
+
         public IUpdateBuilder WithTableName(string tableName)
         {
             AddLine("UPDATE", tableName);

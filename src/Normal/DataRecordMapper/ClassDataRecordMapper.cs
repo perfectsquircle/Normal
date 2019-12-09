@@ -58,6 +58,11 @@ namespace Normal
                 var columnNameVariants = GetVariants(columnName);
                 var member = members.FirstOrDefault(m =>
                 {
+                    var columnNameAttribute = m.GetAttribute(typeof(ColumnAttribute), false) as ColumnAttribute;
+                    if (columnNameAttribute != null)
+                    {
+                        return columnNameAttribute.Name == columnName;
+                    }
                     var propertyVariants = GetVariants(m.Name);
                     return propertyVariants.Intersect(columnNameVariants).Any();
                 });
@@ -65,6 +70,7 @@ namespace Normal
                 {
                     continue;
                 }
+                members = members.Except(new[] { member });
                 list.Add(new PropertyMapper()
                     .WithColumnIndex(i)
                     .WithPropertyName(member.Name)
