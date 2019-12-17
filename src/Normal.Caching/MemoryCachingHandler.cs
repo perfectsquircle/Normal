@@ -55,8 +55,8 @@ namespace Normal
                 return await inner(false);
             }
 
-            var cacheKey = CalculateCacheKey(commandBuilder);
             var ttl = GetTtl(commandBuilder);
+            var cacheKey = CalculateCacheKey(commandBuilder);
 
             var results = await _memoryCache.GetOrCreateAsync<T>(cacheKey, async (cacheEntry) =>
             {

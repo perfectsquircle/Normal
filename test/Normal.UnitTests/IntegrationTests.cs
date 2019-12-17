@@ -14,13 +14,52 @@ namespace Normal.UnitTests
     {
         [Theory]
         [MemberData(nameof(GetDbConnection))]
+        public async Task ToEnumerableAsync(CreateConnection dbConnection)
+        {
+            //Given
+            var context = new DbContext(dbConnection);
+
+            //When
+            var results = await context
+                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .ToEnumerableAsync<Bar>();
+
+            //Then
+            Assert.NotNull(results);
+            results = results.ToList();
+            Assert.NotEmpty(results);
+            var bar = results.Single();
+            Assert.Equal(7, bar.Alpha);
+            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("Can't set me", bar.Charlie);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
+        public async Task ToEnumerableAsyncIsEmpty(CreateConnection dbConnection)
+        {
+            //Given
+            var context = new DbContext(dbConnection);
+
+            //When
+            var results = await context
+                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .ToEnumerableAsync<Bar>();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.Empty(results);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDbConnection))]
         public async Task ToListAsync(CreateConnection dbConnection)
         {
             //Given
             var context = new DbContext(dbConnection);
 
             //When
-            IList<Bar> results = await context
+            var results = await context
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
@@ -41,7 +80,7 @@ namespace Normal.UnitTests
             var context = new DbContext(dbConnection);
 
             //When
-            IList<Bar> results = await context
+            var results = await context
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToListAsync<Bar>();
 

@@ -62,6 +62,32 @@ namespace Normal.UnitTests
             Assert.Equal("USB food flash drive - chocolate bar", last.StockItemName);
         }
 
+        [Theory]
+        [MemberData(nameof(GetSelectTestCases))]
+        public async Task ShouldSelectEnumerableFromStockItems(bool isPostgres, string query)
+        {
+            //Given
+            var context = isPostgres ? _postgresContext : _sqlServerContext;
+
+            //When
+            var results = await context
+                .CreateCommand(query)
+                .ToEnumerableAsync<StockItem>();
+
+            //Then
+            Assert.NotNull(results);
+            results = results.ToList();
+            Assert.NotEmpty(results);
+            Assert.Equal(10, results.Count());
+            var first = results.First();
+            Assert.Equal(1, first.StockItemID);
+            Assert.Equal("USB missile launcher (Green)", first.StockItemName);
+            var last = results.Last();
+            Assert.Equal(10, last.StockItemID);
+            Assert.Equal("USB food flash drive - chocolate bar", last.StockItemName);
+            Assert.Equal("USB food flash drive - chocolate bar", last.StockItemName);
+        }
+
         public static IEnumerable<object[]> GetSelectWithParametersTestCases()
         {
             yield return new object[] { true, "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @supplierId AND tax_rate = @taxRate ORDER BY stock_item_id" };
@@ -184,23 +210,48 @@ namespace Normal.UnitTests
             //Given
             var context = _postgresContext;
 
-            Func<Task<double>> getResults = async () =>
+            Func<int, Task<double>> getResults = async (supplierId) =>
             {
                 return await context
                     .CreateCommand("select random()")
-                    .WithParameter("supplierId", 2)
+                    .WithParameter("supplierId", supplierId)
                     .CacheFor(TimeSpan.FromMinutes(1))
                     .FirstAsync<double>();
             };
 
             //When
-            var results1 = await getResults();
-            var results2 = await getResults();
-            var results3 = await getResults();
+            var results1 = await getResults(1);
+            var results2 = await getResults(1);
+            var results3 = await getResults(1);
 
             //Then
             Assert.Equal(results1, results2);
             Assert.Equal(results2, results3);
+        }
+
+        [Fact]
+        public async Task ShouldNotCacheResults()
+        {
+            //Given
+            var context = _postgresContext;
+
+            Func<int, Task<double>> getResults = async (supplierId) =>
+            {
+                return await context
+                    .CreateCommand("select random()")
+                    .WithParameter("supplierId", supplierId)
+                    .CacheFor(TimeSpan.FromMinutes(1))
+                    .FirstAsync<double>();
+            };
+
+            //When
+            var results1 = await getResults(2);
+            var results2 = await getResults(3);
+            var results3 = await getResults(4);
+
+            //Then
+            Assert.NotEqual(results1, results2);
+            Assert.NotEqual(results2, results3);
         }
     }
 }

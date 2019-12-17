@@ -6,6 +6,7 @@ namespace Normal
 {
     public interface IDbCommandExecutor
     {
+        Task<IEnumerable<T>> ToEnumerableAsync<T>(CancellationToken cancellationToken = default);
         Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default);
         Task<T> FirstAsync<T>(CancellationToken cancellationToken = default);
         Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default);

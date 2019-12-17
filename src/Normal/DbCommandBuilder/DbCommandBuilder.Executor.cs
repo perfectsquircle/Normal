@@ -15,6 +15,8 @@ namespace Normal
             return this;
         }
 
+        public async Task<IEnumerable<T>> ToEnumerableAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken));
         public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
             (await ToEnumerable<T>(cancellationToken)).ToList();
         public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
