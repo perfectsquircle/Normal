@@ -17,6 +17,8 @@ namespace Normal
             return string.Join(Environment.NewLine, _lines);
         }
 
+        public Task<IEnumerable<T>> ToEnumerableAsync<T>(CancellationToken cancellationToken = default) =>
+            ToCommand().ToEnumerableAsync<T>(cancellationToken);
         public Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().ToListAsync<T>(cancellationToken);
         public Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>

@@ -4,7 +4,7 @@
     <!--  NuGet Metadata -->
     <Title>Normal.Caching</Title>
     <PackageId>Normal.Caching</PackageId>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Description>Caching for a Normal ORM</Description>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>

@@ -4,7 +4,7 @@
     <!--  NuGet Metadata -->
     <Title>Normal.Abstractions</Title>
     <PackageId>Normal.Abstractions</PackageId>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <Description>Abstractions for a Normal ORM</Description>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
   </PropertyGroup>
