@@ -19,6 +19,7 @@ namespace Normal
             {
                 _propertyMapper = new PropertyMapper()
                     .WithColumnIndex(0)
+                    .WithColumnType(dataRecord.GetFieldType(0))
                     .WithPropertyType(_targetType);
             }
             return _propertyMapper.MapProperty(dataRecord);

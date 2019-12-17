@@ -6,13 +6,13 @@ namespace Normal
 {
     internal class DynamicDataRecordMapper : IDataRecordMapper
     {
-        private IList<string> _columnNames;
+        private IEnumerable<string> _columnNames;
 
         public object MapDataRecord(IDataRecord dataRecord)
         {
             if (_columnNames == null)
             {
-                _columnNames = GetColumnNames(dataRecord);
+                _columnNames = GetColumnNames(dataRecord).Buffered();
             }
 
             IDictionary<string, object> instance = new ExpandoObject();
@@ -23,14 +23,12 @@ namespace Normal
             return instance;
         }
 
-        private static IList<string> GetColumnNames(IDataRecord dataRecord)
+        private static IEnumerable<string> GetColumnNames(IDataRecord dataRecord)
         {
-            var columnNames = new List<string>();
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
-                columnNames.Add(dataRecord.GetName(i));
+                yield return dataRecord.GetName(i);
             }
-            return columnNames;
         }
     }
 }

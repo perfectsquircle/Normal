@@ -26,6 +26,9 @@ namespace Normal.UnitTests
                 },
                 new {
                     Name = "createDate", Value = now,
+               },
+               new {
+                   Name = "tango", Value = 7
                }
             });
             var mapper = new ClassDataRecordMapper(typeof(Bar));
@@ -39,6 +42,7 @@ namespace Normal.UnitTests
             Assert.Equal("Your lucky day", result.Beta);
             Assert.Equal(now, result.CreateDate);
             Assert.Equal("Can't set me", result.Charlie);
+            Assert.Equal(TheEnum.bat, result.Tango);
         }
 
         [Fact]

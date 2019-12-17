@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,7 +25,6 @@ namespace Normal.UnitTests
 
             //Then
             Assert.NotNull(results);
-            results = results.ToList();
             Assert.NotEmpty(results);
             var bar = results.Single();
             Assert.Equal(7, bar.Alpha);
