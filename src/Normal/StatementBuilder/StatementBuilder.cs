@@ -10,7 +10,7 @@ namespace Normal
     {
         private IList<string> _lines = new List<string>();
         private IDictionary<string, object> _parameters = new Dictionary<string, object>();
-        private IDbContext _context;
+        protected IDbContext _context;
 
         public string Build()
         {
@@ -52,12 +52,6 @@ namespace Normal
             var parameterName = $"normal_{_parameters.Count + 1}";
             _parameters.Add(parameterName, value);
             return parameterName;
-        }
-
-        public StatementBuilder WithContext(IDbContext context)
-        {
-            _context = context;
-            return this;
         }
 
         protected IDbCommandBuilder ToCommand()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Normal
@@ -6,9 +7,20 @@ namespace Normal
     {
         private bool _setCalled = false;
 
+        public UpdateBuilder(IDbContext context)
+        {
+            _context = context;
+        }
+
         public UpdateBuilder(string tableName)
         {
+            WithTableName(tableName);
+        }
+
+        public IUpdateBuilder WithTableName(string tableName)
+        {
             AddLine("UPDATE", tableName);
+            return this;
         }
 
         public IConditionBuilder<IUpdateBuilder> Set(string columnName)
@@ -25,6 +37,11 @@ namespace Normal
         public IUpdateBuilder Set(object setBuilder)
         {
             var setPairs = ReflectionHelper.ToDictionary(setBuilder);
+            return Set(setPairs);
+        }
+
+        public IUpdateBuilder Set(IDictionary<string, object> setPairs)
+        {
             var setList = setPairs.Select(setPair =>
             {
                 var parameterName = RegisterParameter(setPair.Value);

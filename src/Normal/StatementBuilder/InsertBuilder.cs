@@ -6,9 +6,20 @@ namespace Normal
     {
         private bool _valuesCalled = false;
 
+        public InsertBuilder(IDbContext context)
+        {
+            _context = context;
+        }
+
         public InsertBuilder(string tableName)
         {
+            WithTableName(tableName);
+        }
+
+        public IInsertBuilder WithTableName(string tableName)
+        {
             AddLine($"INSERT INTO {tableName}");
+            return this;
         }
 
         public IInsertBuilder Columns(params string[] columnNames)

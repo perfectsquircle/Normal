@@ -50,7 +50,8 @@ namespace Normal
             var list = new List<PropertyMapper>();
             var members = _typeAccessor
                 .GetMembers()
-                .Where(m => m.CanWrite);
+                .Where(m => m.CanWrite)
+                .ToList();
 
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
@@ -58,6 +59,11 @@ namespace Normal
                 var columnNameVariants = GetVariants(columnName);
                 var member = members.FirstOrDefault(m =>
                 {
+                    var columnNameAttribute = m.GetAttribute(typeof(ColumnAttribute), false) as ColumnAttribute;
+                    if (columnNameAttribute != null)
+                    {
+                        return columnNameAttribute.Name == columnName;
+                    }
                     var propertyVariants = GetVariants(m.Name);
                     return propertyVariants.Intersect(columnNameVariants).Any();
                 });
@@ -65,6 +71,7 @@ namespace Normal
                 {
                     continue;
                 }
+                members.Remove(member);
                 list.Add(new PropertyMapper()
                     .WithColumnIndex(i)
                     .WithPropertyName(member.Name)

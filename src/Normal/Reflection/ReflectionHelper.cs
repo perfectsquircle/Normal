@@ -14,7 +14,7 @@ namespace Normal
             return typeAccessor
                 .GetMembers()
                 .Where(m => m.CanRead)
-                .ToDictionary(m => m.Name, m => typeAccessor[target, m.Name]);
+                .ToDictionary(m => Table.GetColumnName(m), m => typeAccessor[target, m.Name]);
         }
 
         public static ConstructorInfo GetConstructor(Type connectionType, object[] arguments)

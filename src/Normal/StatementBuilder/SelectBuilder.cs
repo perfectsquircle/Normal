@@ -2,9 +2,19 @@ namespace Normal
 {
     internal class SelectBuilder : StatementBuilder, ISelectBuilder
     {
+        public SelectBuilder(IDbContext context)
+        {
+            _context = context;
+        }
+
         public SelectBuilder(params string[] selectList)
         {
-            AddLine("SELECT", selectList);
+            WithColumns(selectList);
+        }
+
+        public ISelectBuilder WithColumns(params string[] selectList)
+        {
+            return AddLine("SELECT", selectList);
         }
 
         public ISelectBuilder From(params string[] fromList)
