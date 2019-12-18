@@ -28,7 +28,7 @@ namespace Normal
             }
         }
 
-        public IEnumerable<string> Columns
+        public IEnumerable<string> ColumnNames
         {
             get
             {
@@ -47,7 +47,7 @@ namespace Normal
                 .ToDictionary(m => GetColumnName(m), m => TypeAccessor[target, m.Name]);
         }
 
-        public string PrimaryKey
+        public string PrimaryKeyColumnName
         {
             get
             {
@@ -62,9 +62,10 @@ namespace Normal
             return (GetColumnName(primaryKeyMember), TypeAccessor[target, primaryKeyMember.Name]);
         }
 
-        private static string GetColumnName(Member m)
+        public static string GetColumnName(Member m)
         {
-            return ReflectionHelper.GetColumnName(m);
+            var columnNameAttribute = m.GetAttribute(typeof(ColumnAttribute), false) as ColumnAttribute;
+            return columnNameAttribute?.Name ?? m.Name;
         }
 
         private Member GetPrimaryKeyMember()

@@ -19,7 +19,7 @@ namespace Normal
         public static ISelectBuilder Select<T>(this IDbContext context)
         {
             var table = new Table(typeof(T));
-            return context.Select(table.Columns.ToArray()).From(table.Name);
+            return context.Select(table.ColumnNames.ToArray()).From(table.Name);
         }
 
         public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context, CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ namespace Normal
         {
             var table = new Table(typeof(T));
             return await context.Select<T>()
-                .Where(table.PrimaryKey).EqualTo(id)
+                .Where(table.PrimaryKeyColumnName).EqualTo(id)
                 .FirstOrDefaultAsync<T>(cancellationToken);
         }
 
