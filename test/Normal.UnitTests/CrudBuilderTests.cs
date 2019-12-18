@@ -42,30 +42,30 @@ namespace Normal.UnitTests
             Assert.Equal("USB missile launcher (Green)", first.StockItemName);
         }
 
-        [Fact]
-        public async Task ShouldSelectFromStockItemsWithParameters()
-        {
-            //Given
-            var context = _postgresContext;
+        // [Fact]
+        // public async Task ShouldSelectFromStockItemsWithParameters()
+        // {
+        //     //Given
+        //     var context = _postgresContext;
 
-            //When
-            var results = await context
-                .Select<StockItemAnnotated>()
-                .Where("supplier_id").EqualTo(2)
-                .And("tax_rate").EqualTo(15.0)
-                .ToListAsync<StockItemAnnotated>();
+        //     //When
+        //     var results = await context
+        //         .Select<StockItemAnnotated>()
+        //         .Where("supplier_id").EqualTo(2)
+        //         .And("tax_rate").EqualTo(15.0)
+        //         .ToListAsync<StockItemAnnotated>();
 
-            //Then
-            Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            Assert.Equal(3, results.Count);
-            var first = results.First();
-            Assert.Equal(150, first.StockItemID);
-            Assert.Equal("Pack of 12 action figures (variety)", first.StockItemName);
-            var last = results.Last();
-            Assert.Equal(152, last.StockItemID);
-            Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
-        }
+        //     //Then
+        //     Assert.NotNull(results);
+        //     Assert.NotEmpty(results);
+        //     Assert.Equal(3, results.Count);
+        //     var first = results.First();
+        //     Assert.Equal(150, first.StockItemID);
+        //     Assert.Equal("Pack of 12 action figures (variety)", first.StockItemName);
+        //     var last = results.Last();
+        //     Assert.Equal(152, last.StockItemID);
+        //     Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
+        // }
 
         [Fact(Skip = "Non-nullable fields")]
         public async Task ShouldInsertIntoStockItems()

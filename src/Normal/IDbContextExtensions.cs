@@ -16,15 +16,9 @@ namespace Normal
             return new SelectBuilder(context).WithColumns(selectList);
         }
 
-        public static ISelectBuilder Select<T>(this IDbContext context)
-        {
-            var table = new Table(typeof(T));
-            return context.Select(table.ColumnNames.ToArray()).From(table.Name);
-        }
-
         public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context, CancellationToken cancellationToken = default)
         {
-            return await context.Select<T>().ToListAsync<T>(cancellationToken);
+            return await context.Select<T>().ToEnumerableAsync<T>(cancellationToken);
         }
 
         public static async Task<T> SelectAsync<T>(this IDbContext context, object id, CancellationToken cancellationToken = default)
@@ -121,6 +115,12 @@ namespace Normal
                 }
             }
             return null;
+        }
+
+        private static ISelectBuilder Select<T>(this IDbContext context)
+        {
+            var table = new Table(typeof(T));
+            return context.Select(table.ColumnNames.ToArray()).From(table.Name);
         }
     }
 }
