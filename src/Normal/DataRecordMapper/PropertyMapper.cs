@@ -1,31 +1,41 @@
 using System;
 using System.Data;
+using System.Diagnostics;
 
 namespace Normal
 {
     internal class PropertyMapper
     {
         private int _columnIndex;
+        private Type _columnType;
         private Type _propertyType;
-        private Func<IDataRecord, object> _columnReader;
+        private Lazy<Func<IDataRecord, object>> _columnReader;
         public string PropertyName { get; set; }
+
+        public PropertyMapper()
+        {
+            _columnReader = new Lazy<Func<IDataRecord, object>>(CreateColumnReader);
+        }
 
         public object MapProperty(IDataRecord dataRecord)
         {
-            if (_columnReader == null)
-            {
-                _columnReader = CreateColumnReader();
-            }
+            Debug.Assert(dataRecord != null);
             if (dataRecord.IsDBNull(_columnIndex))
             {
                 return null;
             }
-            return _columnReader?.Invoke(dataRecord);
+            return _columnReader.Value(dataRecord);
         }
 
         public PropertyMapper WithColumnIndex(int columnIndex)
         {
             _columnIndex = columnIndex;
+            return this;
+        }
+
+        public PropertyMapper WithColumnType(Type columnType)
+        {
+            _columnType = columnType;
             return this;
         }
 
@@ -43,44 +53,27 @@ namespace Normal
 
         public Func<IDataRecord, object> CreateColumnReader()
         {
-            if (_propertyType.IsAssignableFrom(typeof(string)))
+            Debug.Assert(_columnType != null);
+            Debug.Assert(_propertyType != null);
+
+            if (_columnType == _propertyType || _propertyType.IsAssignableFrom(_columnType))
             {
-                return (dataRecord) => dataRecord.GetString(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(bool)))
-            {
-                return (dataRecord) => dataRecord.GetBoolean(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(byte)))
-            {
-                return (dataRecord) => dataRecord.GetByte(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(short)))
-            {
-                return (dataRecord) => dataRecord.GetInt16(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(int)))
-            {
-                return (dataRecord) => dataRecord.GetInt32(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(long)))
-            {
-                return (dataRecord) => dataRecord.GetInt64(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(float)))
-            {
-                return (dataRecord) => dataRecord.GetFloat(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(double)))
-            {
-                return (dataRecord) => dataRecord.GetDouble(_columnIndex);
-            }
-            if (_propertyType.IsAssignableFrom(typeof(DateTime)))
-            {
-                return (dataRecord) => dataRecord.GetDateTime(_columnIndex);
+                return (dataRecord) => dataRecord[_columnIndex];
             }
 
-            return (dataRecord) => dataRecord[_columnIndex];
+            if (_propertyType.IsEnum)
+            {
+                if (_columnType == typeof(string))
+                {
+                    return (dataRecord) => Enum.Parse(_propertyType, dataRecord.GetString(_columnIndex), true);
+                }
+                else
+                {
+                    return (dataRecord) => Enum.ToObject(_propertyType, dataRecord[_columnIndex]);
+                }
+            }
+
+            return (dataRecord) => Convert.ChangeType(dataRecord[_columnIndex], _propertyType);
         }
     }
 }

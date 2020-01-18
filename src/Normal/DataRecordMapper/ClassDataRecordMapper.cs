@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using FastMember;
 
@@ -8,31 +9,29 @@ namespace Normal
 {
     internal class ClassDataRecordMapper : IDataRecordMapper
     {
-        private IList<PropertyMapper> _propertyMappers;
-        private TypeAccessor _typeAccessor;
+        private IEnumerable<PropertyMapper> _propertyMappers;
         private Type _targetType;
+        private readonly Lazy<TypeAccessor> _typeAccessor;
+        private TypeAccessor TypeAccessor => _typeAccessor.Value;
+
 
         public ClassDataRecordMapper(Type targetType)
         {
             _targetType = targetType;
+            _typeAccessor = new Lazy<TypeAccessor>(() => TypeAccessor.Create(_targetType));
         }
 
         public object MapDataRecord(IDataRecord dataRecord)
         {
-            if (_typeAccessor == null)
-            {
-                _typeAccessor = TypeAccessor.Create(_targetType);
-            }
             if (_propertyMappers == null)
             {
-                _propertyMappers = CreatePropertyMappers(dataRecord);
+                _propertyMappers = CreatePropertyMappers(dataRecord).Buffered();
             }
 
-            var instance = _typeAccessor.CreateNew();
+            var instance = TypeAccessor.CreateNew();
             foreach (var mapper in _propertyMappers)
             {
-                var fieldValue = mapper.MapProperty(dataRecord);
-                _typeAccessor[instance, mapper.PropertyName] = fieldValue;
+                TypeAccessor[instance, mapper.PropertyName] = mapper.MapProperty(dataRecord);
             }
             return instance;
         }
@@ -45,10 +44,10 @@ namespace Normal
             yield return columnName.ToLowerInvariant().Replace("_", string.Empty);
         }
 
-        private IList<PropertyMapper> CreatePropertyMappers(IDataRecord dataRecord)
+        private IEnumerable<PropertyMapper> CreatePropertyMappers(IDataRecord dataRecord)
         {
             var list = new List<PropertyMapper>();
-            var members = _typeAccessor
+            var members = TypeAccessor
                 .GetMembers()
                 .Where(m => m.CanWrite)
                 .ToList();
@@ -72,12 +71,12 @@ namespace Normal
                     continue;
                 }
                 members.Remove(member);
-                list.Add(new PropertyMapper()
+                yield return new PropertyMapper()
                     .WithColumnIndex(i)
+                    .WithColumnType(dataRecord.GetFieldType(i))
                     .WithPropertyName(member.Name)
-                    .WithPropertyType(member.Type));
+                    .WithPropertyType(member.Type);
             }
-            return list;
         }
     }
 }

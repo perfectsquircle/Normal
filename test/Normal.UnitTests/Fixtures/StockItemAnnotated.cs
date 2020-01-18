@@ -22,7 +22,7 @@ namespace Normal.UnitTests.Fixtures
 
         [Column("recommended_retail_price")]
 
-        public double? RecommendedRetailPrice { get; set; }
+        public decimal RecommendedRetailPrice { get; set; }
 
         [Column("is_chiller_stock")]
         public bool IsChillerStock { get; set; }

@@ -8,5 +8,6 @@ namespace Normal.UnitTests.Fixtures
         public string Beta { get; set; }
         public string Charlie { get; } = "Can't set me";
         public DateTimeOffset? CreateDate { get; set; }
+        public TheEnum Tango { get; set; }
     }
 }

@@ -76,7 +76,6 @@ namespace Normal.UnitTests
 
             //Then
             Assert.NotNull(results);
-            results = results.ToList();
             Assert.NotEmpty(results);
             Assert.Equal(10, results.Count());
             var first = results.First();

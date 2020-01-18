@@ -4,6 +4,6 @@ namespace Normal.UnitTests.Fixtures
     {
         foo,
         bar,
-        bat
+        bat = 7
     }
 }
