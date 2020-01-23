@@ -9,12 +9,14 @@ namespace Normal
         private int _columnIndex;
         private Type _columnType;
         private Type _propertyType;
+        private Lazy<object> _propertyDefault;
         private Lazy<Func<IDataRecord, object>> _columnReader;
         public string PropertyName { get; set; }
 
         public PropertyMapper()
         {
             _columnReader = new Lazy<Func<IDataRecord, object>>(CreateColumnReader);
+            _propertyDefault = new Lazy<object>(() => _propertyType.IsValueType ? Activator.CreateInstance(_propertyType) : null);
         }
 
         public object MapProperty(IDataRecord dataRecord)
@@ -22,7 +24,7 @@ namespace Normal
             Debug.Assert(dataRecord != null);
             if (dataRecord.IsDBNull(_columnIndex))
             {
-                return null;
+                return _propertyDefault.Value;
             }
             return _columnReader.Value(dataRecord);
         }

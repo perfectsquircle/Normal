@@ -12,6 +12,7 @@ Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-rela
   - [Usage](#usage)
     - [DbContext](#dbcontext)
     - [Statement Builder](#statement-builder)
+    - [CRUD statements](#crud-statements)
     - [Custom Commands](#custom-commands)
     - [Middleware](#middleware)
     - [Custom Middleware](#custom-middleware)
@@ -54,7 +55,7 @@ var context = new DbContext(() => new NpgsqlConnection("Host=..."));
 
 ### Statement Builder
 
-For very simple queries, you can use the inline statement builder for `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.
+For very simple queries, you can use the inline statement builder for `SELECT`, `INSERT`, `UPDATE`, and `DELETE`. This can map the results to any POCO class.
 
 ```csharp
 class Customer {
@@ -98,6 +99,41 @@ int rowsAffected = await context
     .DeleteFrom("customer")
     .Where("last_name").EqualTo("Cuervo")
     .Execute();
+```
+
+### CRUD statements
+
+Simple crud operations can be executed using some convenience methods on `DbContext`. To use these, it's recommended that you annotate your models with the `Table`, `PrimaryKey` and `Column` annotations. If the annotations are omitted, Normal will use the class name as the table name, and the field names as the column names.
+
+```csharp
+[Table("warehouse.stock_items")]
+public class StockItem
+{
+    [PrimaryKey]
+    [Column("stock_item_id")]
+    public int StockItemID { get; set; }
+
+    [Column("stock_item_name")]
+    public string StockItemName { get; set; }
+
+    [Column("supplier_id")]
+    public int SupplierId { get; set; }
+}
+
+// SELECT all rows from stock_items and map them to a list of StockItem
+var results = await context.SelectAsync<StockItem>();
+
+// SELECT the row where stock_item_id = 1 and map it to a StockItem (or null.)
+var result = await context.SelectAsync<StockItem>(1);
+
+// INSERT a row into stock_items, using the fields on the stockItem model.
+var rowsAffected = await context.InsertAsync<StockItem>(stockItem);
+
+// INSERT a row in stock_items, using the fields on the stockItem model.
+var rowsAffected = await context.UpdateAsync<StockItem>(stockItem);
+
+// DELETE a row from stock_items
+var rowsAffected = await context.DeleteAsync<StockItemAnnotated>(stockItem);
 ```
 
 ### Custom Commands

@@ -75,6 +75,7 @@ namespace Normal.UnitTests
                 .ToEnumerableAsync<StockItem>();
 
             //Then
+            results = results.ToList();
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             Assert.Equal(10, results.Count());
