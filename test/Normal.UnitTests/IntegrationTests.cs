@@ -24,6 +24,7 @@ namespace Normal.UnitTests
                 .ToEnumerableAsync<Bar>();
 
             //Then
+            results = results.ToList();
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             var bar = results.Single();
@@ -45,6 +46,7 @@ namespace Normal.UnitTests
                 .ToEnumerableAsync<Bar>();
 
             //Then
+            results = results.ToList();
             Assert.NotNull(results);
             Assert.Empty(results);
         }

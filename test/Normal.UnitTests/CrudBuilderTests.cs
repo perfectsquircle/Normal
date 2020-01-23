@@ -42,6 +42,21 @@ namespace Normal.UnitTests
             Assert.Equal("USB missile launcher (Green)", first.StockItemName);
         }
 
+        [Fact]
+        public async Task ShouldSelectFromStockItemsById()
+        {
+            //Given
+            var context = _postgresContext;
+
+            //When
+            var result = await context.SelectAsync<StockItemAnnotated>(1);
+
+            //Then
+            Assert.NotNull(result);
+            Assert.Equal(1, result.StockItemID);
+            Assert.Equal("USB missile launcher (Green)", result.StockItemName);
+        }
+
         // [Fact]
         // public async Task ShouldSelectFromStockItemsWithParameters()
         // {
@@ -67,7 +82,7 @@ namespace Normal.UnitTests
         //     Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
         // }
 
-        [Fact(Skip = "Non-nullable fields")]
+        [Fact]
         public async Task ShouldInsertIntoStockItems()
         {
             //Given
@@ -76,13 +91,78 @@ namespace Normal.UnitTests
             {
                 StockItemName = "Bananas",
                 SupplierId = 2,
-
+                ColorId = 1,
+                UnitPackageId = 1,
+                OuterPackageId = 1,
+                LeadTimeDays = 1,
+                QuantityPerOuter = 1,
+                IsChillerStock = false,
+                TaxRate = 1.0m,
+                UnitPrice = 1.0m,
+                TypicalWeightPerUnit = 1.0m,
+                SearchDetails = "Yellow, Fruit",
+                LastEditedBy = 1,
             };
 
             //When
             using (var transaction = context.BeginTransaction())
             {
                 var rowsAffected = await context.InsertAsync<StockItemAnnotated>(stockItem);
+                transaction.Rollback();
+
+                //Then
+                Assert.Equal(1, rowsAffected);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldUpdateStockItem()
+        {
+            //Given
+            var context = _postgresContext;
+            var stockItem = new StockItemAnnotated
+            {
+                StockItemID = 1,
+                StockItemName = "Bananas",
+                SupplierId = 2,
+                ColorId = 1,
+                UnitPackageId = 1,
+                OuterPackageId = 1,
+                LeadTimeDays = 1,
+                QuantityPerOuter = 1,
+                IsChillerStock = false,
+                TaxRate = 1.0m,
+                UnitPrice = 1.0m,
+                TypicalWeightPerUnit = 1.0m,
+                SearchDetails = "Yellow, Fruit",
+                LastEditedBy = 1,
+            };
+
+            //When
+            using (var transaction = context.BeginTransaction())
+            {
+                var rowsAffected = await context.UpdateAsync<StockItemAnnotated>(stockItem);
+                transaction.Rollback();
+
+                //Then
+                Assert.Equal(1, rowsAffected);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldDeleteStockItem()
+        {
+            //Given
+            var context = _postgresContext;
+            var specialDeal = new SpecialDeal
+            {
+                SpecialDealId = 1,
+            };
+
+            //When
+            using (var transaction = context.BeginTransaction())
+            {
+                var rowsAffected = await context.DeleteAsync<SpecialDeal>(specialDeal);
                 transaction.Rollback();
 
                 //Then

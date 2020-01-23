@@ -25,7 +25,7 @@ namespace Normal
         {
             if (_propertyMappers == null)
             {
-                _propertyMappers = CreatePropertyMappers(dataRecord).Buffered();
+                _propertyMappers = CreatePropertyMappers(dataRecord).ToList();
             }
 
             var instance = TypeAccessor.CreateNew();

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
+using System.Linq;
 
 namespace Normal
 {
@@ -12,7 +13,7 @@ namespace Normal
         {
             if (_columnNames == null)
             {
-                _columnNames = GetColumnNames(dataRecord).Buffered();
+                _columnNames = GetColumnNames(dataRecord).ToList();
             }
 
             IDictionary<string, object> instance = new ExpandoObject();
