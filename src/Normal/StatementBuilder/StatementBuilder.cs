@@ -10,7 +10,7 @@ namespace Normal
     {
         private IList<string> _lines = new List<string>();
         private IDictionary<string, object> _parameters = new Dictionary<string, object>();
-        protected IDbContext _context;
+        protected IDatabase _database;
 
         public string Build()
         {
@@ -56,11 +56,11 @@ namespace Normal
 
         protected IDbCommandBuilder ToCommand()
         {
-            if (_context == null)
+            if (_database == null)
             {
-                throw new InvalidOperationException("No context to execute against.");
+                throw new InvalidOperationException("No database to execute against.");
             }
-            return _context
+            return _database
                 .CreateCommand(Build())
                 .WithParameters(_parameters);
         }

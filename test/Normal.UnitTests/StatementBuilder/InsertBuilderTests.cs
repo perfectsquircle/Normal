@@ -60,16 +60,16 @@ VALUES
         public async Task ShouldInsert()
         {
             //Given
-            var context = new DbContext(_postgresConnection);
+            var database = new Database(_postgresConnection);
 
             //When
-            var rowsInserted = await context
+            var rowsInserted = await database
                 .InsertInto("warehouse.colors")
                 .Columns("color_name", "last_edited_by")
                 .Values("Gurple", 1)
                 .ExecuteNonQueryAsync();
 
-            var gurple = await context
+            var gurple = await database
                 .Select("color_name")
                 .From("warehouse.colors")
                 .Where("color_name").EqualTo("Gurple")

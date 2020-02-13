@@ -13,7 +13,7 @@ dotnet add package Normal.Caching
 ### Usage
 
 ```csharp
-var context = new DbContext(c =>
+var database = new Database(c =>
 {
     c.UseConnection(connection); 
     c.UseCaching(memoryCache); // Add caching middleware.
@@ -21,7 +21,7 @@ var context = new DbContext(c =>
 
 // Now you can cache queries for a given timespan.
 
-var results = await context
+var results = await database
     .Select("stock_item_id", "stock_item_name")
     .From("warehouse.stock_items")
     .CacheFor(TimeSpan.FromMinutes(5))

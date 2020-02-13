@@ -6,9 +6,9 @@ namespace Normal
     {
         private bool _valuesCalled = false;
 
-        public InsertBuilder(IDbContext context)
+        public InsertBuilder(IDatabase database)
         {
-            _context = context;
+            _database = database;
         }
 
         public InsertBuilder(string tableName)

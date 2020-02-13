@@ -2,9 +2,9 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Normal
 {
-    public static class IDbContextBuilderExtensions
+    public static class IDatabaseBuilderExtensions
     {
-        public static IDbContextBuilder UseCaching(this IDbContextBuilder builder, IMemoryCache memoryCache)
+        public static IDatabaseBuilder UseCaching(this IDatabaseBuilder builder, IMemoryCache memoryCache)
         {
             return builder.UseDelegatingHandler(new MemoryCachingHandler(memoryCache));
         }

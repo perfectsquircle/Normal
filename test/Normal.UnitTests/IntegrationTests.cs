@@ -16,10 +16,10 @@ namespace Normal.UnitTests
         public async Task ToEnumerableAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToEnumerableAsync<Bar>();
 
@@ -38,10 +38,10 @@ namespace Normal.UnitTests
         public async Task ToEnumerableAsyncIsEmpty(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToEnumerableAsync<Bar>();
 
@@ -56,10 +56,10 @@ namespace Normal.UnitTests
         public async Task ToListAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
@@ -77,10 +77,10 @@ namespace Normal.UnitTests
         public async Task ToListAsyncIsEmpty(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToListAsync<Bar>();
 
@@ -94,10 +94,10 @@ namespace Normal.UnitTests
         public async Task FirstAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var bar = await context
+            var bar = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .FirstAsync<Bar>();
 
@@ -113,12 +113,12 @@ namespace Normal.UnitTests
         public async Task FirstAsyncThrows(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
             {
-                var bar = await context
+                var bar = await database
                     .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                     .FirstAsync<Bar>();
             });
@@ -129,10 +129,10 @@ namespace Normal.UnitTests
         public async Task FirstOrDefaultAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var bar = await context
+            var bar = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .FirstOrDefaultAsync<Bar>();
 
@@ -148,10 +148,10 @@ namespace Normal.UnitTests
         public async Task FirstOrDefaultAsyncIsNull(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var bar = await context
+            var bar = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .FirstOrDefaultAsync<Bar>();
 
@@ -164,10 +164,10 @@ namespace Normal.UnitTests
         public async Task SingleAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var bar = await context
+            var bar = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .SingleAsync<Bar>();
 
@@ -183,12 +183,12 @@ namespace Normal.UnitTests
         public async Task SingleAsyncThrows(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
             {
-                var bar = await context
+                var bar = await database
                     .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                     .SingleAsync<Bar>();
             });
@@ -199,10 +199,10 @@ namespace Normal.UnitTests
         public async Task SingleOrDefaultAsync(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var bar = await context
+            var bar = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
                 .SingleOrDefaultAsync<Bar>();
 
@@ -218,10 +218,10 @@ namespace Normal.UnitTests
         public async Task SingleOrDefaultAsyncIsNull(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var bar = await context
+            var bar = await database
                 .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .SingleOrDefaultAsync<Bar>();
 
@@ -234,14 +234,14 @@ namespace Normal.UnitTests
         public async Task MultipleQueries(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand("select 1")
                 .ExecuteScalarAsync<int>();
 
-            var results2 = await context
+            var results2 = await database
                 .CreateCommand("select 'hello, there'")
                 .ExecuteScalarAsync<string>();
 
@@ -255,18 +255,18 @@ namespace Normal.UnitTests
         public async Task SimultaneousQueries(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            var results = context
+            var results = database
                 .CreateCommand("select 1")
                 .ExecuteScalarAsync<int>();
 
-            var results2 = context
+            var results2 = database
                 .CreateCommand("select 2")
                 .ExecuteScalarAsync<int>();
 
-            var results3 = context
+            var results3 = database
                 .CreateCommand("select 3")
                 .ExecuteScalarAsync<int>();
 
@@ -281,38 +281,38 @@ namespace Normal.UnitTests
         public async Task MultipleQueriesInTransaction(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            using (var transaction = context.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                Assert.Same(transaction, context.CurrentTransaction);
-                var results = await context
+                Assert.Same(transaction, database.CurrentTransaction);
+                var results = await database
                     .Select("1 as alpha")
                     .SingleAsync<Bar>();
-                Assert.Same(transaction, context.CurrentTransaction);
-                var results2 = await context
+                Assert.Same(transaction, database.CurrentTransaction);
+                var results2 = await database
                     .Select("2 as alpha")
                     .SingleAsync<Bar>();
-                Assert.Same(transaction, context.CurrentTransaction);
+                Assert.Same(transaction, database.CurrentTransaction);
                 Assert.Equal(1, results.Alpha);
                 Assert.Equal(2, results2.Alpha);
                 transaction.Commit();
 
-                var resultsZ = await context
+                var resultsZ = await database
                     .Select("1 as alpha")
                     .SingleAsync<Bar>();
             }
-            Assert.Null(context.CurrentTransaction);
+            Assert.Null(database.CurrentTransaction);
 
-            var results3 = await context
+            var results3 = await database
                 .Select("3 as alpha")
                 .SingleAsync<Bar>();
             Assert.Equal(3, results3.Alpha);
 
-            using (var transaction = context.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                var results4 = await context
+                var results4 = await database
                     .Select("4 as alpha")
                     .SingleAsync<Bar>();
 
@@ -322,7 +322,7 @@ namespace Normal.UnitTests
                 // TRANSACTION NOT COMMITTED
             };
 
-            var results5 = await context
+            var results5 = await database
                     .Select("5 as alpha")
                     .SingleAsync<Bar>();
             Assert.Equal(5, results5.Alpha);
@@ -333,13 +333,13 @@ namespace Normal.UnitTests
         public void NestedTransactionThrows(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
             Assert.Throws<InvalidOperationException>(() =>
             {
-                var transaction = context.BeginTransaction();
-                var transaction2 = context.BeginTransaction();
+                var transaction = database.BeginTransaction();
+                var transaction2 = database.BeginTransaction();
             });
         }
 
@@ -348,10 +348,10 @@ namespace Normal.UnitTests
         public async Task CreateCommandFromResource(CreateConnection dbConnection)
         {
             //Given
-            var context = new DbContext(dbConnection);
+            var database = new Database(dbConnection);
 
             //When
-            IList<dynamic> results = await context
+            IList<dynamic> results = await database
                 .CreateCommandFromResource("Foo.sql")
                 .ToListAsync<dynamic>();
 
