@@ -11,11 +11,11 @@ namespace Normal.UnitTests
 {
     public class CrudBuilderTests
     {
-        private DbContext _postgresContext;
+        private Database _postgresDatabase;
 
         public CrudBuilderTests()
         {
-            _postgresContext = new DbContext(c =>
+            _postgresDatabase = new Database(c =>
             {
                 c.UseConnection<NpgsqlConnection>("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal");
                 c.UseLogging(Helpers.GetLogger());
@@ -28,10 +28,10 @@ namespace Normal.UnitTests
         public async Task ShouldSelectFromStockItems()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
 
             //When
-            var results = (await context.SelectAsync<StockItemAnnotated>()).ToList();
+            var results = (await database.SelectAsync<StockItemAnnotated>()).ToList();
 
             //Then
             Assert.NotNull(results);
@@ -46,10 +46,10 @@ namespace Normal.UnitTests
         public async Task ShouldSelectFromStockItemsById()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
 
             //When
-            var result = await context.SelectAsync<StockItemAnnotated>(1);
+            var result = await database.SelectAsync<StockItemAnnotated>(1);
 
             //Then
             Assert.NotNull(result);
@@ -61,10 +61,10 @@ namespace Normal.UnitTests
         // public async Task ShouldSelectFromStockItemsWithParameters()
         // {
         //     //Given
-        //     var context = _postgresContext;
+        //     var database = _postgresDatabase;
 
         //     //When
-        //     var results = await context
+        //     var results = await database
         //         .Select<StockItemAnnotated>()
         //         .Where("supplier_id").EqualTo(2)
         //         .And("tax_rate").EqualTo(15.0)
@@ -86,7 +86,7 @@ namespace Normal.UnitTests
         public async Task ShouldInsertIntoStockItems()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
             var stockItem = new StockItemAnnotated
             {
                 StockItemName = "Bananas",
@@ -105,9 +105,9 @@ namespace Normal.UnitTests
             };
 
             //When
-            using (var transaction = context.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                var rowsAffected = await context.InsertAsync<StockItemAnnotated>(stockItem);
+                var rowsAffected = await database.InsertAsync<StockItemAnnotated>(stockItem);
                 transaction.Rollback();
 
                 //Then
@@ -119,7 +119,7 @@ namespace Normal.UnitTests
         public async Task ShouldUpdateStockItem()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
             var stockItem = new StockItemAnnotated
             {
                 StockItemID = 1,
@@ -139,9 +139,9 @@ namespace Normal.UnitTests
             };
 
             //When
-            using (var transaction = context.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                var rowsAffected = await context.UpdateAsync<StockItemAnnotated>(stockItem);
+                var rowsAffected = await database.UpdateAsync<StockItemAnnotated>(stockItem);
                 transaction.Rollback();
 
                 //Then
@@ -153,16 +153,16 @@ namespace Normal.UnitTests
         public async Task ShouldDeleteStockItem()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
             var specialDeal = new SpecialDeal
             {
                 SpecialDealId = 1,
             };
 
             //When
-            using (var transaction = context.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                var rowsAffected = await context.DeleteAsync<SpecialDeal>(specialDeal);
+                var rowsAffected = await database.DeleteAsync<SpecialDeal>(specialDeal);
                 transaction.Rollback();
 
                 //Then

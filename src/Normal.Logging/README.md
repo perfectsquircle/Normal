@@ -13,14 +13,14 @@ dotnet add package Normal.Logging
 ### Usage
 
 ```csharp
-var context = new DbContextBuilder()
+var database = new DatabaseBuilder()
     .WithCreateConnection(() => new NpgsqlConnection("..."))
     .WithLogging(logger) // Add logging middleware.
     .Build();
 
 // Now every query will be logged at info level
 
-var results = await context
+var results = await database
     .Select("stock_item_id", "stock_item_name")
     .From("warehouse.stock_items")
     .Where("supplier_id").EqualTo(2)

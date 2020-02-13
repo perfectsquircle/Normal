@@ -4,7 +4,7 @@
     <!--  NuGet Metadata -->
     <Title>Normal.Logging</Title>
     <PackageId>Normal.Logging</PackageId>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <Description>Logging for a Normal ORM</Description>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>

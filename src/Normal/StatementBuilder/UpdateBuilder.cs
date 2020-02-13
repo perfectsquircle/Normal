@@ -7,9 +7,9 @@ namespace Normal
     {
         private bool _setCalled = false;
 
-        public UpdateBuilder(IDbContext context)
+        public UpdateBuilder(IDatabase database)
         {
-            _context = context;
+            _database = database;
         }
 
         public UpdateBuilder(string tableName)

@@ -2,9 +2,9 @@ namespace Normal
 {
     internal class SelectBuilder : StatementBuilder, ISelectBuilder
     {
-        public SelectBuilder(IDbContext context)
+        public SelectBuilder(IDatabase database)
         {
-            _context = context;
+            _database = database;
         }
 
         public SelectBuilder(params string[] selectList)

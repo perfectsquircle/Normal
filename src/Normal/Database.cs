@@ -1,14 +1,12 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Normal
 {
-    public partial class DbContext : IDbContext
+    public partial class Database : IDatabase
     {
         private CreateConnection _createConnection;
         private IHandler _handler;
@@ -20,30 +18,30 @@ namespace Normal
             private set { _currentTransaction.Value = value; }
         }
 
-        public DbContext(CreateConnection createConnection) : this()
+        public Database(CreateConnection createConnection) : this()
         {
             _createConnection = createConnection;
         }
 
-        public DbContext(Action<IDbContextBuilder> configure) : this()
+        public Database(Action<IDatabaseBuilder> configure) : this()
         {
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
-            var dbContextBuilder = new DbContextBuilder();
-            configure(dbContextBuilder);
-            _createConnection = dbContextBuilder.CreateConnection;
-            _handler = dbContextBuilder.BuildHandler(this);
+            var databaseBuilder = new DatabaseBuilder();
+            configure(databaseBuilder);
+            _createConnection = databaseBuilder.CreateConnection;
+            _handler = databaseBuilder.BuildHandler(this);
         }
 
-        public DbContext(Type connectionType, params object[] arguments) : this()
+        public Database(Type connectionType, params object[] arguments) : this()
         {
             var constructor = ReflectionHelper.GetConstructor(connectionType, arguments);
             _createConnection = () => (IDbConnection)constructor.Invoke(arguments);
         }
 
-        private DbContext()
+        private Database()
         {
             _handler = new BaseHandler(this);
             _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
