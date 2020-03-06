@@ -53,11 +53,11 @@ namespace Normal
         {
             var table = new Table(typeof(T));
             var columns = table.GetColumns(model);
-            var (primaryKey, primaryKeyValue) = table.GetPrimaryKey(model);
-            columns.Remove(primaryKey);
+            var pk = table.GetPrimaryKey(model);
+            columns.Remove(pk.Item1);
             return context.Update(table.Name)
                 .Set(columns)
-                .Where(primaryKey).EqualTo(primaryKeyValue)
+                .Where(pk.Item1).EqualTo(pk.Item2)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -69,9 +69,9 @@ namespace Normal
         public static Task<int> DeleteAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
-            var (primaryKey, primaryKeyValue) = table.GetPrimaryKey(model);
+            var pk = table.GetPrimaryKey(model);
             return context.DeleteFrom(table.Name)
-                .Where(primaryKey).EqualTo(primaryKeyValue)
+                .Where(pk.Item1).EqualTo(pk.Item2)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 

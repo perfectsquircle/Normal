@@ -56,10 +56,10 @@ namespace Normal
             }
         }
 
-        public (string, object) GetPrimaryKey<T>(T target)
+        public Tuple<string, object> GetPrimaryKey<T>(T target)
         {
             var primaryKeyMember = GetPrimaryKeyMember();
-            return (GetColumnName(primaryKeyMember), TypeAccessor[target, primaryKeyMember.Name]);
+            return Tuple.Create(GetColumnName(primaryKeyMember), TypeAccessor[target, primaryKeyMember.Name]);
         }
 
         public static string GetColumnName(Member m)
