@@ -324,7 +324,7 @@ class CustomerDataAccess
 ## Building
 
 Prerequisites:
-* .NET Core SDK 2.1 
+* .NET Core SDK 3.1 
 * Mono or .NET Framework
 * Gnu Make
 
@@ -347,7 +347,7 @@ See https://github.com/dotnet/sdk/issues/335
 ## Testing
 
 Prerequisites:
-* .NET Core SDK 2.1
+* .NET Core SDK 3.1
 * Gnu Make
 * Docker
 * Bash

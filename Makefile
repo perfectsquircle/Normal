@@ -1,11 +1,11 @@
 pack:
-	dotnet pack src/Normal.Abstractions -o ../../out -c Release
-	dotnet pack src/Normal -o ../../out -c Release
-	dotnet pack src/Normal.Logging -o ../../out -c Release
-	dotnet pack src/Normal.Caching -o ../../out -c Release
+	dotnet pack src/Normal.Abstractions -o ./out -c Release
+	dotnet pack src/Normal -o ./out -c Release
+	dotnet pack src/Normal.Logging -o ./out -c Release
+	dotnet pack src/Normal.Caching -o ./out -c Release
 
 local:
-	dotnet pack src/Normal/ -o ../../out --version-suffix=beta-`date +%s`
+	dotnet pack src/Normal/ -o ./out --version-suffix=beta-`date +%s`
 	nuget push out/*.nupkg -Source Local
 
 .PHONY: test
