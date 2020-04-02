@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!--  NuGet Metadata -->
     <Authors>Calvin Furano</Authors>
-    <Copyright>2019 Calvin Furano</Copyright>
+    <Copyright>2020 Calvin Furano</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>orm;sql;micro-orm</PackageTags>
     <PackageProjectUrl>https://github.com/perfectsquircle/normal</PackageProjectUrl>
