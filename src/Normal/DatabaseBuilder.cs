@@ -48,28 +48,24 @@ namespace Normal
                 return this;
             }
 
-            public IDatabaseBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper)
+            public IDatabaseBuilder UseDataRecordMapper<T>(IDataRecordMapper<T> mapper)
             {
-                if (type == null)
+                if (mapper == null)
                 {
-                    throw new ArgumentNullException(nameof(type));
+                    throw new ArgumentNullException(nameof(mapper));
                 }
 
-                _dataRecordMapperFactory.UseCustomMapper(type, mapper);
+                _dataRecordMapperFactory.UseCustomMapper(mapper);
                 return this;
             }
 
-            public IDatabaseBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+            public IDatabaseBuilder UseDataRecordMapper<T>(MapDataRecord<T> mapDataRecord)
             {
-                if (type == null)
-                {
-                    throw new ArgumentNullException(nameof(type));
-                }
                 if (mapDataRecord == null)
                 {
                     throw new ArgumentNullException(nameof(mapDataRecord));
                 }
-                _dataRecordMapperFactory.UseCustomMapper(type, new AdHocDataRecordMapper(mapDataRecord));
+                _dataRecordMapperFactory.UseCustomMapper(new AdHocDataRecordMapper<T>(mapDataRecord));
                 return this;
             }
 

@@ -13,26 +13,24 @@ namespace Normal.UnitTests
         public PropertyMapperTests()
         {
             _dataRecord = new Mock<IDataRecord>(MockBehavior.Strict);
+            _dataRecord.Setup(dr => dr.IsDBNull(0)).Returns(false);
         }
 
         [Theory]
-        [InlineData(typeof(short), (short)16, (short)16)]
-        [InlineData(typeof(int), (short)16, (int)16)]
-        [InlineData(typeof(long), (short)16, (long)16)]
-        [InlineData(typeof(float), (short)16, (float)16)]
-        [InlineData(typeof(double), (short)16, (double)16)]
-        [InlineData(typeof(short), (double)64, (short)64)]
-        public void ShouldMapToCorrectNumeric(Type propertyType, object columnValue, object expectedValue)
+        [InlineData(default(short), (short)16, (short)16)]
+        [InlineData(default(int), (short)16, (int)16)]
+        [InlineData(default(long), (short)16, (long)16)]
+        [InlineData(default(float), (short)16, (float)16)]
+        [InlineData(default(double), (short)16, (double)16)]
+        [InlineData(default(short), (double)64, (short)64)]
+        public void ShouldMapToCorrectNumeric<T>(T instance, object columnValue, object expectedValue)
         {
             //Given
-            _dataRecord.Setup(dr => dr[0]).Returns(columnValue);
-            var propertyMapper = new PropertyMapper()
-                .WithColumnType(columnValue.GetType())
-                .WithPropertyType(propertyType);
-            var columnReader = propertyMapper.CreateColumnReader();
+            _dataRecord.Setup(dr => dr.GetValue(0)).Returns(columnValue);
+            var columnReader = Member.GetColumnReader<T>(columnValue.GetType(), 0);
 
             //When
-            var result = columnReader.Invoke(_dataRecord.Object);
+            var result = columnReader(_dataRecord.Object);
 
             //Then
             Assert.Equal(expectedValue, result);
@@ -41,14 +39,11 @@ namespace Normal.UnitTests
         [Fact]
         public void ShouldMapToEnum()
         {
-            _dataRecord.Setup(dr => dr[0]).Returns(1);
-            var propertyMapper = new PropertyMapper()
-                .WithColumnType(typeof(int))
-                .WithPropertyType(typeof(TheEnum));
-            var columnReader = propertyMapper.CreateColumnReader();
+            _dataRecord.Setup(dr => dr.GetValue(0)).Returns(1);
+            var columnReader = Member.GetColumnReader<TheEnum>(typeof(int), 0);
 
             //When
-            var result = columnReader.Invoke(_dataRecord.Object);
+            var result = columnReader(_dataRecord.Object);
 
             //Then
             Assert.Equal(TheEnum.bar, result);
@@ -58,55 +53,46 @@ namespace Normal.UnitTests
         public void ShouldMapToEnumFromString()
         {
             _dataRecord.Setup(dr => dr.GetString(0)).Returns("bar");
-            var propertyMapper = new PropertyMapper()
-                .WithColumnType(typeof(string))
-                .WithPropertyType(typeof(TheEnum));
-            var columnReader = propertyMapper.CreateColumnReader();
+            var columnReader = Member.GetColumnReader<TheEnum>(typeof(string), 0);
 
             //When
-            var result = columnReader.Invoke(_dataRecord.Object);
+            var result = columnReader(_dataRecord.Object);
 
             //Then
             Assert.Equal(TheEnum.bar, result);
         }
 
         [Theory]
-        [InlineData("foo", typeof(string))]
-        [InlineData(123, typeof(int))]
-        public void ShouldMapMatchingType(object sourceObject, Type destType)
+        [InlineData("foo", "Hello, world!")]
+        [InlineData(123, default(int))]
+        public void ShouldMapMatchingType<T>(object sourceObject, T destType)
         {
             //Given
-            _dataRecord.Setup(dr => dr[0]).Returns(sourceObject);
-            var propertyMapper = new PropertyMapper()
-                .WithColumnType(sourceObject.GetType())
-                .WithPropertyType(destType);
-            var columnReader = propertyMapper.CreateColumnReader();
+            _dataRecord.Setup(dr => dr.GetValue(0)).Returns(sourceObject);
+            var columnReader = Member.GetColumnReader<T>(sourceObject.GetType(), 0);
 
             //When
-            var result = columnReader.Invoke(_dataRecord.Object);
+            var result = columnReader(_dataRecord.Object);
 
             //Then
             Assert.NotNull(result);
-            Assert.IsType(destType, result);
+            Assert.IsType<T>(result);
         }
 
         [Theory]
-        [InlineData(123, typeof(string), "123")]
-        public void ShouldMapMismatchedType(object sourceObject, Type destType, object expectedValue)
+        [InlineData(123, "Hello, world!", "123")]
+        public void ShouldMapMismatchedType<T>(object sourceObject, T destType, object expectedValue)
         {
             //Given
-            _dataRecord.Setup(dr => dr[0]).Returns(sourceObject);
-            var propertyMapper = new PropertyMapper()
-                .WithColumnType(sourceObject.GetType())
-                .WithPropertyType(destType);
-            var columnReader = propertyMapper.CreateColumnReader();
+            _dataRecord.Setup(dr => dr.GetValue(0)).Returns(sourceObject);
+            var columnReader = Member.GetColumnReader<T>(sourceObject.GetType(), 0);
 
             //When
             var result = columnReader.Invoke(_dataRecord.Object);
 
             //Then
             Assert.NotNull(result);
-            Assert.IsType(destType, result);
+            Assert.IsType<T>(result);
             Assert.Equal(expectedValue, result);
         }
     }

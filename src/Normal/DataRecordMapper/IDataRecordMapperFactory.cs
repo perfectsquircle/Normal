@@ -4,7 +4,7 @@ namespace Normal
 {
     internal interface IDataRecordMapperFactory
     {
-        IDataRecordMapper CreateMapper(Type type);
-        IDataRecordMapperFactory UseCustomMapper(Type type, IDataRecordMapper mapper);
+        IDataRecordMapper<T> CreateMapper<T>();
+        IDataRecordMapperFactory UseCustomMapper<T>(IDataRecordMapper<T> mapper);
     }
 }

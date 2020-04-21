@@ -2,27 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using FastMember;
 
 namespace Normal
 {
     internal class Table
     {
         private readonly Type _targetType;
-        private readonly Lazy<TypeAccessor> _typeAccessor;
-        private TypeAccessor TypeAccessor => _typeAccessor.Value;
 
         public Table(Type targetType)
         {
             _targetType = targetType;
-            _typeAccessor = new Lazy<TypeAccessor>(() => TypeAccessor.Create(_targetType));
         }
 
         public string Name
         {
             get
             {
-                var tableNameAttribute = _targetType.GetCustomAttribute(typeof(TableAttribute)) as TableAttribute;
+                var tableNameAttribute = _targetType.GetCustomAttribute<TableAttribute>();
                 var tableName = tableNameAttribute?.Name ?? _targetType.Name;
                 return tableName;
             }
@@ -32,8 +28,8 @@ namespace Normal
         {
             get
             {
-                return TypeAccessor
-                    .GetMembers()
+                return Member
+                    .GetMembers(_targetType)
                     .Where(m => m.CanRead)
                     .Select(GetColumnName);
             }
@@ -41,10 +37,10 @@ namespace Normal
 
         public IDictionary<string, object> GetColumns<T>(T target)
         {
-            return TypeAccessor
-                .GetMembers()
+            return Member
+                .GetMembers(_targetType)
                 .Where(m => m.CanRead)
-                .ToDictionary(m => GetColumnName(m), m => TypeAccessor[target, m.Name]);
+                .ToDictionary(m => GetColumnName(m), m => m.GetValue(target));
         }
 
         public string PrimaryKeyColumnName
@@ -59,28 +55,28 @@ namespace Normal
         public (string, object) GetPrimaryKey<T>(T target)
         {
             var primaryKeyMember = GetPrimaryKeyMember();
-            return (GetColumnName(primaryKeyMember), TypeAccessor[target, primaryKeyMember.Name]);
+            return (GetColumnName(primaryKeyMember), primaryKeyMember.GetValue(target));
         }
 
         public static string GetColumnName(Member m)
         {
-            var columnNameAttribute = m.GetAttribute(typeof(ColumnAttribute), false) as ColumnAttribute;
+            var columnNameAttribute = m.GetAttribute<ColumnAttribute>();
             return columnNameAttribute?.Name ?? m.Name;
         }
 
         private Member GetPrimaryKeyMember()
         {
-            var primaryKeyMember = TypeAccessor
-                .GetMembers()
+            var primaryKeyMember = Member
+                .GetMembers(_targetType)
                 .FirstOrDefault(m =>
                 {
-                    return m.GetAttribute(typeof(PrimaryKeyAttribute), false) != null;
+                    return m.GetAttribute<PrimaryKeyAttribute>() != null;
                 });
 
             if (primaryKeyMember == null)
             {
-                primaryKeyMember = TypeAccessor
-                    .GetMembers()
+                primaryKeyMember = Member
+                    .GetMembers(_targetType)
                     .FirstOrDefault(m => m.Name.ToLowerInvariant() == "id");
                 if (primaryKeyMember == null)
                 {

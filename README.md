@@ -6,6 +6,8 @@
 
 Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping) for .NET available as a NuGet package. 
 
+It has no third-party dependencies, and can be dropped into an existing project.
+
 - [Normal](#normal)
   - [Introduction](#introduction)
   - [Installation](#installation)

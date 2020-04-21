@@ -2,16 +2,16 @@ using System.Data;
 
 namespace Normal
 {
-    internal class AdHocDataRecordMapper : IDataRecordMapper
+    internal class AdHocDataRecordMapper<T> : IDataRecordMapper<T>
     {
-        private MapDataRecord _mapDataRecord;
+        private MapDataRecord<T> _mapDataRecord;
 
-        public AdHocDataRecordMapper(MapDataRecord mapDataRecord)
+        public AdHocDataRecordMapper(MapDataRecord<T> mapDataRecord)
         {
             _mapDataRecord = mapDataRecord;
         }
 
-        public object MapDataRecord(IDataRecord dataRecord)
+        public T MapDataRecord(IDataRecord dataRecord)
         {
             return _mapDataRecord.Invoke(dataRecord);
         }

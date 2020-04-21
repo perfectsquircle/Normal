@@ -8,6 +8,9 @@ local:
 	dotnet pack src/Normal/ -o ./out --version-suffix=beta-`date +%s`
 	nuget push out/*.nupkg -Source Local
 
+build:
+	dotnet build src/Normal
+
 .PHONY: test
 test:
 	dotnet test test/Normal.UnitTests

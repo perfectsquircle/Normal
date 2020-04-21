@@ -2,8 +2,8 @@ using System.Data;
 
 namespace Normal
 {
-    public interface IDataRecordMapper
+    public interface IDataRecordMapper<T>
     {
-        object MapDataRecord(IDataRecord dataRecord);
+        T MapDataRecord(IDataRecord dataRecord);
     }
 }

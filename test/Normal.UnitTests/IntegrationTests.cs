@@ -20,7 +20,7 @@ namespace Normal.UnitTests
 
             //When
             var results = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta")
                 .ToEnumerableAsync<Bar>();
 
             //Then
@@ -29,7 +29,7 @@ namespace Normal.UnitTests
             Assert.NotEmpty(results);
             var bar = results.Single();
             Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("foo", bar.Bravo);
             Assert.Equal("Can't set me", bar.Charlie);
         }
 
@@ -42,7 +42,7 @@ namespace Normal.UnitTests
 
             //When
             var results = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToEnumerableAsync<Bar>();
 
             //Then
@@ -60,7 +60,7 @@ namespace Normal.UnitTests
 
             //When
             var results = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta")
                 .ToListAsync<Bar>();
 
             //Then
@@ -68,7 +68,7 @@ namespace Normal.UnitTests
             Assert.NotEmpty(results);
             var bar = results.Single();
             Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("foo", bar.Bravo);
             Assert.Equal("Can't set me", bar.Charlie);
         }
 
@@ -81,7 +81,7 @@ namespace Normal.UnitTests
 
             //When
             var results = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .ToListAsync<Bar>();
 
             //Then
@@ -98,13 +98,13 @@ namespace Normal.UnitTests
 
             //When
             var bar = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta")
                 .FirstAsync<Bar>();
 
             //Then
             Assert.NotNull(bar);
             Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("foo", bar.Bravo);
             Assert.Equal("Can't set me", bar.Charlie);
         }
 
@@ -119,7 +119,7 @@ namespace Normal.UnitTests
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
             {
                 var bar = await database
-                    .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                    .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta where 1 = 2")
                     .FirstAsync<Bar>();
             });
         }
@@ -133,13 +133,13 @@ namespace Normal.UnitTests
 
             //When
             var bar = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta")
                 .FirstOrDefaultAsync<Bar>();
 
             //Then
             Assert.NotNull(bar);
             Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("foo", bar.Bravo);
             Assert.Equal("Can't set me", bar.Charlie);
         }
 
@@ -152,7 +152,7 @@ namespace Normal.UnitTests
 
             //When
             var bar = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .FirstOrDefaultAsync<Bar>();
 
             //Then
@@ -168,13 +168,13 @@ namespace Normal.UnitTests
 
             //When
             var bar = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta")
                 .SingleAsync<Bar>();
 
             //Then
             Assert.NotNull(bar);
             Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("foo", bar.Bravo);
             Assert.Equal("Can't set me", bar.Charlie);
         }
 
@@ -189,7 +189,7 @@ namespace Normal.UnitTests
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
             {
                 var bar = await database
-                    .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                    .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta where 1 = 2")
                     .SingleAsync<Bar>();
             });
         }
@@ -203,13 +203,13 @@ namespace Normal.UnitTests
 
             //When
             var bar = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta")
                 .SingleOrDefaultAsync<Bar>();
 
             //Then
             Assert.NotNull(bar);
             Assert.Equal(7, bar.Alpha);
-            Assert.Equal("foo", bar.Beta);
+            Assert.Equal("foo", bar.Bravo);
             Assert.Equal("Can't set me", bar.Charlie);
         }
 
@@ -222,7 +222,7 @@ namespace Normal.UnitTests
 
             //When
             var bar = await database
-                .CreateCommand("select 7 as alpha, 'foo' as beta, 'something' as charlie, 'delta' as delta where 1 = 2")
+                .CreateCommand("select 7 as alpha, 'foo' as bravo, 'something' as charlie, 'delta' as delta where 1 = 2")
                 .SingleOrDefaultAsync<Bar>();
 
             //Then

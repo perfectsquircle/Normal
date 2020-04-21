@@ -8,10 +8,10 @@ namespace Normal
         IDatabaseBuilder UseConnection(CreateConnection createConnection);
         IDatabaseBuilder UseConnection<T>(params object[] arguments) where T : IDbConnection;
         IDatabaseBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler);
-        IDatabaseBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper);
-        IDatabaseBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord);
+        IDatabaseBuilder UseDataRecordMapper<T>(IDataRecordMapper<T> mapper);
+        IDatabaseBuilder UseDataRecordMapper<T>(MapDataRecord<T> mapDataRecord);
     }
 
     public delegate IDbConnection CreateConnection();
-    public delegate object MapDataRecord(IDataRecord dataRecord);
+    public delegate T MapDataRecord<T>(IDataRecord dataRecord);
 }
