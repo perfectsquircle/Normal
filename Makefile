@@ -1,8 +1,7 @@
 pack:
 	dotnet pack src/Normal.Abstractions -o ./out -c Release
 	dotnet pack src/Normal -o ./out -c Release
-	dotnet pack src/Normal.Logging -o ./out -c Release
-	dotnet pack src/Normal.Caching -o ./out -c Release
+	dotnet pack src/Normal.AspNetCore -o ./out -c Release
 
 local:
 	dotnet pack src/Normal/ -o ./out --version-suffix=beta-`date +%s`
