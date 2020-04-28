@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--  NuGet Metadata -->
-    <Title>Normal.Caching</Title>
-    <PackageId>Normal.Caching</PackageId>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <Title>Normal.AspNetCore</Title>
+    <PackageId>Normal.AspNetCore</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
     <Description>Caching for a Normal ORM</Description>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>

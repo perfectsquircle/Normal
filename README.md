@@ -254,44 +254,7 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
 
 ### AspNetCore
 
-
-
-If you're using a IoC container, like the one in AspNetCore, call the `AddNormal` method to inject a scoped `IDatabase`.
-
-```csharp
-services.AddNormal((sp, c) =>
-{
-    c.UseConnection<NpgsqlConnection>(connectionString);
-    c.UseLogging(sp.GetService<ILogger<Database>>());
-    c.UseCaching(sp.GetService<IMemoryCache>())
-});
-```
-
-Then in your classes, you can use constructor injection to get a reference to IDatabase.
-
-```csharp
-using System.Threading.Tasks;
-using Normal;
-
-class CustomerRepository 
-{
-    private readonly IDatabase _database;
-
-    public CustomerRepository(IDatabase database)
-    { 
-        _database = database;
-    }
-
-    public async Task<Customer> GetCustomer(int id)
-    {
-        return await _database
-            .Select("first_name", "last_name", "age")
-            .From("customer")
-            .Where("customer_id").EqualTo(id)
-            .FirstOrDefaultAsync<Customer>();
-    }
-}
-```
+There is an AspNetCore plugin that adds caching, logging, and DI support. See [Normal.AspNetCore](src/Normal.AspNetCore/README.md).
 
 ## Building
 

@@ -2,12 +2,12 @@
 
 > A Normal extension that adds caching, logging, and DI support.
 
-[![NuGet version](https://img.shields.io/nuget/vpre/Normal.Caching.svg)](https://www.nuget.org/packages/Normal.Caching)
+[![NuGet version](https://img.shields.io/nuget/vpre/Normal.AspNetCore.svg)](https://www.nuget.org/packages/Normal.AspNetCore)
 
 ## Installation
 
 ```bash
-dotnet add package Normal.Caching
+dotnet add package Normal.AspNetCore
 ```
 
 ### Dependency Injection
@@ -15,10 +15,13 @@ dotnet add package Normal.Caching
 If you're using a IoC container, like the one in AspNetCore, call the `AddNormal` method to inject a scoped `IDatabase`.
 
 ```csharp
-services.AddNormal((sp, c) =>
+public void ConfigureServices(IServiceCollection services)
 {
-    c.UseConnection<NpgsqlConnection>(connectionString);
-});
+    services.AddNormal((sp, db) =>
+    {
+        db.UseConnection<NpgsqlConnection>(connectionString);
+    });
+}
 ```
 
 Then in your classes, you can use constructor injection to get a reference to IDatabase.
@@ -50,12 +53,18 @@ class CustomerRepository
 ### Caching
 
 ```csharp
-services.AddNormal((sp, c) =>
+public void ConfigureServices(IServiceCollection services)
 {
-    c.UseConnection<NpgsqlConnection>(connectionString);
-    c.UseCaching(sp.GetService<IMemoryCache>())
-});
+    services.AddMemoryCache();
+    services.AddNormal((sp, db) =>
+    {
+        db.UseConnection<NpgsqlConnection>(connectionString);
+        db.UseCaching(sp.GetService<IMemoryCache>());
+    });
+}
+```
 
+```csharp
 // Now you can cache queries for a given timespan.
 
 var results = await database
@@ -63,18 +72,22 @@ var results = await database
     .From("warehouse.stock_items")
     .CacheFor(TimeSpan.FromMinutes(5))
     .ToListAsync<StockItem>();
-
 ```
 
 ### Logging
 
 ```csharp
-services.AddNormal((sp, c) =>
+public void ConfigureServices(IServiceCollection services)
 {
-    c.UseConnection<NpgsqlConnection>(connectionString);
-    c.UseLogging(sp.GetService<ILogger<Database>>());
-});
+    services.AddNormal((sp, db) =>
+    {
+        db.UseConnection<NpgsqlConnection>(connectionString);
+        db.UseLogging(sp.GetService<ILogger<Database>>());
+    });
+}
+```
 
+```csharp
 // Now every query will be logged at info level
 
 var results = await database
