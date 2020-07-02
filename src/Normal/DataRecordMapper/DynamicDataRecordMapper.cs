@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace Normal
 {
-    internal class DynamicDataRecordMapper : IDataRecordMapper
+    internal class DynamicDataRecordMapper<dynamic> : IDataRecordMapper<dynamic>
     {
         private IEnumerable<string> _columnNames;
 
-        public object MapDataRecord(IDataRecord dataRecord)
+        public dynamic MapDataRecord(IDataRecord dataRecord)
         {
             if (_columnNames == null)
             {
@@ -21,7 +21,7 @@ namespace Normal
             {
                 instance[columnName] = dataRecord[columnName];
             }
-            return instance;
+            return (dynamic)instance;
         }
 
         private static IEnumerable<string> GetColumnNames(IDataRecord dataRecord)

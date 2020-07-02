@@ -5,21 +5,21 @@ using System.Linq;
 
 namespace Normal
 {
-    public partial class DbContext
+    public partial class Database
     {
-        private class DbContextBuilder : IDbContextBuilder
+        private class DatabaseBuilder : IDatabaseBuilder
         {
             public CreateConnection CreateConnection { get; private set; }
             private readonly IList<DelegatingHandler> _delegatingHandlers;
             private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
-            public DbContextBuilder()
+            public DatabaseBuilder()
             {
                 _delegatingHandlers = new List<DelegatingHandler>();
                 _dataRecordMapperFactory = new DataRecordMapperFactory();
             }
 
-            public IDbContextBuilder UseConnection(CreateConnection createConnection)
+            public IDatabaseBuilder UseConnection(CreateConnection createConnection)
             {
                 if (createConnection == null)
                 {
@@ -29,7 +29,7 @@ namespace Normal
                 return this;
             }
 
-            public IDbContextBuilder UseConnection<T>(params object[] arguments)
+            public IDatabaseBuilder UseConnection<T>(params object[] arguments)
                 where T : IDbConnection
             {
                 var constructor = ReflectionHelper.GetConstructor(typeof(T), arguments);
@@ -37,7 +37,7 @@ namespace Normal
                 return this;
             }
 
-            public IDbContextBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler)
+            public IDatabaseBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler)
             {
                 if (delegatingHandler == null)
                 {
@@ -48,34 +48,30 @@ namespace Normal
                 return this;
             }
 
-            public IDbContextBuilder UseDataRecordMapper(Type type, IDataRecordMapper mapper)
+            public IDatabaseBuilder UseDataRecordMapper<T>(IDataRecordMapper<T> mapper)
             {
-                if (type == null)
+                if (mapper == null)
                 {
-                    throw new ArgumentNullException(nameof(type));
+                    throw new ArgumentNullException(nameof(mapper));
                 }
 
-                _dataRecordMapperFactory.UseCustomMapper(type, mapper);
+                _dataRecordMapperFactory.UseCustomMapper(mapper);
                 return this;
             }
 
-            public IDbContextBuilder UseDataRecordMapper(Type type, MapDataRecord mapDataRecord)
+            public IDatabaseBuilder UseDataRecordMapper<T>(MapDataRecord<T> mapDataRecord)
             {
-                if (type == null)
-                {
-                    throw new ArgumentNullException(nameof(type));
-                }
                 if (mapDataRecord == null)
                 {
                     throw new ArgumentNullException(nameof(mapDataRecord));
                 }
-                _dataRecordMapperFactory.UseCustomMapper(type, new AdHocDataRecordMapper(mapDataRecord));
+                _dataRecordMapperFactory.UseCustomMapper(new AdHocDataRecordMapper<T>(mapDataRecord));
                 return this;
             }
 
-            public IHandler BuildHandler(DbContext context)
+            public IHandler BuildHandler(Database database)
             {
-                IHandler head = new BaseHandler(context, _dataRecordMapperFactory);
+                IHandler head = new BaseHandler(database, _dataRecordMapperFactory);
 
                 // Connect all the delegating handlers in a chain
                 foreach (var handler in _delegatingHandlers.Reverse())

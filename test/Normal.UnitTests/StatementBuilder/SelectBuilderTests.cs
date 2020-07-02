@@ -58,14 +58,14 @@ LIMIT 100";
         public async Task ShouldBeQueryable2()
         {
             //Given
-            var context = new DbContext(builder =>
+            var database = new Database(builder =>
             {
                 builder.UseConnection(_postgresConnection);
                 builder.UseLogging(Helpers.GetLogger());
             });
 
             //When
-            var results = await context
+            var results = await database
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("supplier_id").EqualTo(2)
@@ -89,10 +89,10 @@ LIMIT 100";
         public async Task ShouldBeQueryableDynamic()
         {
             //Given
-            var context = new DbContext(_postgresConnection);
+            var database = new Database(_postgresConnection);
 
             //When
-            var results = await context
+            var results = await database
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("supplier_id").EqualTo(2)
@@ -116,10 +116,10 @@ LIMIT 100";
         public async Task FirstOrDefaultAsync()
         {
             //Given
-            var context = new DbContext(_postgresConnection);
+            var database = new Database(_postgresConnection);
 
             //When
-            var stockItem = await context
+            var stockItem = await database
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("supplier_id").EqualTo(2)
@@ -137,10 +137,10 @@ LIMIT 100";
         public async Task FirstAsync()
         {
             //Given
-            var context = new DbContext(_postgresConnection);
+            var database = new Database(_postgresConnection);
 
             //When
-            var stockItem = await context
+            var stockItem = await database
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("supplier_id").EqualTo(2)
@@ -158,10 +158,10 @@ LIMIT 100";
         public async Task SingleAsync()
         {
             //Given
-            var context = new DbContext(_postgresConnection);
+            var database = new Database(_postgresConnection);
 
             //When
-            var stockItem = await context
+            var stockItem = await database
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("stock_item_id").EqualTo(150)
@@ -177,10 +177,10 @@ LIMIT 100";
         public async Task SingleOrDefualtAsync()
         {
             //Given
-            var context = new DbContext(_postgresConnection);
+            var database = new Database(_postgresConnection);
 
             //When
-            var stockItem = await context
+            var stockItem = await database
                 .Select("stock_item_id", "stock_item_name")
                 .From("warehouse.stock_items")
                 .Where("stock_item_id").EqualTo(999999)

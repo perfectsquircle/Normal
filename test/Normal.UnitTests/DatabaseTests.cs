@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Normal.UnitTests
 {
-    public class DbContextTests
+    public class DatabaseTests
     {
         [Fact]
         public async Task ShouldOnlyEnlistOnce()
@@ -16,14 +16,14 @@ namespace Normal.UnitTests
             var createConnectionCalled = 0;
             var connection = new Mock<DbConnection>();
             connection.DefaultValue = DefaultValue.Mock;
-            var dbContext = new DbContext(() => { createConnectionCalled++; return connection.Object; });
+            var database = new Database(() => { createConnectionCalled++; return connection.Object; });
 
             //When
-            using (var transaction = dbContext.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                var task1 = dbContext.Select("1").ExecuteNonQueryAsync();
-                var task2 = dbContext.Select("1").ExecuteNonQueryAsync();
-                var task3 = dbContext.Select("1").ExecuteNonQueryAsync();
+                var task1 = database.Select("1").ExecuteNonQueryAsync();
+                var task2 = database.Select("1").ExecuteNonQueryAsync();
+                var task3 = database.Select("1").ExecuteNonQueryAsync();
 
                 await Task.WhenAll(task1, task2, task3);
             }
@@ -36,10 +36,10 @@ namespace Normal.UnitTests
         public async Task ShouldBeConstructable()
         {
             //Given
-            var dbContext = new DbContext(typeof(NpgsqlConnection), "Host=localhost;Database=postgres;Username=postgres;Password=normal");
+            var database = new Database(typeof(NpgsqlConnection), "Host=localhost;Database=postgres;Username=postgres;Password=normal");
 
             //When
-            var connection = await dbContext.GetOpenConnectionAsync(default(CancellationToken));
+            var connection = await database.GetOpenConnectionAsync(default(CancellationToken));
 
             //Then
             Assert.NotNull(connection);

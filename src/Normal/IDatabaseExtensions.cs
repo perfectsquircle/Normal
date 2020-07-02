@@ -9,80 +9,80 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    public static class IDbContextExtensions
+    public static class IDatabaseExtensions
     {
-        public static ISelectBuilder Select(this IDbContext context, params string[] selectList)
+        public static ISelectBuilder Select(this IDatabase database, params string[] selectList)
         {
-            return new SelectBuilder(context).WithColumns(selectList);
+            return new SelectBuilder(database).WithColumns(selectList);
         }
 
-        public static async Task<IEnumerable<T>> SelectAsync<T>(this IDbContext context, CancellationToken cancellationToken = default)
+        public static async Task<IEnumerable<T>> SelectAsync<T>(this IDatabase database, CancellationToken cancellationToken = default)
         {
-            return await context.Select<T>().ToEnumerableAsync<T>(cancellationToken);
+            return await database.Select<T>().ToEnumerableAsync<T>(cancellationToken);
         }
 
-        public static async Task<T> SelectAsync<T>(this IDbContext context, object id, CancellationToken cancellationToken = default)
+        public static async Task<T> SelectAsync<T>(this IDatabase database, object id, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
-            return await context.Select<T>()
+            return await database.Select<T>()
                 .Where(table.PrimaryKeyColumnName).EqualTo(id)
                 .FirstOrDefaultAsync<T>(cancellationToken);
         }
 
-        public static IInsertBuilder InsertInto(this IDbContext context, string tableName)
+        public static IInsertBuilder InsertInto(this IDatabase database, string tableName)
         {
-            return new InsertBuilder(context).WithTableName(tableName);
+            return new InsertBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<int> InsertAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
+        public static Task<int> InsertAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
             var columns = table.GetColumns(model);
-            return context.InsertInto(table.Name)
+            return database.InsertInto(table.Name)
                 .Columns(columns.Keys.ToArray())
                 .Values(columns.Values.ToArray())
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
-        public static IUpdateBuilder Update(this IDbContext context, string tableName)
+        public static IUpdateBuilder Update(this IDatabase database, string tableName)
         {
-            return new UpdateBuilder(context).WithTableName(tableName);
+            return new UpdateBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<int> UpdateAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
+        public static Task<int> UpdateAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
             var columns = table.GetColumns(model);
             var pk = table.GetPrimaryKey(model);
             columns.Remove(pk.Item1);
-            return context.Update(table.Name)
+            return database.Update(table.Name)
                 .Set(columns)
                 .Where(pk.Item1).EqualTo(pk.Item2)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
-        public static IDeleteBuilder DeleteFrom(this IDbContext context, string tableName)
+        public static IDeleteBuilder DeleteFrom(this IDatabase database, string tableName)
         {
-            return new DeleteBuilder(context).WithTableName(tableName);
+            return new DeleteBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<int> DeleteAsync<T>(this IDbContext context, T model, CancellationToken cancellationToken = default)
+        public static Task<int> DeleteAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
             var pk = table.GetPrimaryKey(model);
-            return context.DeleteFrom(table.Name)
+            return database.DeleteFrom(table.Name)
                 .Where(pk.Item1).EqualTo(pk.Item2)
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
-        public static IDbCommandBuilder CreateCommandFromFile(this IDbContext context, string fileName, Encoding encoding = default)
+        public static IDbCommandBuilder CreateCommandFromFile(this IDatabase database, string fileName, Encoding encoding = default)
         {
             encoding = encoding ?? Encoding.Default;
             var file = File.ReadAllText(fileName, encoding);
-            return context.CreateCommand(file);
+            return database.CreateCommand(file);
         }
 
-        public static IDbCommandBuilder CreateCommandFromResource(this IDbContext context, string resourceName, Assembly inputAssembly = default, Encoding encoding = default)
+        public static IDbCommandBuilder CreateCommandFromResource(this IDatabase database, string resourceName, Assembly inputAssembly = default, Encoding encoding = default)
         {
             encoding = encoding ?? Encoding.Default;
             using (var stream = FindResourceFromAssemblies(resourceName, inputAssembly, Assembly.GetCallingAssembly(), Assembly.GetEntryAssembly()))
@@ -93,7 +93,7 @@ namespace Normal
                 }
                 using (var reader = new StreamReader(stream, encoding))
                 {
-                    return context.CreateCommand(reader.ReadToEnd());
+                    return database.CreateCommand(reader.ReadToEnd());
                 }
             }
         }
@@ -117,10 +117,10 @@ namespace Normal
             return null;
         }
 
-        private static ISelectBuilder Select<T>(this IDbContext context)
+        private static ISelectBuilder Select<T>(this IDatabase database)
         {
             var table = new Table(typeof(T));
-            return context.Select(table.ColumnNames.ToArray()).From(table.Name);
+            return database.Select(table.ColumnNames.ToArray()).From(table.Name);
         }
     }
 }

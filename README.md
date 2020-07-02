@@ -6,18 +6,19 @@
 
 Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping) for .NET available as a NuGet package. 
 
+It has no third-party dependencies, and can be dropped into an existing project.
+
 - [Normal](#normal)
   - [Introduction](#introduction)
   - [Installation](#installation)
   - [Usage](#usage)
-    - [DbContext](#dbcontext)
+    - [Database Class](#database-class)
     - [Statement Builder](#statement-builder)
     - [CRUD statements](#crud-statements)
     - [Custom Commands](#custom-commands)
-    - [Middleware](#middleware)
     - [Custom Middleware](#custom-middleware)
     - [Transactions](#transactions)
-    - [Dependency Injection](#dependency-injection)
+    - [AspNetCore](#aspnetcore)
   - [Building](#building)
   - [Testing](#testing)
 
@@ -40,17 +41,17 @@ PM> Install-Package Normal
 
 ## Usage
 
-### DbContext
+### Database Class
 
-The entrypoint into the Normal API is the `DbContext` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.) A DbContext is intended to be injected into and shared amongst other classes.
+The entrypoint into the Normal API is the `Database` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.) A `Database` is intended to be injected into and shared amongst other classes.
 
-The context must be able to create new instances of `IDbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
+The `Database` must be able to create new instances of `IDbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
 
 ```csharp
 // Use with SQL Server
-var context = new DbContext(() => new SqlConnection("Server=...")); 
+var database = new Database(() => new SqlConnection("Server=...")); 
 // Use with PostgreSQL
-var context = new DbContext(() => new NpgsqlConnection("Host=...")); 
+var database = new Database(() => new NpgsqlConnection("Host=...")); 
 ```
 
 ### Statement Builder
@@ -65,21 +66,21 @@ class Customer {
 }
 
 // Do a SELECT then map the results to a list.
-IList<Customer> customers = await context
+IList<Customer> customers = await database
     .Select("first_name", "last_name", "age")
     .From("customer")
     .Where("last_name").EqualTo("Cuervo")
     .ToListAsync<Customer>();
 
 // Do a SELECT then grab the first result.
-Customer customer = await context
+Customer customer = await database
     .Select("first_name", "last_name", "age")
     .From("customer")
     .Where("customer_id").EqualTo(777)
     .FirstOrDefaultAsync<Customer>();
 
 // Execute an INSERT
-int rowsAffected = await context
+int rowsAffected = await database
     .InsertInto("customer")
     .Columns("first_name", "last_name", "age")
     .Values("Peter", "Rabbit", 100)
@@ -87,7 +88,7 @@ int rowsAffected = await context
     .Execute();
 
 // Execute an UPDATE
-int rowsAffected = await context
+int rowsAffected = await database
     .Update("customer")
     .Set("first_name").EqualTo("Jerry")
     .Set("last_name").EqualTo("Seinfeld")
@@ -95,7 +96,7 @@ int rowsAffected = await context
     .Execute();
 
 // Execute a DELETE
-int rowsAffected = await context
+int rowsAffected = await database
     .DeleteFrom("customer")
     .Where("last_name").EqualTo("Cuervo")
     .Execute();
@@ -103,7 +104,7 @@ int rowsAffected = await context
 
 ### CRUD statements
 
-Simple crud operations can be executed using some convenience methods on `DbContext`. To use these, it's recommended that you annotate your models with the `Table`, `PrimaryKey` and `Column` annotations. If the annotations are omitted, Normal will use the class name as the table name, and the field names as the column names.
+Simple crud operations can be executed using some convenience methods on `Database`. To use these, it's recommended that you annotate your models with the `Table`, `PrimaryKey` and `Column` annotations. If the annotations are omitted, Normal will use the class name as the table name, and the field names as the column names.
 
 ```csharp
 [Table("warehouse.stock_items")]
@@ -121,19 +122,19 @@ public class StockItem
 }
 
 // SELECT all rows from stock_items and map them to a list of StockItem
-var results = await context.SelectAsync<StockItem>();
+var stockItems = await database.SelectAsync<StockItem>();
 
 // SELECT the row where stock_item_id = 1 and map it to a StockItem (or null.)
-var result = await context.SelectAsync<StockItem>(1);
+var stockItem = await database.SelectAsync<StockItem>(1);
 
 // INSERT a row into stock_items, using the fields on the stockItem model.
-var rowsAffected = await context.InsertAsync<StockItem>(stockItem);
+var rowsAffected = await database.InsertAsync<StockItem>(stockItem);
 
 // INSERT a row in stock_items, using the fields on the stockItem model.
-var rowsAffected = await context.UpdateAsync<StockItem>(stockItem);
+var rowsAffected = await database.UpdateAsync<StockItem>(stockItem);
 
 // DELETE a row from stock_items
-var rowsAffected = await context.DeleteAsync<StockItemAnnotated>(stockItem);
+var rowsAffected = await database.DeleteAsync<StockItemAnnotated>(stockItem);
 ```
 
 ### Custom Commands
@@ -142,54 +143,22 @@ For more complicated queries, commands can be created from a string, an embedded
 
 ```csharp
 // Create a command from a string, add a parameter, and map results to a list.
-var customers = await context
+var customers = await database
     .CreateCommand(@"SELECT first_name, last_name FROM customer WHERE last_name = @lastName")
     .WithParameter("lastName", "Cuervo")
     .ToListAsync<Customer>();
 
 // Normal will load the resource from the calling assembly. 
-context.CreateCommandFromResource("My.Assembly.GetCustomers.sql");
+database.CreateCommandFromResource("My.Assembly.GetCustomers.sql");
 
 // The assembly name may be omitted. Normal will load the first resource that ends with the given string.
-context.CreateCommandFromResource("GetCustomers.sql");
+database.CreateCommandFromResource("GetCustomers.sql");
 
 // Optionally, you may pass an assembly to load the embedded resource from
-context.CreateCommandFromResource("GetCustomers.sql", myAssembly);
+database.CreateCommandFromResource("GetCustomers.sql", myAssembly);
     
 // Also, you can load a command from any file.
-context.CreateCommandFromFile("/path/to/sql/GetCustomers.sql");
-```
-
-### Middleware
-
-Middleware can be installed on a `DbContext` that will execute on every database request. 
-
-Existing middleware:
-* [Normal.Logging](./src/Normal.Logging/README.md)
-* [Normal.Caching](./src/Normal.Caching/README.md)
-
-Middleware is added using the `DbContext` builder constructor. 
-
-```csharp
-var context = new DbContext(c =>
-{
-    c.UseConnection<NpgsqlConnection>(connectionString); 
-    c.UseLogging(logger); // Add logging middleware
-});
-
-// Now every query will be logged at info level
-
-var results = await context
-    .Select("stock_item_id", "stock_item_name")
-    .From("warehouse.stock_items")
-    .Where("supplier_id").EqualTo(2)
-    .And("tax_rate").EqualTo(15.0)
-    .OrderBy("stock_item_id")
-    .ToListAsync<StockItem>();
-
-/**
-[9:10:11 INF] query: SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @normal_1 AND tax_rate = @normal_2 ORDER BY stock_item_id parameters: {"normal_1": 2, "normal_2": 15} elapsed: 5ms
-**/
+database.CreateCommandFromFile("/path/to/sql/GetCustomers.sql");
 ```
 
 ### Custom Middleware
@@ -225,10 +194,10 @@ public class AwesomeHandler : DelegatingHandler
 }
 ```
 
-You can install this on `DbContext` by using `new DbContext`.
+You can install this on `Database` by using `new Database`.
 
 ```csharp
-var context = new DbContext(c =>
+var database = new Database(c =>
 {
     c.UseConnection(connection);
     c.UseDelegatingHandler(new AwesomeHandler()); // Add custom middleware.
@@ -238,7 +207,7 @@ var context = new DbContext(c =>
 Middleware is executed in the order that it was added. For example, if you added three DelegatingHandlers...
 
 ```csharp
-var context = new DbContext(c =>
+var database = new Database(c =>
 {
     c.UseDelegatingHandler(new A())
     c.UseDelegatingHandler(new B())
@@ -260,16 +229,16 @@ A
 
 ### Transactions
 
-To start a new database transaction, call `BeginTransaction` on `DbContext`. Once a transaction is begun on an instance of `DbContext`, all statements executed against that context automatically join the transaction on the same connection. Once the transaction is disposed, the context returns to connection pooling behavior.
+To start a new database transaction, call `BeginTransaction` on `Database`. Once a transaction is begun on an instance of `Database`, all statements executed against that database automatically join the transaction on the same connection. Once the transaction is disposed, the database returns to connection pooling behavior.
 
-This is useful because different repositories sharing the same `DbContext` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `DbContext` instance...
+This is useful because different repositories sharing the same `Database` instance can also share transactions. Say you have a service class with several repositories. Because you're using dependency injection, each of those repositories shares the same `Database` instance...
 
 ```csharp
-private readonly IDbContext _context;
+private readonly IDatabase _database;
 
 public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetails orderDetails)
 {
-    using (var transaction = await _context.BeginTransactionAsync())
+    using (var transaction = await _database.BeginTransactionAsync())
     {
         // Automatically joins the transaction
         var userId = await _userRepository.CreateCustomer(customerDetails);
@@ -283,48 +252,14 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
 }
 ```
 
-### Dependency Injection
+### AspNetCore
 
-If you're using a IoC container, like the one in AspNetCore, call the `AddNormal` method to inject a scoped `IDbContext`.
-
-```csharp
-services.AddNormal((sp, c) =>
-{
-    c.UseConnection<NpgsqlConnection>(connectionString);
-    c.UseLogging(sp.GetService<ILogger<DbContext>>());
-});
-```
-
-Then in your classes, you can use constructor injection to get a reference to IDbContext.
-
-```csharp
-using System.Threading.Tasks;
-using Normal;
-
-class CustomerDataAccess 
-{
-    private readonly IDbContext _context;
-
-    public CustomerDataAccess(IDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<Customer> GetCustomer(int id)
-    {
-        return await _context
-            .Select("first_name", "last_name", "age")
-            .From("customer")
-            .Where("customer_id").EqualTo(id)
-            .FirstOrDefaultAsync<Customer>();
-    }
-}
-```
+There is an AspNetCore plugin that adds caching, logging, and DI support. See [Normal.AspNetCore](src/Normal.AspNetCore/README.md).
 
 ## Building
 
 Prerequisites:
-* .NET Core SDK 2.1 
+* .NET Core SDK 3.1 
 * Mono or .NET Framework
 * Gnu Make
 
@@ -347,7 +282,7 @@ See https://github.com/dotnet/sdk/issues/335
 ## Testing
 
 Prerequisites:
-* .NET Core SDK 2.1
+* .NET Core SDK 3.1
 * Gnu Make
 * Docker
 * Bash

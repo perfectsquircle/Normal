@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using FastMember;
 
 namespace Normal
 {
@@ -10,24 +9,24 @@ namespace Normal
     {
         public static IDictionary<string, object> ToDictionary(object target)
         {
-            var typeAccessor = TypeAccessor.Create(target.GetType());
-            return typeAccessor
-                .GetMembers()
+            return Member
+                .GetMembers(target.GetType())
                 .Where(m => m.CanRead)
-                .ToDictionary(m => Table.GetColumnName(m), m => typeAccessor[target, m.Name]);
+                .ToDictionary(m => Table.GetColumnName(m), m => m.GetValue(target));
         }
 
-        public static ConstructorInfo GetConstructor(Type connectionType, object[] arguments)
+        public static ConstructorInfo GetConstructor(Type targetType, object[] arguments)
         {
             var argumentTypes = arguments.Select(a => a.GetType()).ToArray();
-            var constructor = connectionType.GetConstructor(argumentTypes); ;
+            var constructor = targetType.GetConstructor(argumentTypes); ;
             if (constructor == null)
             {
                 var argumentTypeStrings = string.Join(",", argumentTypes.Select(t => t.ToString()));
-                throw new NotSupportedException($"No constructor found: {connectionType}({argumentTypeStrings})");
+                throw new NotSupportedException($"No constructor found: {targetType}({argumentTypeStrings})");
             }
 
             return constructor;
         }
+
     }
 }

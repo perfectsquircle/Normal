@@ -7,17 +7,17 @@ namespace Normal
 {
     internal class BaseHandler : IHandler
     {
-        private readonly DbContext _dbContext;
+        private readonly Database _database;
         private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
-        public BaseHandler(DbContext dbContext)
-            : this(dbContext, new DataRecordMapperFactory())
+        public BaseHandler(Database database)
+            : this(database, new DataRecordMapperFactory())
         {
         }
 
-        public BaseHandler(DbContext dbContext, IDataRecordMapperFactory dataRecordMapperFactory)
+        public BaseHandler(Database database, IDataRecordMapperFactory dataRecordMapperFactory)
         {
-            this._dbContext = dbContext;
+            this._database = database;
             this._dataRecordMapperFactory = dataRecordMapperFactory;
         }
 
@@ -28,10 +28,10 @@ namespace Normal
             DbDataReader reader = null;
             try
             {
-                connection = await _dbContext.GetOpenConnectionAsync(cancellationToken);
+                connection = await _database.GetOpenConnectionAsync(cancellationToken);
                 command = (commandBuilder as DbCommandBuilder).Build(connection);
                 reader = await command.ExecuteReaderAsync(cancellationToken);
-                return ToEnumerable<T>(connection, command, reader, commandBuilder.Mapper);
+                return ToEnumerable<T>(connection, command, reader);
             }
             catch
             {
@@ -44,7 +44,7 @@ namespace Normal
 
         public async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _database.GetOpenConnectionAsync(cancellationToken))
             using (var command = (commandBuilder as DbCommandBuilder).Build(connection))
             {
                 return await command.ExecuteNonQueryAsync(cancellationToken);
@@ -53,14 +53,14 @@ namespace Normal
 
         public async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            using (var connection = await _dbContext.GetOpenConnectionAsync(cancellationToken))
+            using (var connection = await _database.GetOpenConnectionAsync(cancellationToken))
             using (var command = (commandBuilder as DbCommandBuilder).Build(connection))
             {
                 return (T)(await command.ExecuteScalarAsync(cancellationToken));
             }
         }
 
-        private IEnumerable<T> ToEnumerable<T>(IDbConnectionWrapper connection, DbCommand command, DbDataReader dataReader, IDataRecordMapper customMapper = null)
+        private IEnumerable<T> ToEnumerable<T>(IDbConnectionWrapper connection, DbCommand command, DbDataReader dataReader)
         {
             using (connection)
             using (command)
@@ -71,11 +71,11 @@ namespace Normal
                     yield break;
                 }
 
-                var mapper = customMapper;
+                IDataRecordMapper<T> mapper = null;
                 while (dataReader.Read())
                 {
-                    mapper = mapper ?? _dataRecordMapperFactory.CreateMapper(typeof(T));
-                    yield return (T)mapper.MapDataRecord(dataReader);
+                    mapper = mapper ?? _dataRecordMapperFactory.CreateMapper<T>();
+                    yield return mapper.MapDataRecord(dataReader);
                 }
                 yield break;
             }

@@ -2,9 +2,9 @@ namespace Normal
 {
     internal class DeleteBuilder : StatementBuilder, IDeleteBuilder
     {
-        public DeleteBuilder(IDbContext context)
+        public DeleteBuilder(IDatabase database)
         {
-            _context = context;
+            _database = database;
         }
 
         public DeleteBuilder(string tableName)

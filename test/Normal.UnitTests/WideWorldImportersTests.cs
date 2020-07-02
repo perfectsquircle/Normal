@@ -11,19 +11,19 @@ namespace Normal.UnitTests
 {
     public class WideWorldImportersTests
     {
-        private DbContext _postgresContext;
-        private DbContext _sqlServerContext;
+        private Database _postgresDatabase;
+        private Database _sqlServerDatabase;
 
         public WideWorldImportersTests()
         {
-            _postgresContext = new DbContext(c =>
+            _postgresDatabase = new Database(c =>
             {
                 c.UseConnection<NpgsqlConnection>("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal");
                 c.UseLogging(Helpers.GetLogger());
                 c.UseCaching(Helpers.GetMemoryCache());
             });
 
-            _sqlServerContext = new DbContext(c =>
+            _sqlServerDatabase = new Database(c =>
             {
                 c.UseConnection<SqlConnection>("Server=localhost;Uid=sa;Pwd=Normal123;Database=WideWorldImporters");
                 c.UseLogging(Helpers.GetLogger());
@@ -42,10 +42,10 @@ namespace Normal.UnitTests
         public async Task ShouldSelectFromStockItems(bool isPostgres, string query)
         {
             //Given
-            var context = isPostgres ? _postgresContext : _sqlServerContext;
+            var database = isPostgres ? _postgresDatabase : _sqlServerDatabase;
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand(query)
                 .ToListAsync<StockItem>();
 
@@ -67,10 +67,10 @@ namespace Normal.UnitTests
         public async Task ShouldSelectEnumerableFromStockItems(bool isPostgres, string query)
         {
             //Given
-            var context = isPostgres ? _postgresContext : _sqlServerContext;
+            var database = isPostgres ? _postgresDatabase : _sqlServerDatabase;
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand(query)
                 .ToEnumerableAsync<StockItem>();
 
@@ -99,10 +99,10 @@ namespace Normal.UnitTests
         public async Task ShouldSelectFromStockItemsWithParameters(bool isPostgres, string query)
         {
             //Given
-            var context = isPostgres ? _postgresContext : _sqlServerContext;
+            var database = isPostgres ? _postgresDatabase : _sqlServerDatabase;
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand(query)
                 .WithParameter("supplierId", 2)
                 .WithParameter("brand", null) // not in query
@@ -132,10 +132,10 @@ namespace Normal.UnitTests
         public async Task ShouldSelectBoolean(bool isPostgres, string query)
         {
             //Given
-            var context = isPostgres ? _postgresContext : _sqlServerContext;
+            var database = isPostgres ? _postgresDatabase : _sqlServerDatabase;
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand(query)
                 .ToListAsync<StockItem>();
 
@@ -156,10 +156,10 @@ namespace Normal.UnitTests
         public async Task ShouldHandleNullableInt(bool isPostgres, string query)
         {
             //Given
-            var context = isPostgres ? _postgresContext : _sqlServerContext;
+            var database = isPostgres ? _postgresDatabase : _sqlServerDatabase;
 
             //When
-            var results = await context
+            var results = await database
                 .CreateCommand(query)
                 .ToListAsync<StockItem>();
 
@@ -173,25 +173,25 @@ namespace Normal.UnitTests
         public async Task MultipleQueriesInTransaction()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
 
             //When
-            using (var transaction = context.BeginTransaction())
+            using (var transaction = database.BeginTransaction())
             {
-                Assert.Same(transaction, context.CurrentTransaction);
+                Assert.Same(transaction, database.CurrentTransaction);
                 const string cityName = "Calvinville";
-                var results0 = await context
+                var results0 = await database
                     .DeleteFrom("application.cities")
                     .Where("city_name").EqualTo(cityName)
                     .ExecuteNonQueryAsync();
-                Assert.Same(transaction, context.CurrentTransaction);
-                var results1 = await context
+                Assert.Same(transaction, database.CurrentTransaction);
+                var results1 = await database
                     .InsertInto("application.cities")
                     .Columns("city_name", "state_province_id", "last_edited_by")
                     .Values(cityName, 1, 1)
                     .ExecuteNonQueryAsync();
-                Assert.Same(transaction, context.CurrentTransaction);
-                var results2 = await context
+                Assert.Same(transaction, database.CurrentTransaction);
+                var results2 = await database
                     .Select("city_name")
                     .From("application.cities")
                     .Where("city_name").EqualTo(cityName)
@@ -201,18 +201,18 @@ namespace Normal.UnitTests
                 Assert.Equal(cityName, results2);
                 transaction.Commit();
             }
-            Assert.Null(context.CurrentTransaction);
+            Assert.Null(database.CurrentTransaction);
         }
 
         [Fact]
         public async Task ShouldCacheResults()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
 
             Func<int, Task<double>> getResults = async (supplierId) =>
             {
-                return await context
+                return await database
                     .CreateCommand("select random()")
                     .WithParameter("supplierId", supplierId)
                     .CacheFor(TimeSpan.FromMinutes(1))
@@ -233,11 +233,11 @@ namespace Normal.UnitTests
         public async Task ShouldNotCacheResults()
         {
             //Given
-            var context = _postgresContext;
+            var database = _postgresDatabase;
 
             Func<int, Task<double>> getResults = async (supplierId) =>
             {
-                return await context
+                return await database
                     .CreateCommand("select random()")
                     .WithParameter("supplierId", supplierId)
                     .CacheFor(TimeSpan.FromMinutes(1))
