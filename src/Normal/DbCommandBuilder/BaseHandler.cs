@@ -31,7 +31,7 @@ namespace Normal
                 connection = await _database.GetOpenConnectionAsync(cancellationToken);
                 command = (commandBuilder as DbCommandBuilder).Build(connection);
                 reader = await command.ExecuteReaderAsync(cancellationToken);
-                return ToEnumerable<T>(connection, command, reader, commandBuilder.Mapper);
+                return ToEnumerable<T>(connection, command, reader);
             }
             catch
             {
@@ -60,7 +60,7 @@ namespace Normal
             }
         }
 
-        private IEnumerable<T> ToEnumerable<T>(IDbConnectionWrapper connection, DbCommand command, DbDataReader dataReader, IDataRecordMapper customMapper = null)
+        private IEnumerable<T> ToEnumerable<T>(IDbConnectionWrapper connection, DbCommand command, DbDataReader dataReader)
         {
             using (connection)
             using (command)
@@ -71,11 +71,11 @@ namespace Normal
                     yield break;
                 }
 
-                var mapper = customMapper;
+                IDataRecordMapper<T> mapper = null;
                 while (dataReader.Read())
                 {
-                    mapper = mapper ?? _dataRecordMapperFactory.CreateMapper(typeof(T));
-                    yield return (T)mapper.MapDataRecord(dataReader);
+                    mapper = mapper ?? _dataRecordMapperFactory.CreateMapper<T>();
+                    yield return mapper.MapDataRecord(dataReader);
                 }
                 yield break;
             }

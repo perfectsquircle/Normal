@@ -1,28 +1,21 @@
 using System;
 using System.Data;
+using static System.Linq.Expressions.Expression;
 
 namespace Normal
 {
-    internal class PrimitiveDataRecordMapper : IDataRecordMapper
+    internal class PrimitiveDataRecordMapper<T> : IDataRecordMapper<T>
     {
-        private PropertyMapper _propertyMapper;
-        private Type _targetType;
+        private const int _columnIndex = 0;
+        private Func<IDataRecord, T> _columnReader;
 
-        public PrimitiveDataRecordMapper(Type targetType)
+        public T MapDataRecord(IDataRecord dataRecord)
         {
-            _targetType = targetType;
-        }
-
-        public object MapDataRecord(IDataRecord dataRecord)
-        {
-            if (_propertyMapper == null)
+            if (_columnReader == null)
             {
-                _propertyMapper = new PropertyMapper()
-                    .WithColumnIndex(0)
-                    .WithColumnType(dataRecord.GetFieldType(0))
-                    .WithPropertyType(_targetType);
+                _columnReader = Member.GetColumnReader<T>(dataRecord.GetFieldType(_columnIndex), _columnIndex);
             }
-            return _propertyMapper.MapProperty(dataRecord);
+            return _columnReader(dataRecord);
         }
     }
 }

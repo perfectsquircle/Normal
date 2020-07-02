@@ -12,10 +12,6 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FastMember" Version="1.5.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.0.0" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Normal.Abstractions\Normal.Abstractions.csproj" />
   </ItemGroup>
 </Project>

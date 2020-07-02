@@ -6,6 +6,8 @@
 
 Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping) for .NET available as a NuGet package. 
 
+It has no third-party dependencies, and can be dropped into an existing project.
+
 - [Normal](#normal)
   - [Introduction](#introduction)
   - [Installation](#installation)
@@ -14,10 +16,9 @@ Normal is a small and extensible [ORM](https://en.wikipedia.org/wiki/Object-rela
     - [Statement Builder](#statement-builder)
     - [CRUD statements](#crud-statements)
     - [Custom Commands](#custom-commands)
-    - [Middleware](#middleware)
     - [Custom Middleware](#custom-middleware)
     - [Transactions](#transactions)
-    - [Dependency Injection](#dependency-injection)
+    - [AspNetCore](#aspnetcore)
   - [Building](#building)
   - [Testing](#testing)
 
@@ -160,38 +161,6 @@ database.CreateCommandFromResource("GetCustomers.sql", myAssembly);
 database.CreateCommandFromFile("/path/to/sql/GetCustomers.sql");
 ```
 
-### Middleware
-
-Middleware can be installed on a `Database` that will execute on every database request. 
-
-Existing middleware:
-* [Normal.Logging](./src/Normal.Logging/README.md)
-* [Normal.Caching](./src/Normal.Caching/README.md)
-
-Middleware is added using the `Database` builder constructor. 
-
-```csharp
-var database = new Database(c =>
-{
-    c.UseConnection<NpgsqlConnection>(connectionString); 
-    c.UseLogging(logger); // Add logging middleware
-});
-
-// Now every query will be logged at info level
-
-var results = await database
-    .Select("stock_item_id", "stock_item_name")
-    .From("warehouse.stock_items")
-    .Where("supplier_id").EqualTo(2)
-    .And("tax_rate").EqualTo(15.0)
-    .OrderBy("stock_item_id")
-    .ToListAsync<StockItem>();
-
-/**
-[9:10:11 INF] query: SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE supplier_id = @normal_1 AND tax_rate = @normal_2 ORDER BY stock_item_id parameters: {"normal_1": 2, "normal_2": 15} elapsed: 5ms
-**/
-```
-
 ### Custom Middleware
 
 Normal is extensible, and you can write your own middleware!
@@ -283,43 +252,9 @@ public async Task PlaceCustomerOrder(CustomerDetails customerDetails, OrderDetai
 }
 ```
 
-### Dependency Injection
+### AspNetCore
 
-If you're using a IoC container, like the one in AspNetCore, call the `AddNormal` method to inject a scoped `IDatabase`.
-
-```csharp
-services.AddNormal((sp, c) =>
-{
-    c.UseConnection<NpgsqlConnection>(connectionString);
-    c.UseLogging(sp.GetService<ILogger<Database>>());
-});
-```
-
-Then in your classes, you can use constructor injection to get a reference to IDatabase.
-
-```csharp
-using System.Threading.Tasks;
-using Normal;
-
-class CustomerDataAccess 
-{
-    private readonly IDatabase _database;
-
-    public CustomerDataAccess(IDatabase database)
-    {
-        _database = database;
-    }
-
-    public async Task<Customer> GetCustomer(int id)
-    {
-        return await _database
-            .Select("first_name", "last_name", "age")
-            .From("customer")
-            .Where("customer_id").EqualTo(id)
-            .FirstOrDefaultAsync<Customer>();
-    }
-}
-```
+There is an AspNetCore plugin that adds caching, logging, and DI support. See [Normal.AspNetCore](src/Normal.AspNetCore/README.md).
 
 ## Building
 

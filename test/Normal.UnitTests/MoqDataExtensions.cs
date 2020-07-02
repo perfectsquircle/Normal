@@ -54,6 +54,7 @@ namespace Moq.DataExtensions
                 record.Setup(r => r.IsDBNull(index)).Returns(value == DBNull.Value);
                 record.Setup(r => r.GetOrdinal(name)).Returns(index);
                 record.Setup(r => r[index]).Returns(value);
+                record.Setup(r => r.GetValue(index)).Returns(value);
                 record.Setup(r => r[name]).Returns(value);
                 record.Setup(r => r.GetName(index)).Returns(name);
                 record.Setup(r => r.GetString(index)).Returns(() => (string)value);

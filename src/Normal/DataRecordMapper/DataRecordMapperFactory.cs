@@ -16,39 +16,40 @@ namespace Normal
             typeof(char[]),
         };
 
-        private readonly IDictionary<Type, IDataRecordMapper> _customMappers;
+        private readonly IDictionary<Type, object> _customMappers;
 
         public DataRecordMapperFactory()
         {
-            _customMappers = new Dictionary<Type, IDataRecordMapper>();
+            _customMappers = new Dictionary<Type, object>();
         }
 
-        public IDataRecordMapper CreateMapper(Type type)
+        public IDataRecordMapper<T> CreateMapper<T>()
         {
+            var type = typeof(T);
             var underlyingType = Nullable.GetUnderlyingType(type);
             var targetType = underlyingType ?? type;
 
             if (_customMappers.ContainsKey(targetType))
             {
-                return _customMappers[targetType];
+                return (IDataRecordMapper<T>)_customMappers[targetType];
             }
             else if (targetType.IsPrimitive || targetType.IsEnum || _primitiveExtensions.Any(primitiveExtension => primitiveExtension.IsAssignableFrom(targetType)))
             {
-                return new PrimitiveDataRecordMapper(type);
+                return new PrimitiveDataRecordMapper<T>();
             }
             else if (targetType == typeof(object))
             {
-                return new DynamicDataRecordMapper();
+                return new DynamicDataRecordMapper<T>();
             }
             else
             {
-                return new ClassDataRecordMapper(type);
+                return new ClassDataRecordMapper<T>();
             }
         }
 
-        public IDataRecordMapperFactory UseCustomMapper(Type type, IDataRecordMapper mapper)
+        public IDataRecordMapperFactory UseCustomMapper<T>(IDataRecordMapper<T> mapper)
         {
-            _customMappers.Add(type, mapper);
+            _customMappers.Add(typeof(T), mapper);
             return this;
         }
     }

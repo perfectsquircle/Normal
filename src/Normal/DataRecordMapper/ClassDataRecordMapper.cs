@@ -1,39 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
-using FastMember;
+using static System.Linq.Expressions.Expression;
 
 namespace Normal
 {
-    internal class ClassDataRecordMapper : IDataRecordMapper
+    internal class ClassDataRecordMapper<T> : IDataRecordMapper<T>
     {
-        private IEnumerable<PropertyMapper> _propertyMappers;
-        private Type _targetType;
-        private readonly Lazy<TypeAccessor> _typeAccessor;
-        private TypeAccessor TypeAccessor => _typeAccessor.Value;
+        private Type _targetType = typeof(T);
+        Func<IDataRecord, T> _constructor;
 
 
-        public ClassDataRecordMapper(Type targetType)
+        public T MapDataRecord(IDataRecord dataRecord)
         {
-            _targetType = targetType;
-            _typeAccessor = new Lazy<TypeAccessor>(() => TypeAccessor.Create(_targetType));
-        }
-
-        public object MapDataRecord(IDataRecord dataRecord)
-        {
-            if (_propertyMappers == null)
+            if (_constructor == null)
             {
-                _propertyMappers = CreatePropertyMappers(dataRecord).ToList();
+                var matches = FindMatches(dataRecord).ToList();
+                _constructor = CreateContructor(matches);
             }
 
-            var instance = TypeAccessor.CreateNew();
-            foreach (var mapper in _propertyMappers)
-            {
-                TypeAccessor[instance, mapper.PropertyName] = mapper.MapProperty(dataRecord);
-            }
-            return instance;
+            return _constructor(dataRecord);
         }
 
         private static IEnumerable<string> GetVariants(string columnName)
@@ -44,13 +31,13 @@ namespace Normal
             yield return columnName.ToLowerInvariant().Replace("_", string.Empty);
         }
 
-        private IEnumerable<PropertyMapper> CreatePropertyMappers(IDataRecord dataRecord)
+        private static IEnumerable<MemberMatch> FindMatches(IDataRecord dataRecord)
         {
-            var list = new List<PropertyMapper>();
-            var members = TypeAccessor
-                .GetMembers()
+            var members = Member.GetMembers(typeof(T))
                 .Where(m => m.CanWrite)
                 .ToList();
+
+            var fields = typeof(T).GetFields().Where(f => f.IsPublic);
 
             for (var i = 0; i < dataRecord.FieldCount; i++)
             {
@@ -58,7 +45,7 @@ namespace Normal
                 var columnNameVariants = GetVariants(columnName);
                 var member = members.FirstOrDefault(m =>
                 {
-                    var columnNameAttribute = m.GetAttribute(typeof(ColumnAttribute), false) as ColumnAttribute;
+                    var columnNameAttribute = m.GetAttribute<ColumnAttribute>(false);
                     if (columnNameAttribute != null)
                     {
                         return columnNameAttribute.Name == columnName;
@@ -66,17 +53,48 @@ namespace Normal
                     var propertyVariants = GetVariants(m.Name);
                     return propertyVariants.Intersect(columnNameVariants).Any();
                 });
-                if (member == default(Member))
+                if (member == default)
                 {
                     continue;
                 }
                 members.Remove(member);
-                yield return new PropertyMapper()
-                    .WithColumnIndex(i)
-                    .WithColumnType(dataRecord.GetFieldType(i))
-                    .WithPropertyName(member.Name)
-                    .WithPropertyType(member.Type);
+                yield return new MemberMatch
+                {
+                    ColumnIndex = i,
+                    ColumnType = dataRecord.GetFieldType(i),
+                    Member = member,
+                };
             }
+        }
+
+        private Func<IDataRecord, T> CreateContructor(IEnumerable<MemberMatch> memberMatches)
+        {
+            var dataRecord = Parameter(typeof(IDataRecord), "dataRecord");
+
+            var propertyBindings = memberMatches.Select(m =>
+            {
+                var columnReader = m.Member.GetColumnReader(dataRecord, m.ColumnType, m.ColumnIndex);
+
+                return Bind(
+                    m.Member.MemberInfo,
+                    columnReader);
+            });
+
+            var memberInitExpression =
+                MemberInit(
+                    New(typeof(T)),
+                    propertyBindings.ToArray());
+
+            var lambda = Lambda<Func<IDataRecord, T>>(memberInitExpression, false, dataRecord);
+
+            return lambda.Compile();
+        }
+
+        private class MemberMatch
+        {
+            public int ColumnIndex { get; set; }
+            public Type ColumnType { get; set; }
+            public Member Member { get; set; }
         }
     }
 }
