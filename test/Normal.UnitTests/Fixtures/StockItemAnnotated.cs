@@ -14,7 +14,7 @@ namespace Normal.UnitTests.Fixtures
         public int SupplierId { get; set; }
 
         [Column("color_id")] // int4 NULL,
-        public int ColorId { get; set; }
+        public int? ColorId { get; set; }
 
         [Column("unit_package_id")] // int4 NOT NULL,
         public int UnitPackageId { get; set; }
@@ -47,7 +47,7 @@ namespace Normal.UnitTests.Fixtures
         public decimal UnitPrice { get; set; }
 
         [Column("recommended_retail_price")] // numeric(18,2) NULL,
-        public decimal RecommendedRetailPrice { get; set; }
+        public decimal? RecommendedRetailPrice { get; set; }
 
         [Column("typical_weight_per_unit")] // numeric(18,3) NOT NULL,
         public decimal TypicalWeightPerUnit { get; set; }

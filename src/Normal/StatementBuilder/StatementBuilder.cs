@@ -17,6 +17,11 @@ namespace Normal
             return string.Join(Environment.NewLine, _lines);
         }
 
+        public override string ToString()
+        {
+            return Build();
+        }
+
         public Task<IEnumerable<T>> ToEnumerableAsync<T>(CancellationToken cancellationToken = default) =>
             ToCommand().ToEnumerableAsync<T>(cancellationToken);
         public Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>

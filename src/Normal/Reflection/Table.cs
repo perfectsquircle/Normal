@@ -24,44 +24,24 @@ namespace Normal
             }
         }
 
-        public IEnumerable<string> ColumnNames
+        public IEnumerable<Column> Columns
         {
             get
             {
                 return Member
                     .GetMembers(_targetType)
                     .Where(m => m.CanRead)
-                    .Select(GetColumnName);
+                    .Select(m => new Column(m));
             }
         }
 
-        public IDictionary<string, object> GetColumns<T>(T target)
-        {
-            return Member
-                .GetMembers(_targetType)
-                .Where(m => m.CanRead)
-                .ToDictionary(m => GetColumnName(m), m => m.GetValue(target));
-        }
-
-        public string PrimaryKeyColumnName
+        public Column PrimaryKey
         {
             get
             {
                 var primaryKeyMember = GetPrimaryKeyMember();
-                return GetColumnName(primaryKeyMember);
+                return new Column(primaryKeyMember);
             }
-        }
-
-        public Tuple<string, object> GetPrimaryKey<T>(T target)
-        {
-            var primaryKeyMember = GetPrimaryKeyMember();
-            return Tuple.Create(GetColumnName(primaryKeyMember), primaryKeyMember.GetValue(target));
-        }
-
-        public static string GetColumnName(Member m)
-        {
-            var columnNameAttribute = m.GetAttribute<ColumnAttribute>();
-            return columnNameAttribute?.Name ?? m.Name;
         }
 
         private Member GetPrimaryKeyMember()

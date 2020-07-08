@@ -8,8 +8,6 @@ namespace Normal.UnitTests
 {
     public class InsertBuilderTests
     {
-        private static CreateConnection _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
-
         [Fact]
         public void ShouldBeBuildable()
         {
@@ -60,7 +58,7 @@ VALUES
         public async Task ShouldInsert()
         {
             //Given
-            var database = new Database(_postgresConnection);
+            var database = Database.WithConnection<NpgsqlConnection>("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
 
             //When
             var rowsInserted = await database

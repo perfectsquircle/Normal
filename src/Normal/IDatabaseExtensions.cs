@@ -25,7 +25,7 @@ namespace Normal
         {
             var table = new Table(typeof(T));
             return await database.Select<T>()
-                .Where(table.PrimaryKeyColumnName).EqualTo(id)
+                .Where(table.PrimaryKey.Name).EqualTo(id)
                 .FirstOrDefaultAsync<T>(cancellationToken);
         }
 
@@ -34,14 +34,45 @@ namespace Normal
             return new InsertBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<int> InsertAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
+        public static Task<T> InsertAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
-            var columns = table.GetColumns(model);
-            return database.InsertInto(table.Name)
-                .Columns(columns.Keys.ToArray())
-                .Values(columns.Values.ToArray())
-                .ExecuteNonQueryAsync(cancellationToken);
+            var primaryKey = table.PrimaryKey;
+            var columns = table.Columns;
+            var columnsWithoutPrimaryKey = columns.Where(c => !c.IsPrimaryKey);
+            var insertBuilder = database.InsertInto(table.Name)
+                .Columns(columnsWithoutPrimaryKey.Select(c => c.Name).ToArray())
+                .Values(columnsWithoutPrimaryKey.Select(c => c.GetValue(model)).ToArray()) as InsertBuilder;
+
+            ISelectBuilder select;
+            if (primaryKey.IsAutoIncrement)
+            {
+                var identityExpression = database.Variant switch
+                {
+                    Variant.SQLServer => "SCOPE_IDENTITY()",
+                    Variant.PostgreSQL => "LASTVAL()",
+                    Variant.MySQL => "LAST_INSERT_ID()",
+                    _ => throw new NotSupportedException("Unknown database variant: " + database.Variant)
+                };
+
+                select = Select(database, columns.Select(c => c.Name).ToArray())
+                    .From(table.Name)
+                    .Where($"{primaryKey.Name} = {identityExpression}")
+                    .End() as SelectBuilder;
+            }
+            else
+            {
+                select = Select(database, columns.Select(c => c.Name).ToArray())
+                    .From(table.Name)
+                    .Where($"{primaryKey.Name}").EqualTo(primaryKey.GetValue(model));
+            }
+
+            insertBuilder.AddLine(";");
+            insertBuilder.AddLine(select.Build());
+
+
+            return insertBuilder
+                .SingleAsync<T>(cancellationToken);
         }
 
         public static IUpdateBuilder Update(this IDatabase database, string tableName)
@@ -52,12 +83,12 @@ namespace Normal
         public static Task<int> UpdateAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
-            var columns = table.GetColumns(model);
-            var pk = table.GetPrimaryKey(model);
-            columns.Remove(pk.Item1);
+            var columns = table.Columns.ToList();
+            var primaryKey = table.PrimaryKey;
+            columns.Remove(primaryKey);
             return database.Update(table.Name)
-                .Set(columns)
-                .Where(pk.Item1).EqualTo(pk.Item2)
+                .Set(columns.ToDictionary(c => c.Name, c => c.GetValue(model)))
+                .Where(primaryKey.Name).EqualTo(primaryKey.GetValue(model))
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -69,9 +100,9 @@ namespace Normal
         public static Task<int> DeleteAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
-            var pk = table.GetPrimaryKey(model);
+            var primaryKey = table.PrimaryKey;
             return database.DeleteFrom(table.Name)
-                .Where(pk.Item1).EqualTo(pk.Item2)
+                .Where(primaryKey.Name).EqualTo(primaryKey.GetValue(model))
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
@@ -117,10 +148,12 @@ namespace Normal
             return null;
         }
 
+
+        // TODO: make this public, and return an ISelectBuilder with a Generic type?
         private static ISelectBuilder Select<T>(this IDatabase database)
         {
             var table = new Table(typeof(T));
-            return database.Select(table.ColumnNames.ToArray()).From(table.Name);
+            return database.Select(table.Columns.Select(c => c.Name).ToArray()).From(table.Name);
         }
     }
 }

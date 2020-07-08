@@ -45,13 +45,13 @@ PM> Install-Package Normal
 
 The entrypoint into the Normal API is the `Database` class. Typically, only one of these should be created per database in your application lifetime (or HTTP Request lifetime.) A `Database` is intended to be injected into and shared amongst other classes.
 
-The `Database` must be able to create new instances of `IDbConnection`, so we pass it a `CreateConnection` delegate, which is just a function that returns a new connection with the driver of our choosing.
+
 
 ```csharp
 // Use with SQL Server
-var database = new Database(() => new SqlConnection("Server=...")); 
+var database = Database.WithConnection<SqlConnection>("Server=..."); 
 // Use with PostgreSQL
-var database = new Database(() => new NpgsqlConnection("Host=...")); 
+var database = Database.WithConnection<NpgsqlConnection>("Host=..."); 
 ```
 
 ### Statement Builder

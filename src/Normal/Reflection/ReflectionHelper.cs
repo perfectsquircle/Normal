@@ -12,7 +12,7 @@ namespace Normal
             return Member
                 .GetMembers(target.GetType())
                 .Where(m => m.CanRead)
-                .ToDictionary(m => Table.GetColumnName(m), m => m.GetValue(target));
+                .ToDictionary(m => m.Name, m => m.GetValue(target));
         }
 
         public static ConstructorInfo GetConstructor(Type targetType, object[] arguments)

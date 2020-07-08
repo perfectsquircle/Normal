@@ -9,7 +9,7 @@ namespace Normal.UnitTests
 {
     public class SelectBuilderTests
     {
-        private static CreateConnection _postgresConnection = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
+        private static string _postgresConnection = "Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal";
 
         [Fact]
         public void ShouldCreateSelectBuilder()
@@ -60,7 +60,7 @@ LIMIT 100";
             //Given
             var database = new Database(builder =>
             {
-                builder.UseConnection(_postgresConnection);
+                builder.UseConnection<NpgsqlConnection>(_postgresConnection);
                 builder.UseLogging(Helpers.GetLogger());
             });
 
@@ -89,7 +89,7 @@ LIMIT 100";
         public async Task ShouldBeQueryableDynamic()
         {
             //Given
-            var database = new Database(_postgresConnection);
+            var database = Database.WithConnection<NpgsqlConnection>(_postgresConnection);
 
             //When
             var results = await database
@@ -116,7 +116,7 @@ LIMIT 100";
         public async Task FirstOrDefaultAsync()
         {
             //Given
-            var database = new Database(_postgresConnection);
+            var database = Database.WithConnection<NpgsqlConnection>(_postgresConnection);
 
             //When
             var stockItem = await database
@@ -137,7 +137,7 @@ LIMIT 100";
         public async Task FirstAsync()
         {
             //Given
-            var database = new Database(_postgresConnection);
+            var database = Database.WithConnection<NpgsqlConnection>(_postgresConnection);
 
             //When
             var stockItem = await database
@@ -158,7 +158,7 @@ LIMIT 100";
         public async Task SingleAsync()
         {
             //Given
-            var database = new Database(_postgresConnection);
+            var database = Database.WithConnection<NpgsqlConnection>(_postgresConnection);
 
             //When
             var stockItem = await database
@@ -177,7 +177,7 @@ LIMIT 100";
         public async Task SingleOrDefualtAsync()
         {
             //Given
-            var database = new Database(_postgresConnection);
+            var database = Database.WithConnection<NpgsqlConnection>(_postgresConnection);
 
             //When
             var stockItem = await database

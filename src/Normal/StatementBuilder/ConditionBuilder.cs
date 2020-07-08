@@ -78,6 +78,7 @@ namespace Normal
 
         public TParent End()
         {
+            _parent.AddLine(_keyword, $"{_columnName}");
             return (TParent)(IStatementBuilder)_parent;
         }
 

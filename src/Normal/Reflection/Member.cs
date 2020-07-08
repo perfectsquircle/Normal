@@ -129,5 +129,12 @@ namespace Normal
             var lambda = Lambda(memberAccess, false, target);
             return lambda.Compile();
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Member member &&
+                   Name == member.Name &&
+                   EqualityComparer<Type>.Default.Equals(Type, member.Type);
+        }
     }
 }
