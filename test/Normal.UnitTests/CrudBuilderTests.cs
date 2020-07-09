@@ -12,6 +12,7 @@ namespace Normal.UnitTests
     public class CrudBuilderTests
     {
         private Database _postgresDatabase;
+        private Database _sqlServerDatabase;
 
         public CrudBuilderTests()
         {
@@ -21,8 +22,14 @@ namespace Normal.UnitTests
                 c.UseLogging(Helpers.GetLogger());
                 c.UseCaching(Helpers.GetMemoryCache());
             });
-        }
 
+            _sqlServerDatabase = new Database(c =>
+            {
+                c.UseConnection<SqlConnection>("Server=localhost;Uid=sa;Pwd=Normal123;Database=WideWorldImporters");
+                c.UseLogging(Helpers.GetLogger());
+                c.UseCaching(Helpers.GetMemoryCache());
+            });
+        }
 
         [Fact]
         public async Task ShouldSelectFromStockItems()
@@ -32,6 +39,24 @@ namespace Normal.UnitTests
 
             //When
             var results = (await database.SelectAsync<StockItemAnnotated>()).ToList();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            Assert.Equal(227, results.Count);
+            var first = results.First();
+            Assert.Equal(1, first.StockItemID);
+            Assert.Equal("USB missile launcher (Green)", first.StockItemName);
+        }
+
+        [Fact]
+        public async Task ShouldSelectFromStockItems_SqlServer()
+        {
+            //Given
+            var database = _sqlServerDatabase;
+
+            //When
+            var results = (await database.SelectAsync<StockItem>()).ToList();
 
             //Then
             Assert.NotNull(results);
@@ -107,11 +132,11 @@ namespace Normal.UnitTests
             //When
             using (var transaction = database.BeginTransaction())
             {
-                var rowsAffected = await database.InsertAsync<StockItemAnnotated>(stockItem);
+                var result = await database.InsertAsync<StockItemAnnotated>(stockItem);
                 transaction.Rollback();
 
                 //Then
-                Assert.Equal(1, rowsAffected);
+                Assert.NotEqual(0, result.StockItemID);
             }
         }
 
@@ -141,7 +166,7 @@ namespace Normal.UnitTests
             //When
             using (var transaction = database.BeginTransaction())
             {
-                var rowsAffected = await database.UpdateAsync<StockItemAnnotated>(stockItem);
+                var rowsAffected = await database.UpdateAsync(stockItem);
                 transaction.Rollback();
 
                 //Then

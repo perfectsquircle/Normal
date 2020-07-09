@@ -44,6 +44,12 @@ namespace Normal
             return this;
         }
 
+        public IInsertBuilder Returning(params string[] columnNames)
+        {
+            AddLine("RETURNING", columnNames);
+            return this;
+        }
+
         private string GetValueRowParameterString(object[] valueRow)
         {
             var parameterStrings = valueRow.Select(valueRowValue =>

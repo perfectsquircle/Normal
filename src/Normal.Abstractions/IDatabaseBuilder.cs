@@ -5,7 +5,6 @@ namespace Normal
 {
     public interface IDatabaseBuilder
     {
-        IDatabaseBuilder UseConnection(CreateConnection createConnection);
         IDatabaseBuilder UseConnection<T>(params object[] arguments) where T : IDbConnection;
         IDatabaseBuilder UseDelegatingHandler(DelegatingHandler delegatingHandler);
         IDatabaseBuilder UseDataRecordMapper<T>(IDataRecordMapper<T> mapper);

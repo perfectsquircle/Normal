@@ -18,7 +18,9 @@ namespace Normal
             private set { _currentTransaction.Value = value; }
         }
 
-        public Database(CreateConnection createConnection) : this()
+        public Variant Variant { get; set; }
+
+        internal Database(CreateConnection createConnection) : this()
         {
             _createConnection = createConnection;
         }
@@ -33,19 +35,37 @@ namespace Normal
             configure(databaseBuilder);
             _createConnection = databaseBuilder.CreateConnection;
             _handler = databaseBuilder.BuildHandler(this);
+            Variant = databaseBuilder.Variant;
         }
 
-        public Database(Type connectionType, params object[] arguments) : this()
+        public static Database WithConnection<TConnection>(params object[] arguments)
+        {
+            return new Database(typeof(TConnection), arguments);
+        }
+
+        private Database(Type connectionType, params object[] arguments) : this()
         {
             var constructor = ReflectionHelper.GetConstructor(connectionType, arguments);
             _createConnection = () => (IDbConnection)constructor.Invoke(arguments);
+            Variant = DetermineVariant(connectionType);
         }
+
 
         private Database()
         {
             _handler = new BaseHandler(this);
             _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
             _semaphore = new SemaphoreSlim(1, 1);
+        }
+
+        internal static Variant DetermineVariant(Type connectionType)
+        {
+            var typeAsString = connectionType.ToString();
+            if (typeAsString.EndsWith("NpgsqlConnection")) return Variant.PostgreSQL;
+            if (typeAsString.EndsWith("SqlConnection")) return Variant.SQLServer;
+            if (typeAsString.EndsWith("MySqlConnection")) return Variant.MySQL;
+            if (typeAsString.EndsWith("OracleClient")) return Variant.Oracle;
+            return Variant.Unknown;
         }
 
         public IDbCommandBuilder CreateCommand(string commandText)

@@ -13,10 +13,9 @@ namespace Normal.UnitTests
     {
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task ToEnumerableAsync(CreateConnection dbConnection)
+        public async Task ToEnumerableAsync(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var results = await database
@@ -35,10 +34,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task ToEnumerableAsyncIsEmpty(CreateConnection dbConnection)
+        public async Task ToEnumerableAsyncIsEmpty(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var results = await database
@@ -53,10 +51,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task ToListAsync(CreateConnection dbConnection)
+        public async Task ToListAsync(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var results = await database
@@ -74,10 +71,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task ToListAsyncIsEmpty(CreateConnection dbConnection)
+        public async Task ToListAsyncIsEmpty(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var results = await database
@@ -91,10 +87,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task FirstAsync(CreateConnection dbConnection)
+        public async Task FirstAsync(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var bar = await database
@@ -110,10 +105,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task FirstAsyncThrows(CreateConnection dbConnection)
+        public async Task FirstAsyncThrows(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
@@ -126,10 +120,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task FirstOrDefaultAsync(CreateConnection dbConnection)
+        public async Task FirstOrDefaultAsync(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var bar = await database
@@ -145,10 +138,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task FirstOrDefaultAsyncIsNull(CreateConnection dbConnection)
+        public async Task FirstOrDefaultAsyncIsNull(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var bar = await database
@@ -161,10 +153,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task SingleAsync(CreateConnection dbConnection)
+        public async Task SingleAsync(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var bar = await database
@@ -180,10 +171,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task SingleAsyncThrows(CreateConnection dbConnection)
+        public async Task SingleAsyncThrows(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
@@ -196,10 +186,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task SingleOrDefaultAsync(CreateConnection dbConnection)
+        public async Task SingleOrDefaultAsync(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var bar = await database
@@ -215,10 +204,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task SingleOrDefaultAsyncIsNull(CreateConnection dbConnection)
+        public async Task SingleOrDefaultAsyncIsNull(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var bar = await database
@@ -231,10 +219,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task MultipleQueries(CreateConnection dbConnection)
+        public async Task MultipleQueries(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var results = await database
@@ -252,10 +239,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task SimultaneousQueries(CreateConnection dbConnection)
+        public async Task SimultaneousQueries(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             var results = database
@@ -278,10 +264,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task MultipleQueriesInTransaction(CreateConnection dbConnection)
+        public async Task MultipleQueriesInTransaction(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             using (var transaction = database.BeginTransaction())
@@ -330,10 +315,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public void NestedTransactionThrows(CreateConnection dbConnection)
+        public void NestedTransactionThrows(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             Assert.Throws<InvalidOperationException>(() =>
@@ -345,10 +329,9 @@ namespace Normal.UnitTests
 
         [Theory]
         [MemberData(nameof(GetDbConnection))]
-        public async Task CreateCommandFromResource(CreateConnection dbConnection)
+        public async Task CreateCommandFromResource(Database database)
         {
             //Given
-            var database = new Database(dbConnection);
 
             //When
             IList<dynamic> results = await database
@@ -366,8 +349,8 @@ namespace Normal.UnitTests
 
         public static IEnumerable<object[]> GetDbConnection()
         {
-            yield return new object[] { (CreateConnection)(() => new NpgsqlConnection("Host=localhost;Database=postgres;Username=postgres;Password=normal")) };
-            yield return new object[] { (CreateConnection)(() => new SqlConnection("Server=localhost;Uid=SA;Pwd=Normal123")) };
+            yield return new object[] { Database.WithConnection<NpgsqlConnection>("Host=localhost;Database=postgres;Username=postgres;Password=normal") };
+            yield return new object[] { Database.WithConnection<SqlConnection>("Server=localhost;Uid=SA;Pwd=Normal123") };
         }
     }
 }

@@ -4,5 +4,6 @@ namespace Normal
     {
         IInsertBuilder Columns(params string[] columnNames);
         IInsertBuilder Values(params object[] valueRow);
+        IInsertBuilder Returning(params string[] columnNames);
     }
 }
