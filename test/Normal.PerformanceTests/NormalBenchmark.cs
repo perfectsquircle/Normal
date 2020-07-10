@@ -14,14 +14,12 @@ namespace Normal.PerformanceTests
     [RankColumn]
     public class NormalBenchmark
     {
-        CreateConnection _connectionCreator;
         IDatabase _database;
         string _select;
 
         public NormalBenchmark()
         {
-            _connectionCreator = () => new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
-            _database = new Database(_connectionCreator);
+            _database = Database.WithConnection<NpgsqlConnection>("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
             _select = @"SELECT purchase_order_id, supplier_id, order_date, delivery_method_id, contact_person_id, expected_delivery_date, supplier_reference, is_order_finalized, comments, internal_comments, last_edited_by, last_edited_when
             FROM purchasing.purchase_orders;";
         }
@@ -37,7 +35,7 @@ namespace Normal.PerformanceTests
         [Benchmark]
         public async Task<IList<PurchaseOrder>> GetPurchaseOrdersAdo()
         {
-            using (var connection = _connectionCreator())
+            using (var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal"))
             {
                 await (connection as DbConnection).OpenAsync();
                 var command = connection.CreateCommand();
@@ -72,7 +70,7 @@ namespace Normal.PerformanceTests
         [Benchmark]
         public async Task<IList<PurchaseOrder>> GetPurchaseOrdersDapper()
         {
-            using (var connection = _connectionCreator())
+            using (var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal"))
             {
                 return (await connection.QueryAsync<PurchaseOrder>(_select)).ToList();
             }

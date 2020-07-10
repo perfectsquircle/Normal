@@ -12,6 +12,7 @@ namespace Normal
             public CreateConnection CreateConnection { get; private set; }
             private readonly IList<DelegatingHandler> _delegatingHandlers;
             private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
+            public Variant Variant { get; set; }
 
             public DatabaseBuilder()
             {
@@ -19,21 +20,12 @@ namespace Normal
                 _dataRecordMapperFactory = new DataRecordMapperFactory();
             }
 
-            public IDatabaseBuilder UseConnection(CreateConnection createConnection)
-            {
-                if (createConnection == null)
-                {
-                    throw new ArgumentNullException(nameof(createConnection));
-                }
-                CreateConnection = createConnection;
-                return this;
-            }
-
             public IDatabaseBuilder UseConnection<T>(params object[] arguments)
                 where T : IDbConnection
             {
                 var constructor = ReflectionHelper.GetConstructor(typeof(T), arguments);
                 CreateConnection = () => (T)constructor.Invoke(arguments);
+                Variant = Database.DetermineVariant(typeof(T));
                 return this;
             }
 

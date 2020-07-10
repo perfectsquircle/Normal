@@ -7,5 +7,6 @@ namespace Normal
     {
         IDbCommandBuilder CreateCommand(string commandText);
         IDbTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+        Variant Variant { get; }
     }
 }

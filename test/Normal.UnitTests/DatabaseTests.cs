@@ -36,7 +36,7 @@ namespace Normal.UnitTests
         public async Task ShouldBeConstructable()
         {
             //Given
-            var database = new Database(typeof(NpgsqlConnection), "Host=localhost;Database=postgres;Username=postgres;Password=normal");
+            var database = Database.WithConnection<NpgsqlConnection>("Host=localhost;Database=postgres;Username=postgres;Password=normal");
 
             //When
             var connection = await database.GetOpenConnectionAsync(default(CancellationToken));
