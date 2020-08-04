@@ -7,18 +7,18 @@ namespace Normal
 {
     internal class BaseHandler : IHandler
     {
-        private readonly Database _database;
+        private readonly IDbConnectionProvider _database;
         private readonly IDataRecordMapperFactory _dataRecordMapperFactory;
 
-        public BaseHandler(Database database)
+        public BaseHandler(IDbConnectionProvider database)
             : this(database, new DataRecordMapperFactory())
         {
         }
 
-        public BaseHandler(Database database, IDataRecordMapperFactory dataRecordMapperFactory)
+        public BaseHandler(IDbConnectionProvider database, IDataRecordMapperFactory dataRecordMapperFactory)
         {
-            this._database = database;
-            this._dataRecordMapperFactory = dataRecordMapperFactory;
+            _database = database;
+            _dataRecordMapperFactory = dataRecordMapperFactory;
         }
 
         public async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
@@ -56,7 +56,7 @@ namespace Normal
             using (var connection = await _database.GetOpenConnectionAsync(cancellationToken))
             using (var command = (commandBuilder as DbCommandBuilder).Build(connection))
             {
-                return (T)(await command.ExecuteScalarAsync(cancellationToken));
+                return (T)await command.ExecuteScalarAsync(cancellationToken);
             }
         }
 

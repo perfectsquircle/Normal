@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    public partial class Database : IDatabase
+    public partial class Database : IDatabase, IDbConnectionProvider
     {
         private CreateConnection _createConnection;
         private IHandler _handler;
@@ -60,7 +60,7 @@ namespace Normal
 
         internal static Variant DetermineVariant(Type connectionType)
         {
-            var typeAsString = connectionType.ToString();
+            var typeAsString = connectionType?.ToString() ?? "";
             if (typeAsString.EndsWith("NpgsqlConnection")) return Variant.PostgreSQL;
             if (typeAsString.EndsWith("SqlConnection")) return Variant.SQLServer;
             if (typeAsString.EndsWith("MySqlConnection")) return Variant.MySQL;
@@ -95,7 +95,7 @@ namespace Normal
             }
         }
 
-        internal async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        public async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             try
             {

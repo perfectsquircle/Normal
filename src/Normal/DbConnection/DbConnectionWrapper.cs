@@ -6,6 +6,7 @@ namespace Normal
     {
         public DbConnection DbConnection { get; private set; }
         public DbTransaction DbTransaction { get; private set; }
+        public bool DisposeDisabled { get; set; }
 
         public DbConnectionWrapper(DbConnection dbConnection)
         {
@@ -33,6 +34,10 @@ namespace Normal
 
         public void Dispose(bool force)
         {
+            if (DisposeDisabled)
+            {
+                return;
+            }
             if (force || DbTransaction == null)
             {
                 DbTransaction?.Dispose();

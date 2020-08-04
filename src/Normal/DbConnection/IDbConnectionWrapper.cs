@@ -3,7 +3,7 @@ using System.Data.Common;
 
 namespace Normal
 {
-    internal interface IDbConnectionWrapper : IDisposable
+    public interface IDbConnectionWrapper : IDisposable
     {
         DbConnection DbConnection { get; }
         DbTransaction DbTransaction { get; }
