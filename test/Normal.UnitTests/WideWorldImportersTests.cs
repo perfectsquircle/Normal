@@ -253,5 +253,30 @@ namespace Normal.UnitTests
             Assert.NotEqual(results1, results2);
             Assert.NotEqual(results2, results3);
         }
+
+        public static IEnumerable<object[]> GetSelectWithListParametersTestCases()
+        {
+            yield return new object[] { true, "SELECT stock_item_id, stock_item_name FROM warehouse.stock_items WHERE stock_item_id IN (@ids)" };
+            yield return new object[] { false, "SELECT StockItemID, StockItemName FROM Warehouse.StockItems WHERE StockItemId IN (@ids)" };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetSelectWithListParametersTestCases))]
+        public async Task ShouldUseListParameters(bool isPostgres, string query)
+        {
+            //Given
+            var database = isPostgres ? _postgresDatabase : _sqlServerDatabase;
+
+            //When
+            var results = await database
+                .CreateCommand(query)
+                .WithParameter("ids", new[] { 1, 2, 3 })
+                .ToListAsync<StockItem>();
+
+            //Then
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            Assert.Equal(3, results.Count());
+        }
     }
 }
