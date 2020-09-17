@@ -61,10 +61,10 @@ namespace Normal
         internal static Variant DetermineVariant(Type connectionType)
         {
             var typeAsString = connectionType.ToString();
-            if (typeAsString.EndsWith("NpgsqlConnection")) return Variant.PostgreSQL;
-            if (typeAsString.EndsWith("SqlConnection")) return Variant.SQLServer;
             if (typeAsString.EndsWith("MySqlConnection")) return Variant.MySQL;
+            if (typeAsString.EndsWith("NpgsqlConnection")) return Variant.PostgreSQL;
             if (typeAsString.EndsWith("OracleClient")) return Variant.Oracle;
+            if (typeAsString.EndsWith("SqlConnection")) return Variant.SQLServer;
             return Variant.Unknown;
         }
 
