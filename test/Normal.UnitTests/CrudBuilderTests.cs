@@ -82,6 +82,23 @@ namespace Normal.UnitTests
             Assert.Equal("USB missile launcher (Green)", result.StockItemName);
         }
 
+        [Fact]
+        public async Task ShouldSelectFromStockItemsWithWhereClause()
+        {
+            //Given
+            var database = _postgresDatabase;
+
+            //When
+            var result = await database.SelectAsync<StockItemAnnotated>(_ =>
+                _.Where("stock_item_name").EqualTo("USB missile launcher (Green)")
+            ).FirstOrDefaultAsync();
+
+            //Then
+            Assert.NotNull(result);
+            Assert.Equal(1, result.StockItemID);
+            Assert.Equal("USB missile launcher (Green)", result.StockItemName);
+        }
+
         // [Fact]
         // public async Task ShouldSelectFromStockItemsWithParameters()
         // {
