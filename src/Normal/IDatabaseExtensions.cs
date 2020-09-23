@@ -21,7 +21,20 @@ namespace Normal
             return await database.Select<T>().ToEnumerableAsync<T>(cancellationToken);
         }
 
-        public static async Task<T> SelectAsync<T>(this IDatabase database, object id, CancellationToken cancellationToken = default)
+        public static async Task<IEnumerable<T>> SelectAsync<T>(
+            this IDatabase database,
+            Action<ISelectBuilder> builderCallback,
+            CancellationToken cancellationToken = default)
+        {
+            var selectBuilder = database.Select<T>();
+            builderCallback(selectBuilder);
+            return await selectBuilder.ToEnumerableAsync<T>(cancellationToken);
+        }
+
+        public static async Task<T> SelectAsync<T>(
+            this IDatabase database,
+            object id,
+            CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
             return await database.Select<T>()
@@ -34,7 +47,10 @@ namespace Normal
             return new InsertBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<T> InsertAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
+        public static Task<T> InsertAsync<T>(
+            this IDatabase database,
+            T model,
+            CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
             var primaryKey = table.PrimaryKey;
@@ -80,7 +96,10 @@ namespace Normal
             return new UpdateBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<int> UpdateAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
+        public static Task<int> UpdateAsync<T>(
+            this IDatabase database,
+            T model,
+            CancellationToken cancellationToken = default)
         {
             var table = new Table(typeof(T));
             var columns = table.Columns.ToList();
@@ -113,20 +132,24 @@ namespace Normal
             return database.CreateCommand(file);
         }
 
-        public static IDbCommandBuilder CreateCommandFromResource(this IDatabase database, string resourceName, Assembly inputAssembly = default, Encoding encoding = default)
+        public static IDbCommandBuilder CreateCommandFromResource(
+            this IDatabase database,
+            string resourceName,
+            Assembly inputAssembly = default,
+            Encoding encoding = default)
         {
-            encoding = encoding ?? Encoding.Default;
-            using (var stream = FindResourceFromAssemblies(resourceName, inputAssembly, Assembly.GetCallingAssembly(), Assembly.GetEntryAssembly()))
+            encoding ??= Encoding.Default;
+            using var stream = FindResourceFromAssemblies(
+                resourceName,
+                inputAssembly,
+                Assembly.GetCallingAssembly(),
+                Assembly.GetEntryAssembly());
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    throw new InvalidOperationException("Could not find resource named: " + resourceName);
-                }
-                using (var reader = new StreamReader(stream, encoding))
-                {
-                    return database.CreateCommand(reader.ReadToEnd());
-                }
+                throw new InvalidOperationException("Could not find resource named: " + resourceName);
             }
+            using var reader = new StreamReader(stream, encoding);
+            return database.CreateCommand(reader.ReadToEnd());
         }
 
         private static Stream FindResourceFromAssemblies(string resourceName, params Assembly[] inputAssemblies)
