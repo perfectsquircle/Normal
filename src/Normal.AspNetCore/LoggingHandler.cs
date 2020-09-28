@@ -15,7 +15,7 @@ namespace Normal
             _logger = logger;
         }
 
-        public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             var rowsAffected = 0;
             var stopwatch = new Stopwatch();
@@ -33,7 +33,7 @@ namespace Normal
             }
         }
 
-        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -50,7 +50,7 @@ namespace Normal
             }
         }
 
-        public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<T> ExecuteScalarAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             T result = default(T);
             var stopwatch = new Stopwatch();

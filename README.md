@@ -176,7 +176,7 @@ Normal is extensible, and you can write your own middleware!
 ```csharp
 public class AwesomeHandler : DelegatingHandler
 {
-    public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before non-query
         var rowsAffected = await InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
@@ -184,7 +184,7 @@ public class AwesomeHandler : DelegatingHandler
         return rowsAffected;
     }
 
-    public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+    public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before query
         var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
@@ -192,7 +192,7 @@ public class AwesomeHandler : DelegatingHandler
         return results;
     }
 
-    public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+    public override async Task<T> ExecuteScalarAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before scalar
         var result = await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
