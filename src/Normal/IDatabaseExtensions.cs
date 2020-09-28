@@ -36,7 +36,7 @@ namespace Normal
             object id,
             CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             return await database.Select<T>()
                 .Where(table.PrimaryKey.Name).EqualTo(id)
                 .FirstOrDefaultAsync<T>(cancellationToken);
@@ -52,7 +52,7 @@ namespace Normal
             T model,
             CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             var primaryKey = table.PrimaryKey;
             var columns = table.Columns;
             var columnsWithoutPrimaryKey = columns.Where(c => !c.IsPrimaryKey);
@@ -101,7 +101,7 @@ namespace Normal
             T model,
             CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             var columns = table.Columns.ToList();
             var primaryKey = table.PrimaryKey;
             columns.Remove(primaryKey);
@@ -118,7 +118,7 @@ namespace Normal
 
         public static Task<int> DeleteAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             var primaryKey = table.PrimaryKey;
             return database.DeleteFrom(table.Name)
                 .Where(primaryKey.Name).EqualTo(primaryKey.GetValue(model))
@@ -175,7 +175,7 @@ namespace Normal
         // TODO: make this public, and return an ISelectBuilder with a Generic type?
         private static ISelectBuilder Select<T>(this IDatabase database)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             return database.Select(table.Columns.Select(c => c.Name).ToArray()).From(table.Name);
         }
     }

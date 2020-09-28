@@ -27,7 +27,7 @@ namespace Normal.UnitTests
         {
             //Given
             _dataRecord.Setup(dr => dr.GetValue(0)).Returns(columnValue);
-            var columnReader = Member.GetColumnReader<T>(columnValue.GetType(), 0);
+            var columnReader = MemberMatch.GetColumnReader<T>(columnValue.GetType(), 0);
 
             //When
             var result = columnReader(_dataRecord.Object);
@@ -40,7 +40,7 @@ namespace Normal.UnitTests
         public void ShouldMapToEnum()
         {
             _dataRecord.Setup(dr => dr.GetValue(0)).Returns(1);
-            var columnReader = Member.GetColumnReader<TheEnum>(typeof(int), 0);
+            var columnReader = MemberMatch.GetColumnReader<TheEnum>(typeof(int), 0);
 
             //When
             var result = columnReader(_dataRecord.Object);
@@ -53,7 +53,7 @@ namespace Normal.UnitTests
         public void ShouldMapToEnumFromString()
         {
             _dataRecord.Setup(dr => dr.GetString(0)).Returns("bar");
-            var columnReader = Member.GetColumnReader<TheEnum>(typeof(string), 0);
+            var columnReader = MemberMatch.GetColumnReader<TheEnum>(typeof(string), 0);
 
             //When
             var result = columnReader(_dataRecord.Object);
@@ -69,7 +69,7 @@ namespace Normal.UnitTests
         {
             //Given
             _dataRecord.Setup(dr => dr.GetValue(0)).Returns(sourceObject);
-            var columnReader = Member.GetColumnReader<T>(sourceObject.GetType(), 0);
+            var columnReader = MemberMatch.GetColumnReader<T>(sourceObject.GetType(), 0);
 
             //When
             var result = columnReader(_dataRecord.Object);
@@ -85,7 +85,7 @@ namespace Normal.UnitTests
         {
             //Given
             _dataRecord.Setup(dr => dr.GetValue(0)).Returns(sourceObject);
-            var columnReader = Member.GetColumnReader<T>(sourceObject.GetType(), 0);
+            var columnReader = MemberMatch.GetColumnReader<T>(sourceObject.GetType(), 0);
 
             //When
             var result = columnReader.Invoke(_dataRecord.Object);

@@ -1,26 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using static System.Linq.Expressions.Expression;
 
 namespace Normal
 {
-    internal sealed class Member
+    internal class Member
     {
-        private static readonly MethodInfo _dataRecordIsDbNull = typeof(IDataRecord).GetMethod("IsDBNull", new[] { typeof(int) });
-        private static readonly MethodInfo _dataRecordGetValue = typeof(IDataRecord).GetMethod("GetValue", new[] { typeof(int) });
-        private static readonly MethodInfo _dataRecordGetString = typeof(IDataRecord).GetMethod("GetString", new[] { typeof(int) });
-        private static readonly MethodInfo _enumParse = typeof(Enum).GetMethod("Parse", new[] { typeof(Type), typeof(string), typeof(bool) });
-        private static readonly MethodInfo _covertChangeType = typeof(Convert).GetMethod("ChangeType", new[] { typeof(object), typeof(Type) });
-        private readonly Delegate _getValue;
+        private Delegate _getValue;
 
-        private Member(MemberInfo memberInfo)
+        protected Member(MemberInfo memberInfo)
         {
             MemberInfo = memberInfo;
-            _getValue = CreateGetValue(memberInfo);
 
             if (memberInfo is FieldInfo)
             {
@@ -41,7 +33,7 @@ namespace Normal
         }
 
         public MemberInfo MemberInfo { get; }
-        public string Name { get; }
+        public virtual string Name { get; }
         public Type Type { get; }
         public bool CanWrite { get; }
         public bool CanRead { get; }
@@ -69,57 +61,23 @@ namespace Normal
 
         public object GetValue(object target)
         {
+            _getValue ??= CreateGetValue(MemberInfo);
             return _getValue.DynamicInvoke(target);
         }
 
-        public Expression GetColumnReader(ParameterExpression dataRecord, Type columnType, int columnIndex)
+        public override bool Equals(object obj)
         {
-            return GetColumnReader(dataRecord, columnType, columnIndex, Type);
+            return obj is Member member &&
+                   Name == member.Name &&
+                   EqualityComparer<Type>.Default.Equals(Type, member.Type);
         }
 
-        public static Func<IDataRecord, TMember> GetColumnReader<TMember>(Type columnType, int columnIndex)
+        public override int GetHashCode()
         {
-            var dataRecordParameter = Parameter(typeof(IDataRecord), "dataRecord");
-            var columnReaderExpression = GetColumnReader(dataRecordParameter, columnType, columnIndex, typeof(TMember));
-            var lambda = Lambda<Func<IDataRecord, TMember>>(columnReaderExpression, false, dataRecordParameter);
-            return lambda.Compile();
-        }
-
-        public static Expression GetColumnReader(ParameterExpression dataRecord, Type columnType, int columnIndex, Type memberType)
-        {
-            var columnIndexConstant = Constant(columnIndex);
-            var getValueCall = Call(dataRecord, _dataRecordGetValue, columnIndexConstant);
-
-            Expression getColumnValue;
-            if (columnType == memberType || memberType.IsAssignableFrom(columnType))
-            {
-                // Convert(dataRecord.getValue(i), propertyType)
-                getColumnValue = Convert(getValueCall, memberType);
-            }
-            else if (memberType.IsEnum)
-            {
-                if (columnType == typeof(string))
-                {
-                    // Enum.Parse(propertyType, dataRecord.GetString(columnIndex), true);
-                    var enumParseCall = Call(_enumParse, Constant(memberType), Call(dataRecord, _dataRecordGetString, columnIndexConstant), Constant(true));
-                    getColumnValue = Convert(enumParseCall, memberType);
-                }
-                else
-                {
-                    // Convert(dataRecord.getValue(i), propertyType)
-                    getColumnValue = Convert(getValueCall, memberType);
-                }
-            }
-            else
-            {
-                // Convert.ChangeType(dataRecord[columnIndex], propertyType);
-                var changeTypeCall = Call(_covertChangeType, getValueCall, Constant(memberType));
-                getColumnValue = Convert(changeTypeCall, memberType);
-            }
-
-            var isDbNullCall = Call(dataRecord, _dataRecordIsDbNull, columnIndexConstant);
-            var condition = Condition(isDbNullCall, Default(memberType), getColumnValue);
-            return condition;
+            int hashCode = 79417382;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Type>.Default.GetHashCode(Type);
+            return hashCode;
         }
 
         private static Delegate CreateGetValue(MemberInfo memberInfo)
@@ -130,11 +88,5 @@ namespace Normal
             return lambda.Compile();
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is Member member &&
-                   Name == member.Name &&
-                   EqualityComparer<Type>.Default.Equals(Type, member.Type);
-        }
     }
 }

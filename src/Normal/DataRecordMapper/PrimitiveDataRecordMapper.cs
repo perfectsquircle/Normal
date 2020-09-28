@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using static System.Linq.Expressions.Expression;
 
 namespace Normal
 {
@@ -13,7 +12,7 @@ namespace Normal
         {
             if (_columnReader == null)
             {
-                _columnReader = Member.GetColumnReader<T>(dataRecord.GetFieldType(_columnIndex), _columnIndex);
+                _columnReader = MemberMatch.GetColumnReader<T>(dataRecord.GetFieldType(_columnIndex), _columnIndex);
             }
             return _columnReader(dataRecord);
         }

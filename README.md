@@ -119,6 +119,9 @@ public class StockItem
 
     [Column("supplier_id")]
     public int SupplierId { get; set; }
+
+    [NotMapped]
+    public string ComputedProperty { get; set; }
 }
 
 // SELECT all rows from stock_items and map them to a list of StockItem
@@ -126,6 +129,11 @@ var stockItems = await database.SelectAsync<StockItem>();
 
 // SELECT the row where stock_item_id = 1 and map it to a StockItem (or null.)
 var stockItem = await database.SelectAsync<StockItem>(1);
+
+// SELECT the rows where stock_item_name = "USB missile launcher (Green)" and map it to a list of StockItem
+var results = await database.SelectAsync<StockItemAnnotated>(_ =>
+    _.Where("stock_item_name").EqualTo("USB missile launcher (Green)")
+);
 
 // INSERT a row into stock_items, using the fields on the stockItem model.
 var rowsAffected = await database.InsertAsync<StockItem>(stockItem);

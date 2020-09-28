@@ -1,29 +1,40 @@
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Normal
 {
-    internal class Column
+    internal class Column : Member
     {
-        private readonly Member _member;
-        public string Name => _member.GetAttribute<ColumnAttribute>()?.Name ?? _member.Name;
-        public bool IsPrimaryKey => _member.GetAttribute<PrimaryKeyAttribute>() != null;
-        public bool IsAutoIncrement => _member.GetAttribute<PrimaryKeyAttribute>()?.IsAutoIncrement ?? false;
+        public override string Name => GetAttribute<ColumnAttribute>()?.Name ?? base.Name;
+        public bool IsPrimaryKey => GetAttribute<PrimaryKeyAttribute>() != null;
+        public bool IsAutoIncrement => GetAttribute<PrimaryKeyAttribute>()?.IsAutoIncrement ?? false;
+        public bool IsMapped => GetAttribute<NotMappedAttribute>() == null;
 
-        public Column(Member member)
+        public Column(MemberInfo memberInfo)
+            : base(memberInfo)
         {
-            _member = member;
-        }
-
-        public object GetValue(object target)
-        {
-            return _member.GetValue(target);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is Column column &&
-                   EqualityComparer<Member>.Default.Equals(_member, column._member);
+            return obj is Column &&
+                   base.Equals(obj);
         }
+
+        public static IEnumerable<Column> GetColumns(Type targetType)
+        {
+            return targetType
+                .GetFields()
+                .Select(f => new Column(f)).Concat(
+                    targetType
+                        .GetProperties()
+                        .Select(p => new Column(p))
+                );
+        }
+
+        public override int GetHashCode() => base.GetHashCode();
     }
 }

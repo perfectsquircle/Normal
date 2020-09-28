@@ -72,5 +72,14 @@ namespace Normal.UnitTests.Fixtures
 
         [Column("last_edited_by")] // int4 NOT NULL,
         public int LastEditedBy { get; set; }
+
+        [NotMapped]
+        public string PublicExpressionBodiedMember => InternalComments + Tags;
+
+        [NotMapped]
+        public string PublicField;
+
+        [NotMapped]
+        public string PublicProperty { get; set; }
     }
 }
