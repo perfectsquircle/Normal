@@ -25,7 +25,7 @@ namespace Normal
             {
                 var constructor = ReflectionHelper.GetConstructor(typeof(T), arguments);
                 CreateConnection = () => (T)constructor.Invoke(arguments);
-                Variant = Database.DetermineVariant(typeof(T));
+                Variant = DetermineVariant(typeof(T));
                 return this;
             }
 

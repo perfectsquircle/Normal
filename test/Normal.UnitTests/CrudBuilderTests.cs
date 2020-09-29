@@ -11,8 +11,8 @@ namespace Normal.UnitTests
 {
     public class CrudBuilderTests
     {
-        private Database _postgresDatabase;
-        private Database _sqlServerDatabase;
+        private readonly Database _postgresDatabase;
+        private readonly Database _sqlServerDatabase;
 
         public CrudBuilderTests()
         {
@@ -147,14 +147,12 @@ namespace Normal.UnitTests
             };
 
             //When
-            using (var transaction = database.BeginTransaction())
-            {
-                var result = await database.InsertAsync<StockItemAnnotated>(stockItem);
-                transaction.Rollback();
+            using var transaction = database.BeginTransaction();
+            var result = await database.InsertAsync<StockItemAnnotated>(stockItem);
+            transaction.Rollback();
 
-                //Then
-                Assert.NotEqual(0, result.StockItemID);
-            }
+            //Then
+            Assert.NotEqual(0, result.StockItemID);
         }
 
         [Fact]
@@ -181,14 +179,12 @@ namespace Normal.UnitTests
             };
 
             //When
-            using (var transaction = database.BeginTransaction())
-            {
-                var rowsAffected = await database.UpdateAsync(stockItem);
-                transaction.Rollback();
+            using var transaction = database.BeginTransaction();
+            var rowsAffected = await database.UpdateAsync(stockItem);
+            transaction.Rollback();
 
-                //Then
-                Assert.Equal(1, rowsAffected);
-            }
+            //Then
+            Assert.Equal(1, rowsAffected);
         }
 
         [Fact]
@@ -202,14 +198,12 @@ namespace Normal.UnitTests
             };
 
             //When
-            using (var transaction = database.BeginTransaction())
-            {
-                var rowsAffected = await database.DeleteAsync<SpecialDeal>(specialDeal);
-                transaction.Rollback();
+            using var transaction = database.BeginTransaction();
+            var rowsAffected = await database.DeleteAsync<SpecialDeal>(specialDeal);
+            transaction.Rollback();
 
-                //Then
-                Assert.Equal(1, rowsAffected);
-            }
+            //Then
+            Assert.Equal(1, rowsAffected);
         }
     }
 }

@@ -8,8 +8,8 @@ namespace Normal
 {
     internal abstract class StatementBuilder : IStatementBuilder
     {
-        private IList<string> _lines = new List<string>();
-        private IDictionary<string, object> _parameters = new Dictionary<string, object>();
+        private readonly IList<string> _lines = new List<string>();
+        private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
         protected IDatabase _database;
 
         public string Build()

@@ -9,7 +9,7 @@ namespace Normal.UnitTests
 {
     public class SelectBuilderTests
     {
-        private static string _postgresConnection = "Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal";
+        private static readonly string _postgresConnection = "Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal";
 
         [Fact]
         public void ShouldCreateSelectBuilder()
@@ -174,7 +174,7 @@ LIMIT 100";
         }
 
         [Fact]
-        public async Task SingleOrDefualtAsync()
+        public async Task SingleOrDefaultAsync()
         {
             //Given
             var database = Database.WithConnection<NpgsqlConnection>(_postgresConnection);

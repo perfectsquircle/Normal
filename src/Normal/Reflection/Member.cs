@@ -8,7 +8,7 @@ namespace Normal
 {
     internal class Member
     {
-        private Delegate _getValue;
+        private readonly Lazy<Delegate> _getValue;
 
         protected Member(MemberInfo memberInfo)
         {
@@ -30,6 +30,8 @@ namespace Normal
                 CanWrite = p.CanWrite;
                 CanRead = p.CanRead;
             }
+
+            _getValue = new Lazy<Delegate>(() => CreateGetValue(memberInfo));
         }
 
         public MemberInfo MemberInfo { get; }
@@ -61,8 +63,7 @@ namespace Normal
 
         public object GetValue(object target)
         {
-            _getValue ??= CreateGetValue(MemberInfo);
-            return _getValue.DynamicInvoke(target);
+            return _getValue.Value.DynamicInvoke(target);
         }
 
         public override bool Equals(object obj)

@@ -8,8 +8,8 @@ namespace Normal
 {
     public partial class Database : IDatabase
     {
-        private CreateConnection _createConnection;
-        private IHandler _handler;
+        private readonly CreateConnection _createConnection;
+        private readonly IHandler _handler;
         private readonly AsyncLocal<Transaction> _currentTransaction;
         private readonly SemaphoreSlim _semaphore;
         internal Transaction CurrentTransaction
@@ -139,8 +139,7 @@ namespace Normal
             {
                 throw new InvalidOperationException("Connection is null");
             }
-            var dbConnection = connection as DbConnection;
-            if (dbConnection == null)
+            if (!(connection is DbConnection dbConnection))
             {
                 throw new NotSupportedException("Connection must be DbConnection");
             }

@@ -52,7 +52,7 @@ namespace Normal
 
         public override async Task<T> ExecuteScalarAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            T result = default(T);
+            T result = default;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             try

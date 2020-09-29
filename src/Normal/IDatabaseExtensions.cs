@@ -127,7 +127,7 @@ namespace Normal
 
         public static ICommandBuilder CreateCommandFromFile(this IDatabase database, string fileName, Encoding encoding = default)
         {
-            encoding = encoding ?? Encoding.Default;
+            encoding ??= Encoding.Default;
             var file = File.ReadAllText(fileName, encoding);
             return database.CreateCommand(file);
         }
