@@ -45,14 +45,14 @@ namespace Normal
         public async Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             using var connection = await _database.GetOpenConnectionAsync(cancellationToken);
-            using var command = (commandBuilder as CommandBuilder).Build(connection);
+            using var command = commandBuilder.Build(connection);
             return await command.ExecuteNonQueryAsync(cancellationToken);
         }
 
         public async Task<T> ExecuteScalarAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             using var connection = await _database.GetOpenConnectionAsync(cancellationToken);
-            using var command = (commandBuilder as CommandBuilder).Build(connection);
+            using var command = commandBuilder.Build(connection);
             return (T)await command.ExecuteScalarAsync(cancellationToken);
         }
 
