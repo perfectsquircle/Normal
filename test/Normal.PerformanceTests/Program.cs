@@ -5,9 +5,9 @@ namespace Normal.PerformanceTests
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var summary = BenchmarkRunner.Run<NormalBenchmark>();
+            _ = BenchmarkRunner.Run<NormalBenchmark>();
         }
     }
 }

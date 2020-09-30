@@ -9,63 +9,40 @@ namespace Normal
     internal class Table
     {
         private static readonly IDictionary<Type, Table> _cache = new ConcurrentDictionary<Type, Table>();
-        private readonly Type _targetType;
-        private string _tableName;
-        private Column _primaryKeyColumn;
-        private IEnumerable<Column> _columns;
+        private readonly Lazy<string> _tableName;
+        private readonly Lazy<Column> _primaryKeyColumn;
+        private readonly Lazy<IEnumerable<Column>> _columns;
 
         private Table(Type targetType)
         {
-            _targetType = targetType;
+            _tableName = new Lazy<string>(() => targetType.GetCustomAttribute<TableAttribute>()?.Name
+                         ?? targetType.Name);
+            _primaryKeyColumn = new Lazy<Column>(GetPrimaryKey);
+            _columns = new Lazy<IEnumerable<Column>>(() => Column
+                        .GetColumns(targetType)
+                        .Where(m => m.CanRead
+                            && m.GetAttribute<NotMappedAttribute>() == null));
         }
 
         public string Name
-        {
-            get
-            {
-                lock (this)
-                {
-                    _tableName ??= _targetType.GetCustomAttribute<TableAttribute>()?.Name
-                         ?? _targetType.Name;
-                    return _tableName;
-                }
-            }
-        }
-
-        public IEnumerable<Column> Columns
-        {
-            get
-            {
-                lock (this)
-                {
-                    _columns ??= Column
-                        .GetColumns(_targetType)
-                        .Where(m => m.CanRead
-                            && m.GetAttribute<NotMappedAttribute>() == null);
-                    return _columns;
-                }
-            }
-        }
+            => _tableName.Value;
 
         public Column PrimaryKey
-        {
-            get
-            {
-                lock (this)
-                {
-                    _primaryKeyColumn ??= GetPrimaryKey();
-                    return _primaryKeyColumn;
-                }
-            }
-        }
+            => _primaryKeyColumn.Value;
+
+        public IEnumerable<Column> Columns
+            => _columns.Value;
 
         internal static Table FromType(Type type)
         {
-            if (_cache.ContainsKey(type))
+            lock (_cache)
             {
-                return _cache[type];
+                if (_cache.ContainsKey(type))
+                {
+                    return _cache[type];
+                }
+                return _cache[type] = new Table(type);
             }
-            return _cache[type] = new Table(type);
         }
 
         private Column GetPrimaryKey()

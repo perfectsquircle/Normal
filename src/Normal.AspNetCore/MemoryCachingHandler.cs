@@ -76,16 +76,14 @@ namespace Normal
 
         private static string CalculateCacheKey(ICommandBuilder command)
         {
-            using (var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
+            using var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            md5.AppendData(Encoding.UTF8.GetBytes(command.CommandText));
+            foreach (var param in command.Parameters)
             {
-                md5.AppendData(Encoding.UTF8.GetBytes(command.CommandText));
-                foreach (var param in command.Parameters)
-                {
-                    md5.AppendData(Encoding.UTF8.GetBytes(param.Key));
-                    md5.AppendData(Encoding.UTF8.GetBytes(Convert.ToString(param.Value)));
-                }
-                return Convert.ToBase64String(md5.GetHashAndReset());
+                md5.AppendData(Encoding.UTF8.GetBytes(param.Key));
+                md5.AppendData(Encoding.UTF8.GetBytes(Convert.ToString(param.Value)));
             }
+            return Convert.ToBase64String(md5.GetHashAndReset());
         }
     }
 }

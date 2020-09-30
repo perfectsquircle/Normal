@@ -4,7 +4,7 @@ namespace Normal
 {
     internal class AdHocDataRecordMapper<T> : IDataRecordMapper<T>
     {
-        private MapDataRecord<T> _mapDataRecord;
+        private readonly MapDataRecord<T> _mapDataRecord;
 
         public AdHocDataRecordMapper(MapDataRecord<T> mapDataRecord)
         {

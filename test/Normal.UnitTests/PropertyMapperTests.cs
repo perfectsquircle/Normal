@@ -33,6 +33,7 @@ namespace Normal.UnitTests
             var result = columnReader(_dataRecord.Object);
 
             //Then
+            Assert.IsType<T>(instance);
             Assert.Equal(expectedValue, result);
         }
 
@@ -75,7 +76,7 @@ namespace Normal.UnitTests
             var result = columnReader(_dataRecord.Object);
 
             //Then
-            Assert.NotNull(result);
+            Assert.IsType<T>(destType);
             Assert.IsType<T>(result);
         }
 
@@ -91,7 +92,7 @@ namespace Normal.UnitTests
             var result = columnReader.Invoke(_dataRecord.Object);
 
             //Then
-            Assert.NotNull(result);
+            Assert.IsType<T>(destType);
             Assert.IsType<T>(result);
             Assert.Equal(expectedValue, result);
         }

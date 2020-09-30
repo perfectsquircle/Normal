@@ -11,8 +11,8 @@ namespace Normal.UnitTests
 {
     public class WideWorldImportersTests
     {
-        private Database _postgresDatabase;
-        private Database _sqlServerDatabase;
+        private readonly Database _postgresDatabase;
+        private readonly Database _sqlServerDatabase;
 
         public WideWorldImportersTests()
         {
@@ -210,7 +210,7 @@ namespace Normal.UnitTests
             //Given
             var database = _postgresDatabase;
 
-            Func<int, Task<double>> getResults = async (supplierId) =>
+            async Task<double> getResults(int supplierId)
             {
                 return await database
                     .CreateCommand("select random()")
@@ -235,7 +235,7 @@ namespace Normal.UnitTests
             //Given
             var database = _postgresDatabase;
 
-            Func<int, Task<double>> getResults = async (supplierId) =>
+            async Task<double> getResults(int supplierId)
             {
                 return await database
                     .CreateCommand("select random()")
