@@ -59,7 +59,7 @@ namespace Normal
             return parameterName;
         }
 
-        protected IDbCommandBuilder ToCommand()
+        protected ICommandBuilder ToCommand()
         {
             if (_database == null)
             {

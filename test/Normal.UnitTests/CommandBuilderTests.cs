@@ -5,15 +5,15 @@ using Xunit;
 
 namespace Normal.UnitTests
 {
-    public class DbCommandBuilderTests : IDisposable
+    public class CommandBuilderTests : IDisposable
     {
-        private readonly DbConnectionWrapper _connection;
+        private readonly Connection _connection;
 
-        public DbCommandBuilderTests()
+        public CommandBuilderTests()
         {
             var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=postgres;Password=normal");
             connection.Open();
-            _connection = new DbConnectionWrapper(connection);
+            _connection = new Connection(connection);
         }
 
         [Fact]
@@ -22,7 +22,7 @@ namespace Normal.UnitTests
             //Given
 
             //When
-            var builder = new DbCommandBuilder();
+            var builder = new CommandBuilder();
 
             //Then
             Assert.NotNull(builder);
@@ -34,7 +34,7 @@ namespace Normal.UnitTests
         public void ShouldBeBuildable(string commandText, int commandTimeout, CommandType commandType)
         {
             //Given
-            var builder = new DbCommandBuilder()
+            var builder = new CommandBuilder()
                 .WithCommandText(commandText)
                 .WithCommandTimeout(commandTimeout)
                 .WithCommandType(commandType)
@@ -46,7 +46,7 @@ namespace Normal.UnitTests
                 ;
 
             //When
-            var command = (builder as DbCommandBuilder).Build(_connection);
+            var command = (builder as CommandBuilder).Build(_connection);
 
             //Then
             Assert.NotNull(command);

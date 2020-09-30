@@ -125,14 +125,14 @@ namespace Normal
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
-        public static IDbCommandBuilder CreateCommandFromFile(this IDatabase database, string fileName, Encoding encoding = default)
+        public static ICommandBuilder CreateCommandFromFile(this IDatabase database, string fileName, Encoding encoding = default)
         {
             encoding = encoding ?? Encoding.Default;
             var file = File.ReadAllText(fileName, encoding);
             return database.CreateCommand(file);
         }
 
-        public static IDbCommandBuilder CreateCommandFromResource(
+        public static ICommandBuilder CreateCommandFromResource(
             this IDatabase database,
             string resourceName,
             Assembly inputAssembly = default,

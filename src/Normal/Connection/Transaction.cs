@@ -3,15 +3,15 @@ using System.Data.Common;
 
 namespace Normal
 {
-    internal class DbTransactionWrapper : IDbTransaction
+    internal class Transaction : IDbTransaction
     {
-        private DbConnectionWrapper _connection;
+        private Connection _connection;
         private event OnDispose _onDispose;
         public IDbConnection Connection => _connection?.DbConnection;
         private IDbTransaction DbTransaction => _connection?.DbTransaction;
         public IsolationLevel IsolationLevel { get; private set; }
         internal bool Enlisted => _connection != null;
-        internal IDbConnectionWrapper ConnectionWrapper => _connection;
+        internal IConnection ConnectionWrapper => _connection;
 
 
         public void Commit() => DbTransaction?.Commit();
@@ -25,13 +25,13 @@ namespace Normal
             _connection?.Dispose(true);
         }
 
-        internal DbTransactionWrapper WithIsolationLevel(IsolationLevel isolationLevel)
+        internal Transaction WithIsolationLevel(IsolationLevel isolationLevel)
         {
             IsolationLevel = isolationLevel;
             return this;
         }
 
-        internal DbTransactionWrapper OnDispose(OnDispose onDispose)
+        internal Transaction OnDispose(OnDispose onDispose)
         {
             _onDispose += onDispose;
             return this;
@@ -39,7 +39,7 @@ namespace Normal
 
         internal void Enlist(DbConnection dbConnection)
         {
-            _connection = new DbConnectionWrapper(dbConnection, dbConnection.BeginTransaction(IsolationLevel));
+            _connection = new Connection(dbConnection, dbConnection.BeginTransaction(IsolationLevel));
         }
     }
 

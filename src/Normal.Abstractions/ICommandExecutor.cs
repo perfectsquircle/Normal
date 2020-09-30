@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    public interface IDbCommandExecutor
+    public interface ICommandExecutor
     {
         Task<IEnumerable<T>> ToEnumerableAsync<T>(CancellationToken cancellationToken = default);
         Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default);
