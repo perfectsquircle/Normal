@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    public interface IStatementBuilder : ICommandExecutor
+    public interface IStatementBuilder
     {
         string Build();
     }

@@ -38,12 +38,12 @@ namespace Normal.UnitTests
             var database = _postgresDatabase;
 
             //When
-            var results = (await database.SelectAsync<StockItemAnnotated>()).ToList();
+            var results = await database.SelectAll<StockItemAnnotated>().ToListAsync();
 
             //Then
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            Assert.Equal(227, results.Count);
+            Assert.Equal(227, results.Count());
             var first = results.First();
             Assert.Equal(1, first.StockItemID);
             Assert.Equal("USB missile launcher (Green)", first.StockItemName);
@@ -56,12 +56,12 @@ namespace Normal.UnitTests
             var database = _sqlServerDatabase;
 
             //When
-            var results = (await database.SelectAsync<StockItem>()).ToList();
+            var results = await database.SelectAll<StockItem>().ToListAsync();
 
             //Then
             Assert.NotNull(results);
             Assert.NotEmpty(results);
-            Assert.Equal(227, results.Count);
+            Assert.Equal(227, results.Count());
             var first = results.First();
             Assert.Equal(1, first.StockItemID);
             Assert.Equal("USB missile launcher (Green)", first.StockItemName);
@@ -89,9 +89,11 @@ namespace Normal.UnitTests
             var database = _postgresDatabase;
 
             //When
-            var result = await database.SelectAsync<StockItemAnnotated>(_ =>
-                _.Where("stock_item_name").EqualTo("USB missile launcher (Green)")
-            ).FirstOrDefaultAsync();
+            var result = await database
+                .SelectAll<StockItemAnnotated>()
+                .Where("stock_item_name").EqualTo("USB missile launcher (Green)")
+                .FirstOrDefaultAsync();
+
 
             //Then
             Assert.NotNull(result);
@@ -99,30 +101,30 @@ namespace Normal.UnitTests
             Assert.Equal("USB missile launcher (Green)", result.StockItemName);
         }
 
-        // [Fact]
-        // public async Task ShouldSelectFromStockItemsWithParameters()
-        // {
-        //     //Given
-        //     var database = _postgresDatabase;
+        [Fact]
+        public async Task ShouldSelectFromStockItemsWithParameters()
+        {
+            //Given
+            var database = _postgresDatabase;
 
-        //     //When
-        //     var results = await database
-        //         .Select<StockItemAnnotated>()
-        //         .Where("supplier_id").EqualTo(2)
-        //         .And("tax_rate").EqualTo(15.0)
-        //         .ToListAsync<StockItemAnnotated>();
+            //When
+            var results = await database
+                .SelectAll<StockItemAnnotated>()
+                .Where("supplier_id").EqualTo(2)
+                .And("tax_rate").EqualTo(15.0)
+                .ToListAsync();
 
-        //     //Then
-        //     Assert.NotNull(results);
-        //     Assert.NotEmpty(results);
-        //     Assert.Equal(3, results.Count);
-        //     var first = results.First();
-        //     Assert.Equal(150, first.StockItemID);
-        //     Assert.Equal("Pack of 12 action figures (variety)", first.StockItemName);
-        //     var last = results.Last();
-        //     Assert.Equal(152, last.StockItemID);
-        //     Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
-        // }
+            //Then
+            Assert.NotNull(results);
+            Assert.NotEmpty(results);
+            Assert.Equal(3, results.Count());
+            var first = results.First();
+            Assert.Equal(150, first.StockItemID);
+            Assert.Equal("Pack of 12 action figures (variety)", first.StockItemName);
+            var last = results.Last();
+            Assert.Equal(152, last.StockItemID);
+            Assert.Equal("Pack of 12 action figures (female)", last.StockItemName);
+        }
 
         [Fact]
         public async Task ShouldInsertIntoStockItems()

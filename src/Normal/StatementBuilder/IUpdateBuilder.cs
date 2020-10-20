@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Normal
 {
-    public interface IUpdateBuilder : IStatementBuilder
+    public interface IUpdateBuilder : IStatementBuilder, ICommandExecutor
     {
         IConditionBuilder<IUpdateBuilder> Set(string columnName);
         IUpdateBuilder Set(object setBuilder);

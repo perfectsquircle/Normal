@@ -5,10 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.6.0]
+### Added
+- New SelectAll method that returns a typed SelectBuilder that is awaitable.
 ### Changed
 - Renamed DbCommandBuilder to CommandBuilder
 - Renamed DbTransactionWrapper to Transaction
 - Renamed DbConnectionWrapper to Connection
+### Removed
+- Removed SelectAsync override with a callback.
 
 ## [0.5.3]
 ### Added

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    internal abstract class StatementBuilder : IStatementBuilder
+    internal abstract class StatementBuilder : IStatementBuilder, ICommandExecutor
     {
         private readonly IList<string> _lines = new List<string>();
         private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
