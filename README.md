@@ -125,24 +125,24 @@ public class StockItem
 }
 
 // SELECT all rows from stock_items and map them to a list of StockItem
-var stockItems = await database.SelectAsync<StockItem>();
+var stockItems = await database.SelectAll<StockItem>().ToListAsync();
 
 // SELECT the row where stock_item_id = 1 and map it to a StockItem (or null.)
 var stockItem = await database.SelectAsync<StockItem>(1);
 
 // SELECT the rows where stock_item_name = "USB missile launcher (Green)" and map it to a list of StockItem
-var results = await database.SelectAsync<StockItemAnnotated>(_ =>
-    _.Where("stock_item_name").EqualTo("USB missile launcher (Green)")
-);
+var results = await database
+    .SelectAll<StockItem>()
+    .Where("stock_item_name").EqualTo("USB missile launcher (Green)");
 
 // INSERT a row into stock_items, using the fields on the stockItem model.
-var rowsAffected = await database.InsertAsync<StockItem>(stockItem);
+var insertedStockItem = await database.InsertAsync<StockItem>(stockItem);
 
 // INSERT a row in stock_items, using the fields on the stockItem model.
-var rowsAffected = await database.UpdateAsync<StockItem>(stockItem);
+var updatedStockItem = await database.UpdateAsync<StockItem>(stockItem);
 
 // DELETE a row from stock_items
-var rowsAffected = await database.DeleteAsync<StockItemAnnotated>(stockItem);
+var rowsAffected = await database.DeleteAsync<StockItem>(stockItem);
 ```
 
 ### Custom Commands
