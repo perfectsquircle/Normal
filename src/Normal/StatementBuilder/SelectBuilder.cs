@@ -178,8 +178,6 @@ namespace Normal
 
     internal partial class SelectBuilder<T> : ICommandExecutor<T>
     {
-        public Task<T> ExecuteScalarAsync(CancellationToken cancellationToken = default)
-            => ExecuteScalarAsync<T>(cancellationToken);
         public Task<T> FirstAsync(CancellationToken cancellationToken = default)
             => FirstAsync<T>(cancellationToken);
         public Task<T> FirstOrDefaultAsync(CancellationToken cancellationToken = default)

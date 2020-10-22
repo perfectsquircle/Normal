@@ -27,14 +27,6 @@ namespace Normal
             });
         }
 
-        public override async Task<T> ExecuteScalarAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
-        {
-            return await CacheOrNot(commandBuilder, async (buffer) =>
-            {
-                return await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
-            });
-        }
-
         public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             return await CacheOrNot(commandBuilder, async (buffer) =>

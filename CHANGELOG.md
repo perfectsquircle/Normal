@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed DbConnectionWrapper to Connection
 ### Removed
 - Removed SelectAsync override with a callback.
+- Remove ExecuteScalar methods.
 
 ## [0.5.3]
 ### Added

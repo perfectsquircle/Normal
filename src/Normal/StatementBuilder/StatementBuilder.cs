@@ -36,8 +36,6 @@ namespace Normal
             ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
         public Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) =>
              ToCommand().ExecuteNonQueryAsync(cancellationToken);
-        public Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default) =>
-            ToCommand().ExecuteScalarAsync<T>(cancellationToken);
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {

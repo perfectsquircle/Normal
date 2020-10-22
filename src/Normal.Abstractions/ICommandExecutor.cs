@@ -13,7 +13,6 @@ namespace Normal
         Task<T> SingleAsync<T>(CancellationToken cancellationToken = default);
         Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default);
         Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default);
-        Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default);
     }
 
     public interface ICommandExecutor<T>
@@ -25,6 +24,5 @@ namespace Normal
         Task<T> SingleAsync(CancellationToken cancellationToken = default);
         Task<T> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
         Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default);
-        Task<T> ExecuteScalarAsync(CancellationToken cancellationToken = default);
     }
 }

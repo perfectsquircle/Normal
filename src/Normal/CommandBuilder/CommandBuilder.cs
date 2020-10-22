@@ -141,10 +141,5 @@ namespace Normal
         {
             return await _handler.ExecuteNonQueryAsync(this, cancellationToken);
         }
-
-        public async Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default)
-        {
-            return await _handler.ExecuteScalarAsync<T>(this, cancellationToken);
-        }
     }
 }

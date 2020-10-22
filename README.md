@@ -191,14 +191,6 @@ public class AwesomeHandler : DelegatingHandler
         // Do stuff after query
         return results;
     }
-
-    public override async Task<T> ExecuteScalarAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
-    {
-        // Do stuff before scalar
-        var result = await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
-        // Do stuff after scalar
-        return result;
-    }
 }
 ```
 
