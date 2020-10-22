@@ -8,9 +8,7 @@ namespace Normal
 {
     internal class ClassDataRecordMapper<T> : IDataRecordMapper<T>
     {
-        private Type _targetType = typeof(T);
         Func<IDataRecord, T> _constructor;
-
 
         public T MapDataRecord(IDataRecord dataRecord)
         {
@@ -33,7 +31,8 @@ namespace Normal
 
         private static IEnumerable<MemberMatch> FindMatches(IDataRecord dataRecord)
         {
-            var members = Member.GetMembers(typeof(T))
+            var table = Table.FromType(typeof(T));
+            var members = table.Columns
                 .Where(m => m.CanWrite)
                 .ToList();
 
@@ -73,7 +72,7 @@ namespace Normal
 
             var propertyBindings = memberMatches.Select(m =>
             {
-                var columnReader = m.Member.GetColumnReader(dataRecord, m.ColumnType, m.ColumnIndex);
+                var columnReader = m.GetColumnReader(dataRecord);
 
                 return Bind(
                     m.Member.MemberInfo,
@@ -88,13 +87,6 @@ namespace Normal
             var lambda = Lambda<Func<IDataRecord, T>>(memberInitExpression, false, dataRecord);
 
             return lambda.Compile();
-        }
-
-        private class MemberMatch
-        {
-            public int ColumnIndex { get; set; }
-            public Type ColumnType { get; set; }
-            public Member Member { get; set; }
         }
     }
 }

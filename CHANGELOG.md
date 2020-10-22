@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0]
+### Added
+- New SelectAll method that returns a typed SelectBuilder that is awaitable.
+### Changed
+- Renamed DbCommandBuilder to CommandBuilder
+- Renamed DbTransactionWrapper to Transaction
+- Renamed DbConnectionWrapper to Connection
+### Removed
+- Removed SelectAsync override with a callback.
+- Remove ExecuteScalar methods.
+
+## [0.5.3]
+### Added
+- A \[NotMapped\] attribute to prevent a Property or Field from being mapped
+- Caching column details on Table class.
+
+## [0.5.2]
+### Added
+- A new SelectAsync override with a callback with the SelectBuilder
+
 ## [0.5.0]
 ### Changed
 - InsertAsync returns model just inserted instead of rows affected.

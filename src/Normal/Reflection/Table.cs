@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,64 +8,58 @@ namespace Normal
 {
     internal class Table
     {
-        private readonly Type _targetType;
+        private static readonly IDictionary<Type, Table> _cache = new ConcurrentDictionary<Type, Table>();
+        private readonly Lazy<string> _tableName;
+        private readonly Lazy<Column> _primaryKeyColumn;
+        private readonly Lazy<IEnumerable<Column>> _columns;
 
-        public Table(Type targetType)
+        private Table(Type targetType)
         {
-            _targetType = targetType;
+            _tableName = new Lazy<string>(() => targetType.GetCustomAttribute<TableAttribute>()?.Name
+                         ?? targetType.Name);
+            _primaryKeyColumn = new Lazy<Column>(GetPrimaryKey);
+            _columns = new Lazy<IEnumerable<Column>>(() => Column
+                        .GetColumns(targetType)
+                        .Where(m => m.CanRead
+                            && m.GetAttribute<NotMappedAttribute>() == null));
         }
 
         public string Name
-        {
-            get
-            {
-                var tableNameAttribute = _targetType.GetCustomAttribute<TableAttribute>();
-                var tableName = tableNameAttribute?.Name ?? _targetType.Name;
-                return tableName;
-            }
-        }
-
-        public IEnumerable<Column> Columns
-        {
-            get
-            {
-                return Member
-                    .GetMembers(_targetType)
-                    .Where(m => m.CanRead)
-                    .Select(m => new Column(m));
-            }
-        }
+            => _tableName.Value;
 
         public Column PrimaryKey
+            => _primaryKeyColumn.Value;
+
+        public IEnumerable<Column> Columns
+            => _columns.Value;
+
+        internal static Table FromType(Type type)
         {
-            get
+            lock (_cache)
             {
-                var primaryKeyMember = GetPrimaryKeyMember();
-                return new Column(primaryKeyMember);
+                if (_cache.ContainsKey(type))
+                {
+                    return _cache[type];
+                }
+                return _cache[type] = new Table(type);
             }
         }
 
-        private Member GetPrimaryKeyMember()
+        private Column GetPrimaryKey()
         {
-            var primaryKeyMember = Member
-                .GetMembers(_targetType)
+            var primaryKey = Columns
+                .FirstOrDefault(m => m.IsPrimaryKey);
+
+            if (primaryKey != null) return primaryKey;
+
+            primaryKey = Columns
                 .FirstOrDefault(m =>
-                {
-                    return m.GetAttribute<PrimaryKeyAttribute>() != null;
-                });
+                    string.Equals(m.Name, "id", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(m.Name, $"{Name}Id", StringComparison.OrdinalIgnoreCase));
 
-            if (primaryKeyMember == null)
-            {
-                primaryKeyMember = Member
-                    .GetMembers(_targetType)
-                    .FirstOrDefault(m => m.Name.ToLowerInvariant() == "id");
-                if (primaryKeyMember == null)
-                {
-                    throw new NotSupportedException("Could not determine primary key member.");
-                }
-            }
+            if (primaryKey != null) return primaryKey;
 
-            return primaryKeyMember;
+            throw new NotSupportedException("Could not determine primary key member.");
         }
     }
 }

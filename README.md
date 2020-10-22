@@ -119,22 +119,30 @@ public class StockItem
 
     [Column("supplier_id")]
     public int SupplierId { get; set; }
+
+    [NotMapped]
+    public string ComputedProperty { get; set; }
 }
 
 // SELECT all rows from stock_items and map them to a list of StockItem
-var stockItems = await database.SelectAsync<StockItem>();
+var stockItems = await database.SelectAll<StockItem>().ToListAsync();
 
 // SELECT the row where stock_item_id = 1 and map it to a StockItem (or null.)
 var stockItem = await database.SelectAsync<StockItem>(1);
 
+// SELECT the rows where stock_item_name = "USB missile launcher (Green)" and map it to a list of StockItem
+var results = await database
+    .SelectAll<StockItem>()
+    .Where("stock_item_name").EqualTo("USB missile launcher (Green)");
+
 // INSERT a row into stock_items, using the fields on the stockItem model.
-var rowsAffected = await database.InsertAsync<StockItem>(stockItem);
+var insertedStockItem = await database.InsertAsync<StockItem>(stockItem);
 
 // INSERT a row in stock_items, using the fields on the stockItem model.
-var rowsAffected = await database.UpdateAsync<StockItem>(stockItem);
+var updatedStockItem = await database.UpdateAsync<StockItem>(stockItem);
 
 // DELETE a row from stock_items
-var rowsAffected = await database.DeleteAsync<StockItemAnnotated>(stockItem);
+var rowsAffected = await database.DeleteAsync<StockItem>(stockItem);
 ```
 
 ### Custom Commands
@@ -168,7 +176,7 @@ Normal is extensible, and you can write your own middleware!
 ```csharp
 public class AwesomeHandler : DelegatingHandler
 {
-    public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+    public override async Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before non-query
         var rowsAffected = await InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
@@ -176,20 +184,12 @@ public class AwesomeHandler : DelegatingHandler
         return rowsAffected;
     }
 
-    public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+    public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
     {
         // Do stuff before query
         var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
         // Do stuff after query
         return results;
-    }
-
-    public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
-    {
-        // Do stuff before scalar
-        var result = await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
-        // Do stuff after scalar
-        return result;
     }
 }
 ```

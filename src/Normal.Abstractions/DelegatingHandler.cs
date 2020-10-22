@@ -7,8 +7,7 @@ namespace Normal
     public abstract class DelegatingHandler : IHandler
     {
         public IHandler InnerHandler { get; set; }
-        public abstract Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken);
-        public abstract Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken);
-        public abstract Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken);
+        public abstract Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken);
     }
 }

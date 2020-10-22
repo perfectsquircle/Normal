@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Normal
 {
-    internal abstract class StatementBuilder : IStatementBuilder
+    internal abstract class StatementBuilder : IStatementBuilder, ICommandExecutor
     {
-        private IList<string> _lines = new List<string>();
-        private IDictionary<string, object> _parameters = new Dictionary<string, object>();
+        private readonly IList<string> _lines = new List<string>();
+        private readonly IDictionary<string, object> _parameters = new Dictionary<string, object>();
         protected IDatabase _database;
 
         public string Build()
@@ -36,8 +36,6 @@ namespace Normal
             ToCommand().SingleOrDefaultAsync<T>(cancellationToken);
         public Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) =>
              ToCommand().ExecuteNonQueryAsync(cancellationToken);
-        public Task<T> ExecuteScalarAsync<T>(CancellationToken cancellationToken = default) =>
-            ToCommand().ExecuteScalarAsync<T>(cancellationToken);
 
         public IStatementBuilder AddLine(string keyword, params string[] columnNames)
         {
@@ -59,7 +57,7 @@ namespace Normal
             return parameterName;
         }
 
-        protected IDbCommandBuilder ToCommand()
+        protected ICommandBuilder ToCommand()
         {
             if (_database == null)
             {

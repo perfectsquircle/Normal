@@ -8,11 +8,11 @@ namespace Normal
 {
     public partial class Database : IDatabase
     {
-        private CreateConnection _createConnection;
-        private IHandler _handler;
-        private readonly AsyncLocal<DbTransactionWrapper> _currentTransaction;
+        private readonly CreateConnection _createConnection;
+        private readonly IHandler _handler;
+        private readonly AsyncLocal<Transaction> _currentTransaction;
         private readonly SemaphoreSlim _semaphore;
-        internal DbTransactionWrapper CurrentTransaction
+        internal Transaction CurrentTransaction
         {
             get { return _currentTransaction.Value; }
             private set { _currentTransaction.Value = value; }
@@ -54,7 +54,7 @@ namespace Normal
         private Database()
         {
             _handler = new BaseHandler(this);
-            _currentTransaction = new AsyncLocal<DbTransactionWrapper>();
+            _currentTransaction = new AsyncLocal<Transaction>();
             _semaphore = new SemaphoreSlim(1, 1);
         }
 
@@ -68,9 +68,9 @@ namespace Normal
             return Variant.Unknown;
         }
 
-        public IDbCommandBuilder CreateCommand(string commandText)
+        public ICommandBuilder CreateCommand(string commandText)
         {
-            return new DbCommandBuilder()
+            return new CommandBuilder()
                 .WithHandler(_handler)
                 .WithCommandText(commandText);
         }
@@ -84,7 +84,7 @@ namespace Normal
                 {
                     throw new InvalidOperationException("Transaction already in progress!");
                 }
-                CurrentTransaction = new DbTransactionWrapper()
+                CurrentTransaction = new Transaction()
                     .WithIsolationLevel(isolationLevel)
                     .OnDispose(() => CurrentTransaction = null);
                 return CurrentTransaction;
@@ -95,7 +95,7 @@ namespace Normal
             }
         }
 
-        internal async Task<IDbConnectionWrapper> GetOpenConnectionAsync(CancellationToken cancellationToken)
+        internal async Task<IConnection> GetOpenConnectionAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -112,7 +112,7 @@ namespace Normal
                 }
                 else
                 {
-                    return new DbConnectionWrapper(await CreateOpenConnectionAsync(cancellationToken));
+                    return new Connection(await CreateOpenConnectionAsync(cancellationToken));
                 }
             }
             finally
@@ -139,8 +139,7 @@ namespace Normal
             {
                 throw new InvalidOperationException("Connection is null");
             }
-            var dbConnection = connection as DbConnection;
-            if (dbConnection == null)
+            if (!(connection is DbConnection dbConnection))
             {
                 throw new NotSupportedException("Connection must be DbConnection");
             }

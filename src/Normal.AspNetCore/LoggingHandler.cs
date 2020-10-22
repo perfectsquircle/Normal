@@ -15,11 +15,10 @@ namespace Normal
             _logger = logger;
         }
 
-        public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             var rowsAffected = 0;
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var stopwatch = Stopwatch.StartNew();
             try
             {
                 rowsAffected = await InnerHandler.ExecuteNonQueryAsync(commandBuilder, cancellationToken);
@@ -28,15 +27,14 @@ namespace Normal
             finally
             {
                 var parameters = commandBuilder.Parameters;
-                _logger.LogInformation("non-query: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms rows affected: {rowsAffected}",
+                _logger.LogDebug("non-query: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms rows affected: {rowsAffected}",
                     commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds, rowsAffected);
             }
         }
 
-        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var stopwatch = Stopwatch.StartNew();
             try
             {
                 var results = await InnerHandler.ExecuteReaderAsync<T>(commandBuilder, cancellationToken);
@@ -45,26 +43,8 @@ namespace Normal
             finally
             {
                 var parameters = commandBuilder.Parameters;
-                _logger.LogInformation("query: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms",
+                _logger.LogDebug("query: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms",
                     commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds);
-            }
-        }
-
-        public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
-        {
-            T result = default(T);
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            try
-            {
-                result = await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
-                return result;
-            }
-            finally
-            {
-                var parameters = commandBuilder.Parameters;
-                _logger.LogInformation("scalar: {commandText} parameters: {parameters} elapsed: {ElapsedMilliseconds}ms result: {result}",
-                    commandBuilder.CommandText, parameters, stopwatch.ElapsedMilliseconds, result);
             }
         }
     }

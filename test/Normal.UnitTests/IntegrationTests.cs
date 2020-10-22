@@ -226,11 +226,11 @@ namespace Normal.UnitTests
             //When
             var results = await database
                 .CreateCommand("select 1")
-                .ExecuteScalarAsync<int>();
+                .SingleAsync<int>();
 
             var results2 = await database
                 .CreateCommand("select 'hello, there'")
-                .ExecuteScalarAsync<string>();
+                .SingleAsync<string>();
 
             //Then
             Assert.Equal(1, results);
@@ -246,15 +246,15 @@ namespace Normal.UnitTests
             //When
             var results = database
                 .CreateCommand("select 1")
-                .ExecuteScalarAsync<int>();
+                .SingleAsync<int>();
 
             var results2 = database
                 .CreateCommand("select 2")
-                .ExecuteScalarAsync<int>();
+                .SingleAsync<int>();
 
             var results3 = database
                 .CreateCommand("select 3")
-                .ExecuteScalarAsync<int>();
+                .SingleAsync<int>();
 
             //Then
             Assert.Equal(1, await results);

@@ -19,7 +19,7 @@ namespace Normal
             _memoryCache = memoryCache;
         }
 
-        public override async Task<int> ExecuteNonQueryAsync(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<int> ExecuteNonQueryAsync(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             return await CacheOrNot(commandBuilder, async (buffer) =>
             {
@@ -27,15 +27,7 @@ namespace Normal
             });
         }
 
-        public override async Task<T> ExecuteScalarAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
-        {
-            return await CacheOrNot(commandBuilder, async (buffer) =>
-            {
-                return await InnerHandler.ExecuteScalarAsync<T>(commandBuilder, cancellationToken);
-            });
-        }
-
-        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(IDbCommandBuilder commandBuilder, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<T>> ExecuteReaderAsync<T>(ICommandBuilder commandBuilder, CancellationToken cancellationToken)
         {
             return await CacheOrNot(commandBuilder, async (buffer) =>
             {
@@ -48,7 +40,7 @@ namespace Normal
             });
         }
 
-        private async Task<T> CacheOrNot<T>(IDbCommandBuilder commandBuilder, Func<bool, Task<T>> inner)
+        private async Task<T> CacheOrNot<T>(ICommandBuilder commandBuilder, Func<bool, Task<T>> inner)
         {
             if (!commandBuilder.Parameters.ContainsKey(NormalTtl))
             {
@@ -66,7 +58,7 @@ namespace Normal
             return results;
         }
 
-        private static TimeSpan? GetTtl(IDbCommandBuilder command)
+        private static TimeSpan? GetTtl(ICommandBuilder command)
         {
             var ttlParam = command.Parameters.First(p => p.Key == NormalTtl);
             var ttl = ttlParam.Value as TimeSpan?;
@@ -74,18 +66,16 @@ namespace Normal
             return ttl;
         }
 
-        private static string CalculateCacheKey(IDbCommandBuilder command)
+        private static string CalculateCacheKey(ICommandBuilder command)
         {
-            using (var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5))
+            using var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+            md5.AppendData(Encoding.UTF8.GetBytes(command.CommandText));
+            foreach (var param in command.Parameters)
             {
-                md5.AppendData(Encoding.UTF8.GetBytes(command.CommandText));
-                foreach (var param in command.Parameters)
-                {
-                    md5.AppendData(Encoding.UTF8.GetBytes(param.Key));
-                    md5.AppendData(Encoding.UTF8.GetBytes(Convert.ToString(param.Value)));
-                }
-                return Convert.ToBase64String(md5.GetHashAndReset());
+                md5.AppendData(Encoding.UTF8.GetBytes(param.Key));
+                md5.AppendData(Encoding.UTF8.GetBytes(Convert.ToString(param.Value)));
             }
+            return Convert.ToBase64String(md5.GetHashAndReset());
         }
     }
 }

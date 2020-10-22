@@ -71,7 +71,7 @@ VALUES
                 .Select("color_name")
                 .From("warehouse.colors")
                 .Where("color_name").EqualTo("Gurple")
-                .ExecuteScalarAsync<string>();
+                .FirstAsync<string>();
 
             //Then
             Assert.Equal(1, rowsInserted);

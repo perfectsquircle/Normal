@@ -2,17 +2,17 @@ using System.Data.Common;
 
 namespace Normal
 {
-    internal class DbConnectionWrapper : IDbConnectionWrapper
+    internal class Connection : IConnection
     {
         public DbConnection DbConnection { get; private set; }
         public DbTransaction DbTransaction { get; private set; }
 
-        public DbConnectionWrapper(DbConnection dbConnection)
+        public Connection(DbConnection dbConnection)
         {
             DbConnection = dbConnection;
         }
 
-        public DbConnectionWrapper(DbConnection dbConnection, DbTransaction transaction)
+        public Connection(DbConnection dbConnection, DbTransaction transaction)
         {
             DbConnection = dbConnection;
             DbTransaction = transaction;

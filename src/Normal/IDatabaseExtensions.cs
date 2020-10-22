@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,30 +15,21 @@ namespace Normal
             return new SelectBuilder(database).WithColumns(selectList);
         }
 
-        public static async Task<IEnumerable<T>> SelectAsync<T>(this IDatabase database, CancellationToken cancellationToken = default)
+        public static ISelectBuilder<T> SelectAll<T>(this IDatabase database)
         {
-            return await database.Select<T>().ToEnumerableAsync<T>(cancellationToken);
-        }
-
-        public static async Task<IEnumerable<T>> SelectAsync<T>(
-            this IDatabase database,
-            Action<ISelectBuilder> builderCallback,
-            CancellationToken cancellationToken = default)
-        {
-            var selectBuilder = database.Select<T>();
-            builderCallback(selectBuilder);
-            return await selectBuilder.ToEnumerableAsync<T>(cancellationToken);
+            var table = Table.FromType(typeof(T));
+            return new SelectBuilder<T>(database)
+                .WithColumns(table.Columns.Select(c => c.Name).ToArray())
+                .From(table.Name);
         }
 
         public static async Task<T> SelectAsync<T>(
-            this IDatabase database,
-            object id,
-            CancellationToken cancellationToken = default)
+            this IDatabase database, object id, CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
-            return await database.Select<T>()
+            var table = Table.FromType(typeof(T));
+            return await database.SelectAll<T>()
                 .Where(table.PrimaryKey.Name).EqualTo(id)
-                .FirstOrDefaultAsync<T>(cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public static IInsertBuilder InsertInto(this IDatabase database, string tableName)
@@ -52,7 +42,7 @@ namespace Normal
             T model,
             CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             var primaryKey = table.PrimaryKey;
             var columns = table.Columns;
             var columnsWithoutPrimaryKey = columns.Where(c => !c.IsPrimaryKey);
@@ -60,7 +50,7 @@ namespace Normal
                 .Columns(columnsWithoutPrimaryKey.Select(c => c.Name).ToArray())
                 .Values(columnsWithoutPrimaryKey.Select(c => c.GetValue(model)).ToArray()) as InsertBuilder;
 
-            ISelectBuilder select;
+            ISelectBuilder<T> select;
             if (primaryKey.IsAutoIncrement)
             {
                 var identityExpression = database.Variant switch
@@ -71,21 +61,18 @@ namespace Normal
                     _ => throw new NotSupportedException("Unknown database variant: " + database.Variant)
                 };
 
-                select = Select(database, columns.Select(c => c.Name).ToArray())
-                    .From(table.Name)
+                select = SelectAll<T>(database)
                     .Where($"{primaryKey.Name} = {identityExpression}")
-                    .End() as SelectBuilder;
+                    .End();
             }
             else
             {
-                select = Select(database, columns.Select(c => c.Name).ToArray())
-                    .From(table.Name)
+                select = SelectAll<T>(database)
                     .Where($"{primaryKey.Name}").EqualTo(primaryKey.GetValue(model));
             }
 
             insertBuilder.AddLine(";");
             insertBuilder.AddLine(select.Build());
-
 
             return insertBuilder
                 .SingleAsync<T>(cancellationToken);
@@ -97,11 +84,9 @@ namespace Normal
         }
 
         public static Task<int> UpdateAsync<T>(
-            this IDatabase database,
-            T model,
-            CancellationToken cancellationToken = default)
+            this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             var columns = table.Columns.ToList();
             var primaryKey = table.PrimaryKey;
             columns.Remove(primaryKey);
@@ -116,23 +101,25 @@ namespace Normal
             return new DeleteBuilder(database).WithTableName(tableName);
         }
 
-        public static Task<int> DeleteAsync<T>(this IDatabase database, T model, CancellationToken cancellationToken = default)
+        public static Task<int> DeleteAsync<T>(
+            this IDatabase database, T model, CancellationToken cancellationToken = default)
         {
-            var table = new Table(typeof(T));
+            var table = Table.FromType(typeof(T));
             var primaryKey = table.PrimaryKey;
             return database.DeleteFrom(table.Name)
                 .Where(primaryKey.Name).EqualTo(primaryKey.GetValue(model))
                 .ExecuteNonQueryAsync(cancellationToken);
         }
 
-        public static IDbCommandBuilder CreateCommandFromFile(this IDatabase database, string fileName, Encoding encoding = default)
+        public static ICommandBuilder CreateCommandFromFile(
+            this IDatabase database, string fileName, Encoding encoding = default)
         {
-            encoding = encoding ?? Encoding.Default;
+            encoding ??= Encoding.Default;
             var file = File.ReadAllText(fileName, encoding);
             return database.CreateCommand(file);
         }
 
-        public static IDbCommandBuilder CreateCommandFromResource(
+        public static ICommandBuilder CreateCommandFromResource(
             this IDatabase database,
             string resourceName,
             Assembly inputAssembly = default,
@@ -169,14 +156,6 @@ namespace Normal
                 }
             }
             return null;
-        }
-
-
-        // TODO: make this public, and return an ISelectBuilder with a Generic type?
-        private static ISelectBuilder Select<T>(this IDatabase database)
-        {
-            var table = new Table(typeof(T));
-            return database.Select(table.Columns.Select(c => c.Name).ToArray()).From(table.Name);
         }
     }
 }

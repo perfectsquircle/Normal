@@ -2,22 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Normal
 {
-    internal partial class DbCommandBuilder : IDbCommandBuilder
+    internal partial class CommandBuilder : ICommandBuilder
     {
         public string CommandText { get; private set; }
         public int? CommandTimeout { get; private set; }
         public CommandType? CommandType { get; private set; }
         public IDictionary<string, object> Parameters { get; }
 
-        public DbCommandBuilder()
+        public CommandBuilder()
         {
             Parameters = new Dictionary<string, object>();
         }
 
-        public IDbCommandBuilder WithCommandText(string commandText)
+        public ICommandBuilder WithCommandText(string commandText)
         {
             if (commandText == null)
             {
@@ -28,19 +31,19 @@ namespace Normal
             return this;
         }
 
-        public IDbCommandBuilder WithCommandTimeout(int commandTimeout)
+        public ICommandBuilder WithCommandTimeout(int commandTimeout)
         {
             CommandTimeout = commandTimeout;
             return this;
         }
 
-        public IDbCommandBuilder WithCommandType(CommandType commandType)
+        public ICommandBuilder WithCommandType(CommandType commandType)
         {
             CommandType = commandType;
             return this;
         }
 
-        public IDbCommandBuilder WithParameter(string key, object value)
+        public ICommandBuilder WithParameter(string key, object value)
         {
             if (key == null)
             {
@@ -50,7 +53,7 @@ namespace Normal
             return this;
         }
 
-        public IDbCommandBuilder WithParameters(object parameters)
+        public ICommandBuilder WithParameters(object parameters)
         {
             if (parameters == null)
             {
@@ -60,7 +63,7 @@ namespace Normal
             return WithParameters(ReflectionHelper.ToDictionary(parameters));
         }
 
-        public IDbCommandBuilder WithParameters(IDictionary<string, object> parameters)
+        public ICommandBuilder WithParameters(IDictionary<string, object> parameters)
         {
             if (parameters == null)
             {
@@ -78,7 +81,7 @@ namespace Normal
             return this;
         }
 
-        public DbCommand Build(IDbConnectionWrapper connection)
+        public DbCommand Build(IConnection connection)
         {
             var command = connection.CreateCommand();
             if (CommandText != null)
@@ -103,6 +106,40 @@ namespace Normal
             }
 
             return command;
+        }
+    }
+
+    internal partial class CommandBuilder : ICommandExecutor
+    {
+        private IHandler _handler;
+
+        internal CommandBuilder WithHandler(IHandler handler)
+        {
+            _handler = handler;
+            return this;
+        }
+
+        public async Task<IEnumerable<T>> ToEnumerableAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken));
+        public async Task<IList<T>> ToListAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken)).ToList();
+        public async Task<T> FirstAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken)).First();
+        public async Task<T> FirstOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken)).FirstOrDefault();
+        public async Task<T> SingleAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken)).Single();
+        public async Task<T> SingleOrDefaultAsync<T>(CancellationToken cancellationToken = default) =>
+            (await ToEnumerable<T>(cancellationToken)).SingleOrDefault();
+
+        private async Task<IEnumerable<T>> ToEnumerable<T>(CancellationToken cancellationToken)
+        {
+            return await _handler.ExecuteReaderAsync<T>(this, cancellationToken);
+        }
+
+        public async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default)
+        {
+            return await _handler.ExecuteNonQueryAsync(this, cancellationToken);
         }
     }
 }

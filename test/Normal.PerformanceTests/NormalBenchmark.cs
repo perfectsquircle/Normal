@@ -10,12 +10,12 @@ using Normal.PerformanceTests.Fixtures;
 
 namespace Normal.PerformanceTests
 {
-    [CoreJob]
+    [SimpleJob]
     [RankColumn]
     public class NormalBenchmark
     {
-        IDatabase _database;
-        string _select;
+        private readonly IDatabase _database;
+        private readonly string _select;
 
         public NormalBenchmark()
         {
@@ -35,45 +35,39 @@ namespace Normal.PerformanceTests
         [Benchmark]
         public async Task<IList<PurchaseOrder>> GetPurchaseOrdersAdo()
         {
-            using (var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal"))
-            {
-                await (connection as DbConnection).OpenAsync();
-                var command = connection.CreateCommand();
-                command.CommandText = _select;
+            using var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
+            await (connection as DbConnection).OpenAsync();
+            var command = connection.CreateCommand();
+            command.CommandText = _select;
 
-                using (var reader = command.ExecuteReader())
+            using var reader = command.ExecuteReader();
+            var results = new List<PurchaseOrder>();
+            while (reader.Read())
+            {
+                results.Add(new PurchaseOrder
                 {
-                    var results = new List<PurchaseOrder>();
-                    while (reader.Read())
-                    {
-                        results.Add(new PurchaseOrder
-                        {
-                            PurchaseOrderId = (int)reader["purchase_order_id"],
-                            SupplierId = (int)reader["supplier_id"],
-                            OrderDate = (DateTime)reader["order_date"],
-                            DeliveryMethodId = (int)reader["delivery_method_id"],
-                            ContactPersonId = (int)reader["contact_person_id"],
-                            ExpectedDeliveryDate = (DateTime)(DBNull.Value == reader["expected_delivery_date"] ? null : reader["expected_delivery_date"]),
-                            SupplierReference = (string)(DBNull.Value == reader["supplier_reference"] ? null : reader["supplier_reference"]),
-                            IsOrderFinalized = (bool)reader["is_order_finalized"],
-                            Comments = (string)(DBNull.Value == reader["comments"] ? null : reader["comments"]),
-                            InternalComments = (string)(DBNull.Value == reader["internal_comments"] ? null : reader["internal_comments"]),
-                            LastEditedBy = (int)reader["last_edited_by"],
-                            LastEditedWhen = (DateTime)reader["last_edited_when"],
-                        });
-                    }
-                    return results;
-                }
+                    PurchaseOrderId = (int)reader["purchase_order_id"],
+                    SupplierId = (int)reader["supplier_id"],
+                    OrderDate = (DateTime)reader["order_date"],
+                    DeliveryMethodId = (int)reader["delivery_method_id"],
+                    ContactPersonId = (int)reader["contact_person_id"],
+                    ExpectedDeliveryDate = (DateTime)(DBNull.Value == reader["expected_delivery_date"] ? null : reader["expected_delivery_date"]),
+                    SupplierReference = (string)(DBNull.Value == reader["supplier_reference"] ? null : reader["supplier_reference"]),
+                    IsOrderFinalized = (bool)reader["is_order_finalized"],
+                    Comments = (string)(DBNull.Value == reader["comments"] ? null : reader["comments"]),
+                    InternalComments = (string)(DBNull.Value == reader["internal_comments"] ? null : reader["internal_comments"]),
+                    LastEditedBy = (int)reader["last_edited_by"],
+                    LastEditedWhen = (DateTime)reader["last_edited_when"],
+                });
             }
+            return results;
         }
 
         [Benchmark]
         public async Task<IList<PurchaseOrder>> GetPurchaseOrdersDapper()
         {
-            using (var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal"))
-            {
-                return (await connection.QueryAsync<PurchaseOrder>(_select)).ToList();
-            }
+            using var connection = new NpgsqlConnection("Host=localhost;Database=wide_world_importers_pg;Username=normal;Password=normal");
+            return (await connection.QueryAsync<PurchaseOrder>(_select)).ToList();
         }
     }
 }

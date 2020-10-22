@@ -14,8 +14,10 @@ namespace Normal.UnitTests
         {
             //Given
             var createConnectionCalled = 0;
-            var connection = new Mock<DbConnection>();
-            connection.DefaultValue = DefaultValue.Mock;
+            var connection = new Mock<DbConnection>
+            {
+                DefaultValue = DefaultValue.Mock
+            };
             var database = new Database(() => { createConnectionCalled++; return connection.Object; });
 
             //When
@@ -39,7 +41,7 @@ namespace Normal.UnitTests
             var database = Database.WithConnection<NpgsqlConnection>("Host=localhost;Database=postgres;Username=postgres;Password=normal");
 
             //When
-            var connection = await database.GetOpenConnectionAsync(default(CancellationToken));
+            var connection = await database.GetOpenConnectionAsync(default);
 
             //Then
             Assert.NotNull(connection);

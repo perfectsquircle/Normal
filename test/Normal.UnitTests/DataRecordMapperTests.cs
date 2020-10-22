@@ -153,6 +153,7 @@ namespace Normal.UnitTests
             var mapper = factory.CreateMapper<T>();
 
             //Then
+            Assert.IsType<T>(instance);
             Assert.NotNull(mapper);
             Assert.Equal(expectedMapperType, mapper.GetType());
         }
